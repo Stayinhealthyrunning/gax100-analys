@@ -23,14 +23,14 @@ ETAPP 1 är mergad till `main` via PR #1 (merge commit `8a11f78`). ETAPP 2 körs
 - `tests/test_database.js` passerar: 13 editions, 826 resultat, 1 838 observationer; FINISHED 581, DNF 100, UNKNOWN 145, DNS 0.
 - ETAPP 3-grunden finns i `web/`: årsväljare, fem faktakort, löparsökning, resultattabell och individuell mellantidsvy från exporterad normaliserad data.
 - `scripts/export_web_data.js` exporterade 13 editions, 826 resultat och 1 838 observationer till `web/data.json`; JavaScript-syntaxkontroller passerar.
-- `tests/test_semantics.js` och `tests/test_web.js` passerar. Frontend har klubbfilter, sortering, histogram, tid/placering, individuell delsträckevisning, exakt-två-jämförelse och gated Kartduell/personlig plan.
+- `tests/test_semantics.js` och `tests/test_web.js` passerar. Frontend har klubbfilter, sortering, histogram, P10/P50/P90-percentiler, tid/placering, individuell delsträckevisning, exakt-två-jämförelse och gated Kartduell/personlig plan. Externa textfält HTML-escapas.
 
 ## Nästa steg
 
-1. Senaste verifierade commit före denna körning är `821df9c`; uppdateras efter commit.
-2. Lägg till percentilvy och full browser-QA om testmiljö blir tillgänglig.
+1. Commit och pusha percentilvyn samt uppdatera Draft PR #2.
+2. Genomför full browser-QA om testmiljö blir tillgänglig; statisk QA är redan grön.
 3. Hitta verifierad historisk GPX/2025-alternativkälla; annars behåll blockeringarna.
-4. Uppdatera denna fil före sessionsslut.
+4. Uppdatera denna fil före sessionsslut med senaste commit och testresultat.
 
 ## Begränsningar
 
