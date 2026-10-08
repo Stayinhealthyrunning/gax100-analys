@@ -23,7 +23,7 @@ ETAPP 1 är mergad till `main` via PR #1 (merge commit `8a11f78`). ETAPP 2 körs
 - `tests/test_database.js` passerar: 13 editions, 826 resultat, 1 838 observationer; FINISHED 581, DNF 100, UNKNOWN 145, DNS 0.
 - ETAPP 3-grunden finns i `web/`: årsväljare, fem faktakort, löparsökning, resultattabell och individuell mellantidsvy från exporterad normaliserad data.
 - `scripts/export_web_data.js` exporterade 13 editions, 826 resultat och 1 838 observationer till `web/data.json`; JavaScript-syntaxkontroller passerar.
-- `tests/test_semantics.js` och `tests/test_web.js` passerar. Frontend har klubbfilter, sortering, histogram, P10/P50/P90-percentiler, tid/placering, individuell delsträckevisning, exakt-två-jämförelse och gated Kartduell/personlig plan. Externa textfält HTML-escapas.
+- `tests/test_semantics.js` och `tests/test_web.js` passerar. Frontend har klubbfilter, sortering, histogram, P10/P50/P90-percentiler, korrigerat tid/placeringsdiagram, historisk upplagejämförelse, individuell delsträckevisning, exakt-två-jämförelse, 2–5-val för gated Kartduell och gated personlig plan. Externa textfält HTML-escapas.
 
 ## Nästa steg
 
