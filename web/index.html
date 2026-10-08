@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="sv">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>GAX100 Analys</title><link rel="stylesheet" href="styles.css"></head>
+<body>
+<main>
+  <header class="hero"><p class="eyebrow">THE GAX 100 MILES</p><h1>GAX100 Analys</h1><p>Verifierade resultat, mellantider och källspårning per tävlingsupplaga.</p><label>År <select id="year"></select></label></header>
+  <section aria-labelledby="facts-title"><h2 id="facts-title">Loppet i siffror</h2><div id="facts" class="facts"></div></section>
+  <section aria-labelledby="finder-title"><h2 id="finder-title">Hitta din löpare</h2><input id="search" type="search" placeholder="Sök namn eller klubb" aria-label="Sök namn eller klubb"><p id="result-count" class="muted"></p><div id="runner" class="runner empty">Välj en rad i resultatdatabasen för individuell visning.</div></section>
+  <section aria-labelledby="database-title"><h2 id="database-title">Resultatdatabas</h2><div class="table-wrap"><table><thead><tr><th>Namn</th><th>Kön</th><th>Klubb</th><th>Status</th><th>Sluttid</th><th></th></tr></thead><tbody id="rows"></tbody></table></div></section>
+  <section aria-labelledby="method-title"><h2 id="method-title">Data och metod</h2><p class="muted">Värdena kommer från importerade officiella resultatsidor. Saknade statusar förblir UNKNOWN. Mellantider visas bara när en faktisk observation finns.</p><p><a href="https://gax100.se/resultat/">Officiellt resultatindex</a> · <a href="https://gax100.se/bana-karta/">Officiell bana och karta</a></p></section>
+</main><script src="app.js"></script>
+</body></html>

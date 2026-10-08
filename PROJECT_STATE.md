@@ -21,14 +21,17 @@ ETAPP 1 är mergad till `main` via PR #1 (merge commit `8a11f78`). ETAPP 2 körs
 - `tests/test_source_pipeline.ps1` passerar: manifest 15 poster, 14 nedladdade, audit 14 poster.
 - `scripts/build_database.js` bygger SQLite från råarkivet; två körningar i följd är idempotenta.
 - `tests/test_database.js` passerar: 13 editions, 826 resultat, 1 838 observationer; FINISHED 581, DNF 100, UNKNOWN 145, DNS 0.
+- ETAPP 3-grunden finns i `web/`: årsväljare, fem faktakort, löparsökning, resultattabell och individuell mellantidsvy från exporterad normaliserad data.
+- `scripts/export_web_data.js` exporterade 13 editions, 826 resultat och 1 838 observationer till `web/data.json`; JavaScript-syntaxkontroller passerar.
 
 ## Nästa steg
 
 1. Senaste verifierade commit är `c901562` på `codex/gax100-etapp2`.
 2. ETAPP 2B är påbörjad: importerad databas och importtest fungerar.
 3. Förbättra äldre format och köns-/statussemantik där källan stöder det; 2025 kvarstår som 404.
-4. Bygg ETAPP 3 frontend endast från verifierad SQLite-export; capability-gate splits/GPX.
-5. Uppdatera denna fil före sessionsslut.
+4. Fortsätt ETAPP 3 med browser-QA och capability-gating; lokal browser-QA blockerades av socketåtkomst (`ERR_CONNECTION_TIMED_OUT`/åtkomst nekad), inte av appens JavaScript.
+5. Lägg till percentil-/fördelningsvyer först efter QA och behåll GPX/replay avstängt utan verifierade spår.
+6. Uppdatera denna fil före sessionsslut.
 
 ## Begränsningar
 
