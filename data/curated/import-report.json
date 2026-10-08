@@ -1,0 +1,83 @@
+{
+  "generated_at": "2026-10-08T18:30:03.141Z",
+  "stats": [
+    {
+      "source": "result-index-2026",
+      "year": 2026,
+      "imported": 110,
+      "observations": 0
+    },
+    {
+      "source": "result-2014",
+      "year": 2014,
+      "imported": 37,
+      "observations": 94
+    },
+    {
+      "source": "result-2015",
+      "year": 2015,
+      "imported": 53,
+      "observations": 123
+    },
+    {
+      "source": "result-2016",
+      "year": 2016,
+      "imported": 59,
+      "observations": 160
+    },
+    {
+      "source": "result-2017",
+      "year": 2017,
+      "imported": 59,
+      "observations": 158
+    },
+    {
+      "source": "result-2018",
+      "year": 2018,
+      "imported": 63,
+      "observations": 168
+    },
+    {
+      "source": "result-2019",
+      "year": 2019,
+      "imported": 69,
+      "observations": 184
+    },
+    {
+      "source": "result-2020",
+      "year": 2020,
+      "imported": 41,
+      "observations": 119
+    },
+    {
+      "source": "result-2021",
+      "year": 2021,
+      "imported": 80,
+      "observations": 209
+    },
+    {
+      "source": "result-2022",
+      "year": 2022,
+      "imported": 78,
+      "observations": 217
+    },
+    {
+      "source": "result-2023",
+      "year": 2023,
+      "imported": 90,
+      "observations": 245
+    },
+    {
+      "source": "result-2024",
+      "year": 2024,
+      "imported": 87,
+      "observations": 161
+    },
+    {
+      "source": "course-current",
+      "year": 2026,
+      "imported": 0,
+      "observations": 0
+    }
+  ]
+}
