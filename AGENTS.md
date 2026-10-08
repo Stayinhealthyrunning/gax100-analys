@@ -14,4 +14,4 @@ GAX100 Analys är ett källspårbart analysunderlag för The GAX 100 Miles. Arbe
 
 ## Status
 
-ETAPP 1 är påbörjad. Datainsamling och källinventering återstår innan analysresultat kan fastställas.
+ETAPP 1 är mergad till `main`. ETAPP 2 körs på `codex/gax100-etapp2`; resultatimport och en första webbfunktion är implementerade, medan full QA och vidare analysmoduler återstår.

@@ -26,7 +26,7 @@ ETAPP 1 är mergad till `main` via PR #1 (merge commit `8a11f78`). ETAPP 2 körs
 
 ## Nästa steg
 
-1. Senaste verifierade commit är `c901562` på `codex/gax100-etapp2`.
+1. Senaste verifierade commit är `b6086ce` på `codex/gax100-etapp2`.
 2. ETAPP 2B är påbörjad: importerad databas och importtest fungerar.
 3. Förbättra äldre format och köns-/statussemantik där källan stöder det; 2025 kvarstår som 404.
 4. Fortsätt ETAPP 3 med browser-QA och capability-gating; lokal browser-QA blockerades av socketåtkomst (`ERR_CONNECTION_TIMED_OUT`/åtkomst nekad), inte av appens JavaScript.
