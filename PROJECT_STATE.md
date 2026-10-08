@@ -2,7 +2,7 @@
 
 ## Aktuellt
 
-ETAPP 1 är mergad till `main` via PR #1 (merge commit `8a11f78`). ETAPP 2 körs på branchen `codex/gax100-etapp2`. Projektet ska bygga en källspårbar analys av The GAX 100 Miles enligt Loppanalys Standard 1.0; analysverktyget är ännu inte påbörjat.
+ETAPP 1 är mergad till `main` via PR #1 (merge commit `8a11f78`). ETAPP 2 körs på branchen `codex/gax100-etapp2` och Draft PR #2. Resultatimport, databasvalidering och en testbar frontendgrund är implementerade enligt Loppanalys Standard 1.0.
 
 ## Genomfört
 
@@ -23,15 +23,14 @@ ETAPP 1 är mergad till `main` via PR #1 (merge commit `8a11f78`). ETAPP 2 körs
 - `tests/test_database.js` passerar: 13 editions, 826 resultat, 1 838 observationer; FINISHED 581, DNF 100, UNKNOWN 145, DNS 0.
 - ETAPP 3-grunden finns i `web/`: årsväljare, fem faktakort, löparsökning, resultattabell och individuell mellantidsvy från exporterad normaliserad data.
 - `scripts/export_web_data.js` exporterade 13 editions, 826 resultat och 1 838 observationer till `web/data.json`; JavaScript-syntaxkontroller passerar.
+- `tests/test_semantics.js` och `tests/test_web.js` passerar. Frontend har klubbfilter, sortering, histogram, tid/placering, individuell delsträckevisning, exakt-två-jämförelse och gated Kartduell/personlig plan.
 
 ## Nästa steg
 
-1. Senaste verifierade commit är `b6086ce` på `codex/gax100-etapp2`.
-2. ETAPP 2B är påbörjad: importerad databas och importtest fungerar.
-3. Förbättra äldre format och köns-/statussemantik där källan stöder det; 2025 kvarstår som 404.
-4. Fortsätt ETAPP 3 med browser-QA och capability-gating; lokal browser-QA blockerades av socketåtkomst (`ERR_CONNECTION_TIMED_OUT`/åtkomst nekad), inte av appens JavaScript.
-5. Lägg till percentil-/fördelningsvyer först efter QA och behåll GPX/replay avstängt utan verifierade spår.
-6. Uppdatera denna fil före sessionsslut.
+1. Senaste verifierade commit före denna körning är `821df9c`; uppdateras efter commit.
+2. Lägg till percentilvy och full browser-QA om testmiljö blir tillgänglig.
+3. Hitta verifierad historisk GPX/2025-alternativkälla; annars behåll blockeringarna.
+4. Uppdatera denna fil före sessionsslut.
 
 ## Begränsningar
 
