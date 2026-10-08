@@ -20,9 +20,13 @@
 |---|---|---|---|
 | DUV-2026 | https://statistik.d-u-v.org/eventdetail.php?event=129899&language=EN | Oberoende kontroll av 2024–2026 vinnare och deltagarantal | Identifierad; ej ersättning för officiell källa |
 
+## Officiella resultatsidor 2014–2026
+
+Årsidorna följer `https://gax100.se/resultat/resultat-YYYY/` för 2014–2025. Resultatindexet är `https://gax100.se/resultat/` och listar alla länkar samt aktuell 2026-tabell. 2016, 2020 och 2021/2025 hade åtkomst- eller avgränsningshinder i denna inventering; se `DATA_COVERAGE.md`.
+
 ## Standard
 
-Den normerande standarden är `Stayinhealthyrunning/Stayinhealthyrunning.github.io/standards/`, enligt projektbeställningen. Direktläsning misslyckades i denna session med webbcachefel; standardinnehåll ska verifieras innan slutlig compliance-bedömning.
+Den normerande standarden är `Stayinhealthyrunning/Stayinhealthyrunning.github.io/standards/LOPPANALYS_STANDARD_V1_0.md`. Den lästes fullständigt via en tillfällig shallow Git-klon av GitHub-repot; den innehåller 1.0.0-kravbaslinjen och no-fabrication/evidensspärrar. Webbcachefelet kring katalog-URL:n kringgicks med GitHub-åtkomst.
 
 ## Källhantering
 

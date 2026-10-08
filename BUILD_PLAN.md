@@ -1,13 +1,22 @@
 # BUILD_PLAN.md
 
-## ETAPP 1 – källinventering och reproducerbar grund
+## ETAPP 1 – inventering och källverifiering (aktuell leverans)
 
-1. **Källor och standard** – läs Loppanalys Standard 1.0, skapa källregister och fastställ datamodell.
-2. **Resultat 2014–2026** – samla officiella resultat, deltagarstatus, sluttider och eventuella publicerade mellantider.
-3. **Mellantider** – normalisera kontrollpunkter (Magleberg, Haväng, Sandhammaren och mål) med år, klass och enhet.
-4. **Bana och GPX** – spara metadata för GPX-filer och jämför historiska banbeskrivningar/versioner; separera arrangörens bana från Skåneleden.
-5. **Kvalitetssäkring** – kontrollera dubbletter, saknade värden, enheter, årtal och avvikelser mot officiella sidor.
-6. **Leverans** – dokumentera analysens första reproducerbara resultat, uppdatera `PROJECT_STATE.md`, commit/push och öppna PR.
+1. **Standard** – läs hela `LOPPANALYS_STANDARD_V1_0.md` via GitHub-klon och registrera normerande status.
+2. **Resultatindex** – inventera varje verklig upplaga 2014–2026, inklusive två 2021-upplagor.
+3. **Fältmatris** – dokumentera FINISHED/DNF/DNS, kön, klubb, sluttid, mellantider och kontrollpunkter utan fabricering.
+4. **Bana/GPX** – inventera officiella länkar, autentiska spår och banändringen vid Knäbäckshusen 2024.
+5. **Åtkomst/proveniens** – registrera filformat, URL, åtkomsthinder och skillnaden identifierad/verifierad/nedladdad/normaliserad.
+6. **Genomförbarhet** – bedöm standardblock och lämna tydliga blockerare för ETAPP 2.
+
+## ETAPP 2 – hämtning, arkivering, import och normalisering
+
+1. Ladda ned officiella HTML/PDF/resultatfiler och autentiska GPX där åtkomst och publiceringsrätt är verifierad.
+2. Arkivera råfiler med URL, hämtad tidpunkt och SHA-256; ändra inte originalfält.
+3. Importera till kuraterad tabell med source-scoped edition/result-ID och fältproveniens.
+4. Normalisera status, kön, klubb, tider och kontrollpunkter; bevara råvärden och markera osäkerheter.
+5. Jämför GPX/banversioner före och efter 2024 utan att anta geometrisk jämförbarhet.
+6. Kör counts/status/QA mot officiella sidor och förbered analysverktygets datakontrakt först efter verifierad täckning.
 
 ## Definition of done för ETAPP 1
 
