@@ -19,14 +19,15 @@ ETAPP 1 är mergad till `main` via PR #1 (merge commit `8a11f78`). ETAPP 2 körs
 - 2025 års resultat-URL svarar med HTTP 404; hindret är dokumenterat och inte återförsökt upprepade gånger.
 - `scripts/audit_sources.ps1` kördes och skapade `data/source-audit.json`; detta är en teknisk regex-audit, inte normaliserade resultatantal.
 - `tests/test_source_pipeline.ps1` passerar: manifest 15 poster, 14 nedladdade, audit 14 poster.
+- `scripts/build_database.js` bygger SQLite från råarkivet; två körningar i följd är idempotenta.
+- `tests/test_database.js` passerar: 13 editions, 826 resultat, 1 838 observationer; FINISHED 581, DNF 100, UNKNOWN 145, DNS 0.
 
 ## Nästa steg
 
 1. Senaste verifierade commit är `c901562` på `codex/gax100-etapp2`.
-2. ETAPP 2A: inventera hämtade HTML-tabeller och avgränsa båda 2021-upplagorna.
-2. Avgränsa båda 2021-upplagorna och följ upp 2016/2020/2025:s åtkomsthinder.
-3. Importera och normalisera först efter råarkiv och proveniens är på plats.
-4. Beräkna inga analysmått före verifierad normalisering.
+2. ETAPP 2B är påbörjad: importerad databas och importtest fungerar.
+3. Förbättra äldre format och köns-/statussemantik där källan stöder det; 2025 kvarstår som 404.
+4. Bygg ETAPP 3 frontend endast från verifierad SQLite-export; capability-gate splits/GPX.
 5. Uppdatera denna fil före sessionsslut.
 
 ## Begränsningar

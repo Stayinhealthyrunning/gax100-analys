@@ -2,7 +2,11 @@
 
 ## Inventeringsstatus 2026-10-08
 
-`Identifierad` = länk/underlag känt. `Verifierad` = läst i officiell sida/PDF. `Nedladdad` = råfil arkiverad lokalt. `Normaliserad` = kuraterad tabell med proveniens. Inga nedladdade eller normaliserade rådata finns ännu.
+`Identifierad` = länk/underlag känt. `Verifierad` = läst i officiell sida/PDF. `Nedladdad` = råfil arkiverad lokalt. `Normaliserad` = kuraterad tabell med proveniens. Råarkivet är lokalt och ignorerat; normaliserad SQLite byggs reproducerbart men publiceras inte.
+
+## Uppmätt importtäckning
+
+Importerade editions: **13** (2014–2024, 2021-A, 2021-B och 2026). Importerade resultatposter: **826**. Tidsobservationer: **1 838**. Normaliserad status: **FINISHED 581**, **DNF 100**, **UNKNOWN 145**, **DNS 0**. 2025: **0**, eftersom den officiella detalj-URL:n svarade HTTP 404. Se `data/IMPORT_REPORT.md` för editionsfördelning och återuppbyggnadskommandon.
 
 ## Editionsmatris 2014–2026
 

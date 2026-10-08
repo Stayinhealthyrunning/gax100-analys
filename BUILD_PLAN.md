@@ -18,6 +18,10 @@
 5. Jämför GPX/banversioner före och efter 2024 utan att anta geometrisk jämförbarhet.
 6. Kör counts/status/QA mot officiella sidor och förbered analysverktygets datakontrakt först efter verifierad täckning.
 
+### ETAPP 2B-status
+
+SQLite-importen är implementerad i `scripts/build_database.js`. Den är idempotent och skiljer editions, resultat och tidsobservationer. Nästa steg är att förbättra äldre format/2024-könssemantik och sedan bygga ETAPP 3:s läsbara frontend ovanpå verifierade exporter.
+
 ## Definition of done för ETAPP 1
 
 - Alla påståenden har källa eller är märkta som ej verifierade.
