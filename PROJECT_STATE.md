@@ -24,15 +24,15 @@ ETAPP 1 är mergad till `main` via PR #1 (merge commit `8a11f78`). ETAPP 2 körs
 - ETAPP 3-grunden finns i `web/`: årsväljare, fem faktakort, löparsökning, resultattabell och individuell mellantidsvy från exporterad normaliserad data.
 - `scripts/export_web_data.js` exporterade 13 editions, 826 resultat och 1 838 observationer till `web/data.json`; JavaScript-syntaxkontroller passerar.
 - `tests/test_statistics.js`, `tests/test_time_parser.js`, `tests/test_semantics.js` och `tests/test_web.js` passerar. Median för jämnt n använder de två mittersta värdena; percentiler använder linjär interpolation `h=(n−1)×p`. Frontend följer nu standardordningen, har fungerande hjälpdetaljer, klubbfilter, sortering, histogram med skalor, P10/P25/P50/P75/P90-percentiler, korrigerat tid/placeringsdiagram, historisk upplagejämförelse, individuell delsträckevisning, exakt-två-jämförelse, 2–5-val för gated Kartduell och en gated personlig historisk referensprofil. Externa textfält HTML-escapas.
-- `.github/workflows/qa.yml`, `playwright.config.js`, `package.json` och `tests/e2e/gax100.spec.js` etablerar riktig Chromium browser-QA med screenshots, trace/video vid fel och artefaktuppladdning. Lokal npm saknas i Codex-miljön, så Playwright har ännu inte körts lokalt.
+- `.github/workflows/qa.yml`, `playwright.config.js`, `package.json` och `tests/e2e/gax100.spec.js` etablerar riktig Chromium browser-QA med screenshots, trace/video vid fel och artefaktuppladdning. GitHub Actions körde den på `cb130e4` för 1440/900/768/390 px och godkände alla fyra flöden. Lokal npm saknas fortfarande i Codex-miljön.
 
 ## Nästa steg
 
-1. Senaste lokala verifierade commit är `eb199f3` (`feat: correct data semantics and establish browser QA`); pushas efter denna statusuppdatering.
-2. Kör GitHub Actions Chromium-QA på den pushade exakta committen och granska screenshotartefakterna.
+1. Senaste pushade och verifierade commit är `cb130e4` (`fix: remove mobile document overflow`) på `codex/gax100-etapp2`; Draft PR #2 är fortfarande öppen och inte mergad.
+2. GitHub Actions-körningen `37833464479` är godkänd; artefakterna ska behållas som QA-underlag.
 3. Hitta verifierad historisk GPX/2025-alternativkälla; annars behåll blockeringarna.
 4. Implementera endast ytterligare analysblock där verifierat underlag och standardkontrakt räcker.
 
 ## Begränsningar
 
-Råarkivet och SQLite-databasen är lokalt reproducerbara men råfiler/SQLite publiceras inte. Officiella resultatsidor är heterogena. Ingen verifierad, redistribuerbar GPX-årsfil är tillgänglig; geometrisk flerårsjämförelse och replay saknar därför underlag. GitHub Actions Chromium-QA körde 3/4 flöden grönt på `999445f`; 390 px hade dokumentoverflow och korrigeras i nästa commit.
+Råarkivet och SQLite-databasen är lokalt reproducerbara men råfiler/SQLite publiceras inte. Officiella resultatsidor är heterogena. Ingen verifierad, redistribuerbar GPX-årsfil är tillgänglig; geometrisk flerårsjämförelse och replay saknar därför underlag. GitHub Actions Chromium-QA är godkänd på `cb130e4`; lokal Playwright-körning är inte möjlig eftersom npm saknas i Codex-miljön.
