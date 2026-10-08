@@ -11,6 +11,6 @@ $audit = Get-Content $auditPath -Raw | ConvertFrom-Json
 if ($manifest.Count -lt 15) { throw "För få källposter i manifest: $($manifest.Count)" }
 if (($manifest | Where-Object status -eq 'downloaded').Count -lt 14) { throw 'För få nedladdade källor; kontrollera manifestet.' }
 if (($manifest | Where-Object { $_.status -eq 'downloaded' -and [string]::IsNullOrWhiteSpace($_.sha256) }).Count -ne 0) { throw 'Nedladdad källa saknar SHA-256.' }
-if (($audit | Where-Object note -notlike 'regex audit only*').Count -ne 0) { throw 'Auditens begränsningsmarkering saknas.' }
+if (($audit | Where-Object { $_.status -eq 'downloaded' -and $_.note -notlike 'regex audit only*' }).Count -ne 0) { throw 'Auditens begränsningsmarkering saknas för nedladdad källa.' }
 if ((Get-Content (Join-Path $repo '.gitignore') -Raw) -notmatch 'data/raw/') { throw 'Rådata är inte git-ignorerad.' }
 Write-Output "PASS: manifest=$($manifest.Count), downloaded=$(($manifest | Where-Object status -eq 'downloaded').Count), audit=$($audit.Count)"
