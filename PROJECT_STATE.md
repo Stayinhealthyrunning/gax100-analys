@@ -35,4 +35,4 @@ ETAPP 1 är mergad till `main` via PR #1 (merge commit `8a11f78`). ETAPP 2 körs
 
 ## Begränsningar
 
-Råarkivet och SQLite-databasen är lokalt reproducerbara men råfiler/SQLite publiceras inte. Officiella resultatsidor är heterogena. Ingen verifierad, redistribuerbar GPX-årsfil är tillgänglig; geometrisk flerårsjämförelse och replay saknar därför underlag. Lokal Playwright-körning är blockerad av att npm saknas, men GitHub Actions-workflow är etablerad.
+Råarkivet och SQLite-databasen är lokalt reproducerbara men råfiler/SQLite publiceras inte. Officiella resultatsidor är heterogena. Ingen verifierad, redistribuerbar GPX-årsfil är tillgänglig; geometrisk flerårsjämförelse och replay saknar därför underlag. GitHub Actions Chromium-QA körde 3/4 flöden grönt på `999445f`; 390 px hade dokumentoverflow och korrigeras i nästa commit.
