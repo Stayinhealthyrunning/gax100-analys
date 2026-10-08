@@ -9,6 +9,8 @@ ETAPP 1 är påbörjad på branchen `codex/gax100-etapp1`. Arbetsmiljö, branch 
 - `1900a94` verifierar vanlig filskrivning och Git-commit.
 - Branchen finns på GitHub och följer `origin/codex/gax100-etapp1`.
 - Officiella webbkällor för resultat, bana/karta och historiska resultat är identifierade.
+- 2026 års arrangörslänkade Garmin-kurs är identifierad: `https://connect.garmin.com/app/course/484861455`.
+- Arrangören anger att sträckan förbi Knäbäckshusen är ny från 2024 efter stormen Babet; detta är en prioriterad historisk banversion att dokumentera.
 - Dokumentationsramen för ETAPP 1 är skapad.
 
 ## Nästa steg

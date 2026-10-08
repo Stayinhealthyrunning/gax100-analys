@@ -6,6 +6,7 @@
 |---|---|---|---|
 | GAX-RESULT | https://gax100.se/resultat/ | Index och officiella resultat 2026 samt länkar till 2014–2025 | Identifierad |
 | GAX-COURSE | https://gax100.se/bana-karta/ | Aktuell bana, GPX, banprofil och banbeskrivning | Identifierad |
+| GAX-GARMIN-2026 | https://connect.garmin.com/app/course/484861455 | Arrangörens länkade interaktiva kurs/GPX för 2026 | Identifierad; nedladdning återstår |
 | GAX-R2024 | https://gax100.se/resultat/resultat-2024/ | Exempel på mellantider och DNF-statistik | Identifierad |
 | GAX-R2023 | https://gax100.se/resultat/resultat-2023/ | Mellantider 44/80/130 km och mål | Identifierad |
 | GAX-R2022 | https://gax100.se/resultat/resultat-2022/ | Mellantider och vinnardata | Identifierad |
