@@ -28,10 +28,10 @@ ETAPP 1 är mergad till `main` via PR #1 (merge commit `8a11f78`). ETAPP 2 körs
 
 ## Nästa steg
 
-1. Kör GitHub Actions Chromium-QA på den pushade exakta committen och granska screenshotartefakterna.
-2. Hitta verifierad historisk GPX/2025-alternativkälla; annars behåll blockeringarna.
-3. Implementera endast ytterligare analysblock där verifierat underlag och standardkontrakt räcker.
-4. Uppdatera denna fil före sessionsslut med senaste commit, CI-status och blockerare.
+1. Senaste lokala verifierade commit är `eb199f3` (`feat: correct data semantics and establish browser QA`); pushas efter denna statusuppdatering.
+2. Kör GitHub Actions Chromium-QA på den pushade exakta committen och granska screenshotartefakterna.
+3. Hitta verifierad historisk GPX/2025-alternativkälla; annars behåll blockeringarna.
+4. Implementera endast ytterligare analysblock där verifierat underlag och standardkontrakt räcker.
 
 ## Begränsningar
 
