@@ -27,7 +27,7 @@ ETAPP 1 är mergad till `main` via PR #1 (merge commit `8a11f78`). ETAPP 2 körs
 
 ## Nästa steg
 
-1. Commit och pusha percentilvyn samt uppdatera Draft PR #2.
+1. Senaste verifierade commit är `2ccdc4f` (`feat: add percentile statistics and update work queue`); den ska pushas och kontrolleras mot Draft PR #2.
 2. Genomför full browser-QA om testmiljö blir tillgänglig; statisk QA är redan grön.
 3. Hitta verifierad historisk GPX/2025-alternativkälla; annars behåll blockeringarna.
 4. Uppdatera denna fil före sessionsslut med senaste commit och testresultat.
