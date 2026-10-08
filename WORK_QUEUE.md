@@ -21,6 +21,6 @@
 | FE-009 | Kartduellens valkontrakt 2–5 resultat | DONE | UI begränsar valet till 2–5 och visar tydlig GPX-gating |
 | SEC-001 | HTML-escaping och exportkontroll | DONE | Externa textfält HTML-escapas och råarkivet ligger utanför webbutdata |
 | QA-001 | Riktig Chromium browser-QA vid 1440/900/768/390 | DONE | GitHub Actions körde Playwright-flöden för 1440/900/768/390; screenshots, trace/video vid fel och rapportartefakt är konfigurerade |
-| QA-003 | GitHub Actions exact-head QA och artefakter | DONE | Körningen på `cb130e4` byggde data, passerade käll-/databas-/semantiktester och Chromium-QA samt laddade upp rapportartefakter |
+| QA-003 | GitHub Actions exact-head QA och artefakter | DONE | Körningen på `4605fd4` byggde data, passerade käll-/databas-/semantiktester och Chromium-QA samt laddade upp rapportartefakter |
 | QA-002 | Uppdatera PROJECT_STATE, commit och push | DONE | Projektstatus uppdateras i denna commit |
 | SRC-001 | Historiska GPX och 2025 alternativkälla | BLOCKED | Kräver autentisk källa eller dokumenterat verifierat hinder |
