@@ -7,7 +7,7 @@ ETAPP 1 är mergad till `main` via PR #1 (merge commit `8a11f78`). ETAPP 2 körs
 ## Genomfört
 
 - `1900a94` verifierar vanlig filskrivning och Git-commit.
-- Branchen finns på GitHub och följer `origin/codex/gax100-etapp1`.
+- Branchen finns på GitHub och följer `origin/codex/gax100-etapp2`.
 - Officiella webbkällor för resultat, bana/karta och historiska resultat är identifierade.
 - 2026 års arrangörslänkade Garmin-kurs är identifierad: `https://connect.garmin.com/app/course/484861455`.
 - Arrangören anger att sträckan förbi Knäbäckshusen är ny från 2024 efter stormen Babet; detta är en prioriterad historisk banversion att dokumentera.
@@ -27,7 +27,7 @@ ETAPP 1 är mergad till `main` via PR #1 (merge commit `8a11f78`). ETAPP 2 körs
 
 ## Nästa steg
 
-1. Senaste verifierade commit är `876a530` (`feat: add gated personal reference profile`); den ska pushas och kontrolleras mot Draft PR #2.
+1. Senaste verifierade commit är `da29c77` (`docs: record personal profile checkpoint`); den är pushad och kontrollerad mot Draft PR #2.
 2. Genomför full browser-QA om testmiljö blir tillgänglig; statisk QA är redan grön.
 3. Hitta verifierad historisk GPX/2025-alternativkälla; annars behåll blockeringarna.
 4. Uppdatera denna fil före sessionsslut med senaste commit och testresultat.
