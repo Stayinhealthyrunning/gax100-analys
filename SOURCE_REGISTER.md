@@ -31,3 +31,7 @@ Den normerande standarden är `Stayinhealthyrunning/Stayinhealthyrunning.github.
 ## Källhantering
 
 Hämtad-datum, URL, sidtitel, relevant år/sektion och eventuella PDF/GPX-filer ska registreras när datainsamlingen genomförs.
+
+## ETAPP 2A råarkiv
+
+`scripts/fetch_sources.ps1` hämtar officiella HTML-sidor och `GaxPM2023.pdf` till lokalt ignorerat `data/raw/`. `data/raw/MANIFEST.json` innehåller hämtnings-tidpunkt, status, URL och SHA-256. Vid körningen laddades 13 HTML/PDF-källor; `result-2025` misslyckades med HTTP 404. Rådata publiceras inte i repot.
