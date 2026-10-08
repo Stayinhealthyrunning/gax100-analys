@@ -1,0 +1,18 @@
+{
+  "name": "gax100-analys",
+  "private": true,
+  "version": "0.1.0",
+  "engines": { "node": ">=24" },
+  "scripts": {
+    "test:statistics": "node tests/test_statistics.js",
+    "test:time-parser": "node tests/test_time_parser.js",
+    "test:database": "node tests/test_database.js",
+    "test:semantics": "node tests/test_semantics.js",
+    "test:web": "node tests/test_web.js",
+    "test:browser": "playwright test",
+    "test": "npm run test:statistics && npm run test:time-parser && npm run test:database && npm run test:semantics && npm run test:web && npm run test:browser"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0"
+  }
+}

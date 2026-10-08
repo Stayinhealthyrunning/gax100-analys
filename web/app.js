@@ -4,7 +4,8 @@ const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&':
 const time = (seconds) => seconds == null ? '—' : `${Math.floor(seconds / 3600)}:${String(Math.floor(seconds % 3600 / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
 const edition = () => state.data.editions.find((item) => item.edition_id === state.year);
 const editionResults = (editionId) => state.data.results.filter((result) => result.edition_id === editionId);
-const median = (values) => { const sorted = values.filter(Number.isFinite).sort((a, b) => a - b); return sorted.length ? sorted[Math.floor((sorted.length - 1) / 2)] : null; };
+const median = (values) => GaxStatistics.median(values);
+const percentile = (values, probability) => GaxStatistics.percentile(values, probability);
 const mean = (values) => { const valid = values.filter(Number.isFinite); return valid.length ? Math.round(valid.reduce((sum, value) => sum + value, 0) / valid.length) : null; };
 
 function rows() {
@@ -21,12 +22,13 @@ function rows() {
 
 function renderFacts() {
   const all = editionResults(state.year);
-  const finished = all.filter((result) => result.status === 'FINISHED');
+  const finished = all.filter((result) => result.status === 'FINISHED' && Number.isFinite(result.finish_seconds) && result.finish_seconds > 0);
   const dnf = all.filter((result) => result.status === 'DNF');
   const women = finished.filter((result) => /Kvinnor|Damer/i.test(result.gender || ''));
   const men = finished.filter((result) => /Män|Herrar/i.test(result.gender || ''));
   const best = finished.filter((result) => Number.isFinite(result.finish_seconds)).sort((a, b) => a.finish_seconds - b.finish_seconds)[0];
-  $('#facts').innerHTML = `<div class="fact"><h3>STARTANDE</h3><strong>Ej fastställt</strong><small>källan skiljer inte alltid startande från publicerade poster</small></div><div class="fact"><h3>FULLFÖLJDE</h3><strong>${finished.length}</strong><small>${all.length ? Math.round(finished.length / all.length * 1000) / 10 : 0}% av importerade poster</small></div><div class="fact"><h3>DNF</h3><strong>${dnf.length}</strong><small>explicit källstödd status</small></div><div class="fact gender"><h3>TIDER KVINNOR / MÄN</h3><strong><span class="f">Kvinnor median ${time(median(women.map((result) => result.finish_seconds)))} · medel ${time(mean(women.map((result) => result.finish_seconds)))}</span><span class="m">Män median ${time(median(men.map((result) => result.finish_seconds)))} · medel ${time(mean(men.map((result) => result.finish_seconds)))}</span></strong></div><div class="fact"><h3>SNABBASTE TID</h3><strong>${best ? time(best.finish_seconds) : '—'}</strong><small>${best ? esc(best.name) : 'Ej fastställt'}</small></div>`;
+  const groupLine = (label, values) => values.length >= 5 ? `${label} median ${time(median(values))} · medel ${time(mean(values))} · n=${values.length}` : `${label} Otillräckligt underlag · n=${values.length}`;
+  $('#facts').innerHTML = `<div class="fact"><h3>STARTANDE</h3><strong>Ej fastställt</strong><small>källan skiljer inte alltid startande från publicerade poster</small></div><div class="fact"><h3>FULLFÖLJDE</h3><strong>${finished.length}</strong><small>giltig officiell sluttid; startandel ej fastställd</small></div><div class="fact"><h3>DNF</h3><strong>${dnf.length}</strong><small>explicit källstödd status</small></div><div class="fact gender"><h3>TIDER KVINNOR / MÄN</h3><strong><span class="f">${esc(groupLine('Kvinnor', women.map((result) => result.finish_seconds)))}</span><span class="m">${esc(groupLine('Män', men.map((result) => result.finish_seconds)))}</span></strong></div><div class="fact"><h3>SNABBASTE TID</h3><strong>${best ? time(best.finish_seconds) : '—'}</strong><small>${best ? esc(best.name) : 'Ej fastställt'}</small></div>`;
 }
 
 function renderFilters() {
@@ -50,7 +52,7 @@ function renderRunner() {
   const observations = result.observations || [];
   const segments = observations.map((observation, index) => {
     const previous = index ? observations[index - 1].elapsed_seconds : 0;
-    const segmentSeconds = Number.isFinite(observation.elapsed_seconds) ? observation.elapsed_seconds - previous : null;
+    const segmentSeconds = Number.isFinite(observation.elapsed_seconds) && (index === 0 || (Number.isFinite(previous) && observation.elapsed_seconds >= previous)) ? observation.elapsed_seconds - previous : null;
     return `<tr><td>${esc(observation.name)}</td><td>${esc(observation.distance_km ?? 'källavstånd saknas')}</td><td>${esc(observation.raw_time)}</td><td>${time(segmentSeconds)}</td></tr>`;
   }).join('');
   $('#runner').className = 'runner';
@@ -63,7 +65,8 @@ function renderPlan() {
   if (observations.length < 2) { $('#plan').className = 'runner empty'; $('#plan').textContent = 'Personlig loppplan är gated: välj ett resultat med minst två verifierade mellantider.'; return; }
   const segments = observations.map((observation, index) => {
     const previous = index ? observations[index - 1].elapsed_seconds : 0;
-    return `<tr><td>${esc(observation.name)}</td><td>${esc(observation.distance_km ?? 'källavstånd saknas')}</td><td>${time(Number.isFinite(observation.elapsed_seconds) ? observation.elapsed_seconds - previous : null)}</td></tr>`;
+    const segmentSeconds = Number.isFinite(observation.elapsed_seconds) && (index === 0 || (Number.isFinite(previous) && observation.elapsed_seconds >= previous)) ? observation.elapsed_seconds - previous : null;
+    return `<tr><td>${esc(observation.name)}</td><td>${esc(observation.distance_km ?? 'källavstånd saknas')}</td><td>${time(segmentSeconds)}</td></tr>`;
   }).join('');
   $('#plan').className = 'runner';
   $('#plan').innerHTML = `<h3>Historisk personlig referens: ${esc(result.name)}</h3><p>Planen återger verifierade delsträckor från valt resultat. Den prognostiserar inte saknade tider och ersätter inte GPX-baserad banplanering.</p><table class="segment-table"><tr><th>Kontrollpunkt</th><th>km</th><th>Verifierad delsträcka</th></tr>${segments}</table>`;
@@ -72,8 +75,9 @@ function renderPlan() {
 function renderComparison() {
   const selected = state.compare.map((id) => state.data.results.find((result) => result.result_id === id)).filter(Boolean);
   if (selected.length !== 2) { $('#comparison').className = 'runner empty'; $('#comparison').textContent = `${selected.length}/2 resultat valda.`; return; }
+  if (selected[0].edition_id !== selected[1].edition_id) { $('#comparison').className = 'runner empty'; $('#comparison').textContent = 'Direktjämförelse av gemensamma kontrollpunkter är gated: upplagorna har ingen verifierad jämförbarhetsgrupp i aktuell data.'; return; }
   const maps = selected.map((result) => new Map((result.observations || []).map((observation) => [observation.checkpoint_id, observation])));
-  const common = [...maps[0].keys()].filter((key) => maps[1].has(key));
+  const common = [...maps[0].keys()].filter((key) => maps[1].has(key) && Number.isFinite(maps[0].get(key).elapsed_seconds) && Number.isFinite(maps[1].get(key).elapsed_seconds) && (maps[0].get(key).distance_km == null || maps[1].get(key).distance_km == null || maps[0].get(key).distance_km === maps[1].get(key).distance_km));
   const lines = common.map((key) => {
     const first = maps[0].get(key); const second = maps[1].get(key); const gap = first.elapsed_seconds - second.elapsed_seconds;
     return `<tr><td>${esc(first.name)}</td><td>${time(first.elapsed_seconds)}</td><td>${time(second.elapsed_seconds)}</td><td>${gap >= 0 ? '+' : '-'}${time(Math.abs(gap))}</td></tr>`;
@@ -84,9 +88,9 @@ function renderComparison() {
 
 function renderMapDuel() {
   const selected = state.duel.map((id) => state.data.results.find((result) => result.result_id === id)).filter(Boolean);
-  if (selected.length < 2) { $('#map-duel').className = 'runner empty'; $('#map-duel').textContent = `${selected.length}/2–5 resultat valda. Välj minst två.`; return; }
-  $('#map-duel').className = 'runner';
-  $('#map-duel').innerHTML = `<h3>Förberedda kartduellresultat (${selected.length}/5)</h3><ol>${selected.map((result) => `<li>${esc(result.name)} · ${esc(result.status)} · ${time(result.finish_seconds)}</li>`).join('')}</ol><p>Kartduell/replay är fortfarande gated: autentisk GPX-geometri och verifierad tidskoppling saknas.</p>`;
+  if (selected.length < 2) { $('#map-duel-panel').className = 'runner empty'; $('#map-duel-panel').textContent = `${selected.length}/2–5 resultat valda. Välj minst två.`; return; }
+  $('#map-duel-panel').className = 'runner';
+  $('#map-duel-panel').innerHTML = `<h3>Förberedda kartduellresultat (${selected.length}/5)</h3><ol>${selected.map((result) => `<li>${esc(result.name)} · ${esc(result.status)} · ${time(result.finish_seconds)}</li>`).join('')}</ol><p>Kartduell/replay är fortfarande gated: autentisk GPX-geometri och verifierad tidskoppling saknas.</p>`;
 }
 
 function chart() {
@@ -95,18 +99,19 @@ function chart() {
   const width = 420; const height = 160; const bins = 6; const min = Math.min(...finished.map((result) => result.finish_seconds)); const max = Math.max(...finished.map((result) => result.finish_seconds)); const step = Math.max(1, (max - min) / bins); const counts = Array(bins).fill(0);
   finished.forEach((result) => { counts[Math.min(bins - 1, Math.floor((result.finish_seconds - min) / step))] += 1; });
   const barWidth = 350 / bins; const maxCount = Math.max(...counts);
-  $('#histogram').innerHTML = `<svg viewBox="0 0 ${width} ${height}" aria-label="Sluttid i ${bins} tidsintervall"><line class="axis" x1="32" y1="140" x2="400" y2="140"/>${counts.map((count, index) => `<rect class="bar" x="${38 + index * barWidth}" y="${140 - count / maxCount * 105}" width="${barWidth - 5}" height="${count / maxCount * 105}"/><text x="${38 + index * barWidth}" y="155">${time(min + index * step).slice(0, 5)}</text>`).join('')}<text x="4" y="20">antal</text></svg>`;
+  const histogramTicks = [0, .25, .5, .75, 1].map((fraction) => `<line class="gridline" x1="32" y1="${140 - fraction * 105}" x2="400" y2="${140 - fraction * 105}"/><text x="2" y="${144 - fraction * 105}">${Math.round(maxCount * fraction)}</text>`).join('');
+  $('#histogram').innerHTML = `<svg viewBox="0 0 ${width} ${height}" aria-label="Sluttid i ${bins} tidsintervall"><line class="axis" x1="32" y1="140" x2="400" y2="140"/>${histogramTicks}${counts.map((count, index) => `<rect class="bar" x="${38 + index * barWidth}" y="${140 - count / maxCount * 105}" width="${barWidth - 5}" height="${count / maxCount * 105}"/><text x="${38 + index * barWidth}" y="155">${time(min + index * step).slice(0, 5)}</text>`).join('')}<text x="4" y="20">antal</text></svg>`;
   const points = finished.filter((result) => /^\d+$/.test(String(result.rank || ''))).slice(0, 120); const maxRank = Math.max(...points.map((result) => Number(result.rank)), 1); const maxTime = max;
-  $('#scatter').innerHTML = `<svg viewBox="0 0 420 160" aria-label="Tid mot placering"><line class="axis" x1="32" y1="140" x2="400" y2="140"/><line class="axis" x1="32" y1="10" x2="32" y2="140"/>${points.map((result) => `<circle class="dot" cx="${38 + Number(result.rank) / maxRank * 350}" cy="${135 - result.finish_seconds / maxTime * 120}" r="2.5"/>`).join('')}<text x="160" y="155">placering →</text><text x="4" y="20">tid</text></svg>`;
+  const scatterTicks = [0, .25, .5, .75, 1].map((fraction) => `<line class="gridline" x1="32" y1="${135 - fraction * 120}" x2="400" y2="${135 - fraction * 120}"/><text x="2" y="${139 - fraction * 120}">${time(maxTime * fraction).slice(0, 5)}</text>`).join('');
+  $('#scatter').innerHTML = `<svg viewBox="0 0 420 160" aria-label="Tid mot placering"><line class="axis" x1="32" y1="140" x2="400" y2="140"/><line class="axis" x1="32" y1="10" x2="32" y2="140"/>${scatterTicks}${points.map((result) => `<circle class="dot" cx="${38 + Number(result.rank) / maxRank * 350}" cy="${135 - result.finish_seconds / maxTime * 120}" r="2.5"/>`).join('')}<text x="160" y="155">placering →</text><text x="4" y="20">tid</text></svg>`;
   $('#stats-note').textContent = `${finished.length} FINISHED-resultat med sluttid används. Diagrammen är beskrivande och bygger inte på saknade observationer.`;
 }
 
 function renderPercentiles() {
   const values = editionResults(state.year).filter((result) => result.status === 'FINISHED' && Number.isFinite(result.finish_seconds)).map((result) => result.finish_seconds).sort((a, b) => a - b);
   if (!values.length) { $('#percentiles').textContent = 'Ingen verifierad sluttidsdata.'; return; }
-  const percentile = (fraction) => time(values[Math.min(values.length - 1, Math.floor((values.length - 1) * fraction))]);
   $('#percentiles').className = 'runner';
-  $('#percentiles').innerHTML = `<table class="segment-table"><tr><th>P10</th><th>P50 median</th><th>P90</th><th>Underlag</th></tr><tr><td>${percentile(.1)}</td><td>${percentile(.5)}</td><td>${percentile(.9)}</td><td>${values.length} FINISHED med sluttid</td></tr></table>`;
+  $('#percentiles').innerHTML = `<table class="segment-table"><tr><th>P10</th><th>P25</th><th>P50 median</th><th>P75</th><th>P90</th><th>Underlag</th></tr><tr><td>${time(percentile(values, .1))}</td><td>${time(percentile(values, .25))}</td><td>${time(percentile(values, .5))}</td><td>${time(percentile(values, .75))}</td><td>${time(percentile(values, .9))}</td><td>${values.length} FINISHED med sluttid · linjär interpolation</td></tr></table>`;
 }
 
 function renderHistory() {

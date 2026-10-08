@@ -6,6 +6,10 @@
 |---|---|---|---|
 | DATA-001 | Semantisk datavalidering per edition och status | DONE | `tests/test_semantics.js` passerar för 13 editions |
 | DATA-002 | Dokumentera uppmätt datatäckning | DONE | `DATA_COVERAGE.md` och `data/IMPORT_REPORT.md` innehåller testade counts |
+| DATA-003 | Korrigera äldre tidsformat och statusklassificering | DONE | Gemensam tidsparser testas; 4:51(31), punkt/komma/semikolon och h/m hanteras utan rangförorening; explicit DNF-råtext blir DNF |
+| DATA-004 | Verifiera passagetidernas kronologi | DONE | Semantiktestet stoppar negativa eller fallande ackumulerade tider |
+| STAT-001 | Korrekt median vid jämnt antal | DONE | Statistiktest verifierar medianen 2,5 för [1,2,3,4] |
+| STAT-002 | Enhetlig linjär percentilmetod | DONE | Statistiktest verifierar h=(n−1)×p och UI visar P10/P25/P50/P75/P90 |
 | FE-001 | Fem faktakort och korrekt editionsval | DONE | År/edition byter statistik utan fabricerat startantal |
 | FE-002 | Sökning, klubbfilter och sorterbar tabell | DONE | `tests/test_web.js` passerar DOM-sektioner och export |
 | FE-003 | Sluttidsfördelning, percentiler och placering mot tid | DONE | Histogram, P10/P50/P90 och tid/placering finns |
@@ -16,6 +20,7 @@
 | FE-008 | Historisk jämförelse mellan upplagor | DONE | Historiktabell visar verifierade FINISHED, DNF, tider och observationer per upplaga |
 | FE-009 | Kartduellens valkontrakt 2–5 resultat | DONE | UI begränsar valet till 2–5 och visar tydlig GPX-gating |
 | SEC-001 | HTML-escaping och exportkontroll | DONE | Externa textfält HTML-escapas och råarkivet ligger utanför webbutdata |
-| QA-001 | DOM-/statisk QA vid 1440/900/768/390 | BLOCKED | Kräver browseråtkomst eller godkänd alternativ testmiljö |
+| QA-001 | Riktig Chromium browser-QA vid 1440/900/768/390 | IN_PROGRESS | Playwright-flöden och screenshotartefakter körs i GitHub Actions; lokal npm saknas |
+| QA-003 | GitHub Actions exact-head QA och artefakter | IN_PROGRESS | `.github/workflows/qa.yml` bygger data, kör tester/Chromium och laddar upp rapporter |
 | QA-002 | Uppdatera PROJECT_STATE, commit och push | DONE | Projektstatus uppdateras i denna commit |
 | SRC-001 | Historiska GPX och 2025 alternativkälla | BLOCKED | Kräver autentisk källa eller dokumenterat verifierat hinder |

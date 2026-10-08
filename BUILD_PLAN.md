@@ -20,7 +20,7 @@
 
 ### ETAPP 2B-status
 
-SQLite-importen är implementerad i `scripts/build_database.js`. Den är idempotent och skiljer editions, resultat och tidsobservationer. Nästa steg är att förbättra äldre format/2024-könssemantik och sedan bygga ETAPP 3:s läsbara frontend ovanpå verifierade exporter.
+SQLite-importen är implementerad i `scripts/build_database.js`. Den är idempotent och skiljer editions, resultat och tidsobservationer. Äldre tidsformat med rangsuffix är nu parserade utan att rangvärdet påverkar klocktiden; tidskronologin valideras per resultat. Nästa steg är automatiserad Chromium-QA, därefter fortsatt källarbete för GPX/2025 och endast underlagsstödda analysmoduler.
 
 ## Definition of done för ETAPP 1
 

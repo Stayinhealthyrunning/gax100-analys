@@ -10,10 +10,19 @@ for (const e of editions) {
     assert(r.status === 'FINISHED' ? Number.isInteger(r.finish_seconds) : true, `${r.result_id}: FINISHED saknar sluttid`);
     const obs = db.prepare('SELECT checkpoint_raw_distance_km,elapsed_seconds FROM observations WHERE result_id=? ORDER BY checkpoint_raw_distance_km').all(r.result_id);
     for (let i=1;i<obs.length;i++) assert(obs[i].checkpoint_raw_distance_km >= obs[i-1].checkpoint_raw_distance_km, `${r.result_id}: checkpointordning`);
-    for (const o of obs) assert(o.elapsed_seconds === null || o.elapsed_seconds >= 0, `${r.result_id}: negativ mellantid`);
+    let previousElapsed = null;
+    for (const o of obs) {
+      assert(o.elapsed_seconds === null || o.elapsed_seconds >= 0, `${r.result_id}: negativ mellantid`);
+      if (Number.isFinite(o.elapsed_seconds)) {
+        assert(previousElapsed === null || o.elapsed_seconds >= previousElapsed, `${r.result_id}: kronologin i passagetiderna`);
+        previousElapsed = o.elapsed_seconds;
+      }
+    }
+    if (r.status === 'FINISHED') assert(Number.isInteger(r.finish_seconds) && r.finish_seconds > 0, `${r.result_id}: FINISHED kräver positiv sluttid`);
   }
 }
 assert(db.prepare("SELECT COUNT(*) n FROM results WHERE status='DNS'").get().n === 0, 'DNS ska inte fabriceras');
+assert(db.prepare("SELECT COUNT(*) n FROM results WHERE status='UNKNOWN' AND raw_finish_time LIKE 'DNF%'").get().n === 0, 'Explicit DNF får inte ligga som UNKNOWN');
 assert(db.prepare('SELECT COUNT(*) n FROM results WHERE source_id IS NULL OR raw_json IS NULL').get().n === 0, 'proveniens saknas');
 console.log(JSON.stringify({pass:true, editions:editions.length, semantic_checks:'passed'},null,2));
 db.close();

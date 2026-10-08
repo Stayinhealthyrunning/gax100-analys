@@ -20,18 +20,19 @@ ETAPP 1 är mergad till `main` via PR #1 (merge commit `8a11f78`). ETAPP 2 körs
 - `scripts/audit_sources.ps1` kördes och skapade `data/source-audit.json`; detta är en teknisk regex-audit, inte normaliserade resultatantal.
 - `tests/test_source_pipeline.ps1` passerar: manifest 15 poster, 14 nedladdade, audit 14 poster.
 - `scripts/build_database.js` bygger SQLite från råarkivet; två körningar i följd är idempotenta.
-- `tests/test_database.js` passerar: 13 editions, 826 resultat, 1 838 observationer; FINISHED 581, DNF 100, UNKNOWN 145, DNS 0.
+- `tests/test_database.js` passerar: 13 editions, 826 resultat, 1 838 observationer; FINISHED 582, DNF 139, UNKNOWN 105, DNS 0. Äldre tidsformat reparerades efter faktisk kronologigranskning och explicit `DNF(...)`-råtext klassificeras nu källtroget.
 - ETAPP 3-grunden finns i `web/`: årsväljare, fem faktakort, löparsökning, resultattabell och individuell mellantidsvy från exporterad normaliserad data.
 - `scripts/export_web_data.js` exporterade 13 editions, 826 resultat och 1 838 observationer till `web/data.json`; JavaScript-syntaxkontroller passerar.
-- `tests/test_semantics.js` och `tests/test_web.js` passerar. Frontend har klubbfilter, sortering, histogram, P10/P50/P90-percentiler, korrigerat tid/placeringsdiagram, historisk upplagejämförelse, individuell delsträckevisning, exakt-två-jämförelse, 2–5-val för gated Kartduell och en gated personlig historisk referensprofil. Externa textfält HTML-escapas.
+- `tests/test_statistics.js`, `tests/test_time_parser.js`, `tests/test_semantics.js` och `tests/test_web.js` passerar. Median för jämnt n använder de två mittersta värdena; percentiler använder linjär interpolation `h=(n−1)×p`. Frontend följer nu standardordningen, har fungerande hjälpdetaljer, klubbfilter, sortering, histogram med skalor, P10/P25/P50/P75/P90-percentiler, korrigerat tid/placeringsdiagram, historisk upplagejämförelse, individuell delsträckevisning, exakt-två-jämförelse, 2–5-val för gated Kartduell och en gated personlig historisk referensprofil. Externa textfält HTML-escapas.
+- `.github/workflows/qa.yml`, `playwright.config.js`, `package.json` och `tests/e2e/gax100.spec.js` etablerar riktig Chromium browser-QA med screenshots, trace/video vid fel och artefaktuppladdning. Lokal npm saknas i Codex-miljön, så Playwright har ännu inte körts lokalt.
 
 ## Nästa steg
 
-1. Senaste verifierade commit är `da29c77` (`docs: record personal profile checkpoint`); den är pushad och kontrollerad mot Draft PR #2.
-2. Genomför full browser-QA om testmiljö blir tillgänglig; statisk QA är redan grön.
-3. Hitta verifierad historisk GPX/2025-alternativkälla; annars behåll blockeringarna.
-4. Uppdatera denna fil före sessionsslut med senaste commit och testresultat.
+1. Kör GitHub Actions Chromium-QA på den pushade exakta committen och granska screenshotartefakterna.
+2. Hitta verifierad historisk GPX/2025-alternativkälla; annars behåll blockeringarna.
+3. Implementera endast ytterligare analysblock där verifierat underlag och standardkontrakt räcker.
+4. Uppdatera denna fil före sessionsslut med senaste commit, CI-status och blockerare.
 
 ## Begränsningar
 
-Det finns inga tidigare analysfiler eller nedladdade rådata i repot. Officiella resultatsidor är heterogena och vissa kunde inte läsas i sessionen. Ingen GPX är nedladdad; geometrisk flerårsjämförelse och replay saknar därför underlag.
+Råarkivet och SQLite-databasen är lokalt reproducerbara men råfiler/SQLite publiceras inte. Officiella resultatsidor är heterogena. Ingen verifierad, redistribuerbar GPX-årsfil är tillgänglig; geometrisk flerårsjämförelse och replay saknar därför underlag. Lokal Playwright-körning är blockerad av att npm saknas, men GitHub Actions-workflow är etablerad.

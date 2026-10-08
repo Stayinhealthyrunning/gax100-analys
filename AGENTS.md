@@ -14,4 +14,4 @@ GAX100 Analys är ett källspårbart analysunderlag för The GAX 100 Miles. Arbe
 
 ## Status
 
-ETAPP 1 är mergad till `main`. ETAPP 2 körs på `codex/gax100-etapp2`; resultatimport och en första webbfunktion är implementerade, medan full QA och vidare analysmoduler återstår.
+ETAPP 1 är mergad till `main`. ETAPP 2 körs på `codex/gax100-etapp2`; resultatimport, korrigerad tids-/statusnormalisering, standardiserad statistik och en testbar webbfunktion är implementerade. Chromium browser-QA är konfigurerad i GitHub Actions men ännu inte körd lokalt eftersom npm saknas i Codex-miljön.

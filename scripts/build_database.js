@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { DatabaseSync } = require('node:sqlite');
+const { parseClockSeconds } = require('./time');
 
 const repo = path.resolve(__dirname, '..');
 const rawDir = path.join(repo, 'data', 'raw');
@@ -19,14 +20,6 @@ CREATE INDEX IF NOT EXISTS ix_observations_result ON observations(result_id);`);
 
 function clean(s) { return s.replace(/<br\s*\/?>/gi, ' ').replace(/<[^>]*>/g, '').replace(/&nbsp;|&#160;/gi, ' ').replace(/&amp;/gi, '&').replace(/&#8211;|&ndash;/gi, '–').replace(/&#8217;|&rsquo;/gi, '’').replace(/\s+/g, ' ').trim(); }
 function cells(row) { return [...row.matchAll(/<t[dh][^>]*>([\s\S]*?)<\/t[dh]>/gi)].map(m => clean(m[1])); }
-function seconds(value) {
-  if (!value) return null;
-  const v = value.replace(/[()]/g, '').replace(/\s+/g, '').replace(/^\./, '');
-  const p = v.split(/[.:]/).map(Number);
-  if (p.some(Number.isNaN) || p.length < 2 || p.length > 3) return null;
-  if (p.length === 3) return p[0] * 3600 + p[1] * 60 + p[2];
-  return p[0] * 3600 + p[1] * 60;
-}
 function distance(header) { const m = header.match(/(\d+(?:[.,]\d+)?)\s*km/i); return m ? Number(m[1].replace(',', '.')) : null; }
 function slug(v) { return v.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); }
 function sourceId(file) { return file.replace(/\.html$/, ''); }
@@ -90,12 +83,12 @@ for (const src of manifest.filter(x => x.kind === 'html' && x.status === 'downlo
     const lower = c.map(x => x.toLowerCase()); const statusText = c.find(x => /^(dnf|dns|dsq)$/i.test(x)) || '';
     const finishIndex = headers.findIndex(x => /mål|finish|sluttid/i.test(x));
     const finishRaw = finishIndex >= 0 ? (c[finishIndex] || '') : '';
-    const status = statusText.toUpperCase() || (seconds(finishRaw) !== null ? 'FINISHED' : 'UNKNOWN');
+    const status = statusText.toUpperCase() || (/^DNF\b/i.test(finishRaw) ? 'DNF' : parseClockSeconds(finishRaw) !== null ? 'FINISHED' : 'UNKNOWN');
     const clubIndex = headers.findIndex(x => /club|klubb|town|ort/i.test(x));
     const rankIndex = headers.findIndex(x => /plats|position|placering/i.test(x));
     const rawName = nameIndex >= 0 ? c[nameIndex] : `${c[firstIndex]} ${c[lastIndex]}`; const rawRank = rankIndex >= 0 ? c[rankIndex] : '';
     const resultId = crypto.createHash('sha256').update(`${edition.id}|${source}|${sourceRow}|${rawName}|${rawRank}`).digest('hex').slice(0, 24);
-    const finishSeconds = seconds(finishRaw); const rawJson = JSON.stringify({ html: raw, cells: c, headers });
+    const finishSeconds = parseClockSeconds(finishRaw); const rawJson = JSON.stringify({ html: raw, cells: c, headers });
     insertResult.run(resultId, edition.id, source, sourceRow, rawJson, rawName, currentGender, clubIndex >= 0 ? c[clubIndex] : null, rawRank, finishRaw || null, status, currentGender, finishSeconds);
     imported++;
     headers.forEach((h, i) => {
@@ -103,7 +96,7 @@ for (const src of manifest.filter(x => x.kind === 'html' && x.status === 'downlo
       if (!cp || i >= c.length || !c[i] || /mål|finish|sluttid/i.test(h)) return;
       const checkpointId = slug(h.replace(/\s*\d+(?:[.,]\d+)?\s*km/i, ''));
       const obsId = crypto.createHash('sha256').update(`${resultId}|${checkpointId}`).digest('hex').slice(0, 24);
-      insertObs.run(obsId, resultId, checkpointId, h, distance(h), c[i], seconds(c[i]), source); observations++;
+      insertObs.run(obsId, resultId, checkpointId, h, distance(h), c[i], parseClockSeconds(c[i]), source); observations++;
     });
   }
   stats.push({ source, year, imported, observations });

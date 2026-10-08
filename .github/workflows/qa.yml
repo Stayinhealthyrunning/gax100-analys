@@ -1,0 +1,67 @@
+name: GAX100 QA
+
+on:
+  push:
+    branches: [codex/gax100-etapp2]
+  pull_request:
+    branches: [codex/gax100-etapp2]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact commit
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Fetch and build verified local data
+        shell: pwsh
+        run: |
+          ./scripts/fetch_sources.ps1
+          ./scripts/audit_sources.ps1
+
+      - name: Build SQLite and web export
+        shell: bash
+        run: |
+          node scripts/build_database.js
+          node scripts/export_web_data.js
+
+      - name: Run source, data and semantic tests
+        shell: pwsh
+        run: ./tests/test_source_pipeline.ps1
+
+      - name: Run Node contract tests
+        run: |
+          npm run test:statistics
+          npm run test:time-parser
+          npm run test:database
+          npm run test:semantics
+          npm run test:web
+
+      - name: Run Chromium browser QA and screenshots
+        run: npm run test:browser
+
+      - name: Upload Playwright report and diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gax100-playwright-qa-${{ github.sha }}
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: warn
