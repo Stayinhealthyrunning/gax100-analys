@@ -27,7 +27,7 @@ ETAPP 1 är mergad till `main` via PR #1 (merge commit `8a11f78`). ETAPP 2 körs
 
 ## Nästa steg
 
-1. Senaste verifierade commit är `26323ae` (`feat: add historical comparison and map duel contract`); den ska pushas och kontrolleras mot Draft PR #2.
+1. Senaste verifierade commit är `876a530` (`feat: add gated personal reference profile`); den ska pushas och kontrolleras mot Draft PR #2.
 2. Genomför full browser-QA om testmiljö blir tillgänglig; statisk QA är redan grön.
 3. Hitta verifierad historisk GPX/2025-alternativkälla; annars behåll blockeringarna.
 4. Uppdatera denna fil före sessionsslut med senaste commit och testresultat.
