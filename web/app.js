@@ -39,7 +39,7 @@ function renderRows() {
   const visibleRows = rows();
   $('#result-count').textContent = `${visibleRows.length} träffar i ${esc(edition()?.edition_label || 'vald upplaga')}`;
   $('#rows').innerHTML = visibleRows.slice(0, 300).map((result) => `<tr><td>${esc(result.name) || '—'}</td><td>${esc(result.gender) || '—'}</td><td>${esc(result.club) || '—'}</td><td class="status-${esc(result.status.toLowerCase())}">${esc(result.status)}</td><td>${time(result.finish_seconds)}</td><td><button data-id="${esc(result.result_id)}">Öppna</button><button data-compare="${esc(result.result_id)}">${state.compare.includes(result.result_id) ? 'Ta bort' : 'Jämför'}</button><button data-duel="${esc(result.result_id)}">${state.duel.includes(result.result_id) ? 'Ta bort duell' : 'Kartduell'}</button></td></tr>`).join('');
-  document.querySelectorAll('[data-id]').forEach((button) => { button.onclick = () => { state.selected = state.data.results.find((result) => result.result_id === button.dataset.id); renderRunner(); }; });
+  document.querySelectorAll('[data-id]').forEach((button) => { button.onclick = () => { state.selected = state.data.results.find((result) => result.result_id === button.dataset.id); renderRunner(); renderPlan(); }; });
   document.querySelectorAll('[data-compare]').forEach((button) => { button.onclick = () => { const id = button.dataset.compare; state.compare = state.compare.includes(id) ? state.compare.filter((item) => item !== id) : state.compare.length < 2 ? [...state.compare, id] : state.compare; renderRows(); renderComparison(); }; });
   document.querySelectorAll('[data-duel]').forEach((button) => { button.onclick = () => { const id = button.dataset.duel; state.duel = state.duel.includes(id) ? state.duel.filter((item) => item !== id) : state.duel.length < 5 ? [...state.duel, id] : state.duel; renderRows(); renderMapDuel(); }; });
 }
@@ -55,6 +55,18 @@ function renderRunner() {
   }).join('');
   $('#runner').className = 'runner';
   $('#runner').innerHTML = `<h3>${esc(result.name)}</h3><p>${esc(result.status)} · sluttid ${time(result.finish_seconds)} · ${esc(result.club || 'klubb saknas')}</p><h4>Verkliga mellantider och delsträckor</h4>${segments ? `<table class="segment-table"><tr><th>Kontrollpunkt</th><th>km</th><th>Källtid</th><th>Delsträcka</th></tr>${segments}</table>` : '<p>Inga importerade mellantidsobservationer för detta resultat.</p>'}<p class="muted">GPS-position och replay är otillgängliga utan verifierad GPX-geometri.</p>`;
+}
+
+function renderPlan() {
+  const result = state.selected;
+  const observations = result?.observations || [];
+  if (observations.length < 2) { $('#plan').className = 'runner empty'; $('#plan').textContent = 'Personlig loppplan är gated: välj ett resultat med minst två verifierade mellantider.'; return; }
+  const segments = observations.map((observation, index) => {
+    const previous = index ? observations[index - 1].elapsed_seconds : 0;
+    return `<tr><td>${esc(observation.name)}</td><td>${esc(observation.distance_km ?? 'källavstånd saknas')}</td><td>${time(Number.isFinite(observation.elapsed_seconds) ? observation.elapsed_seconds - previous : null)}</td></tr>`;
+  }).join('');
+  $('#plan').className = 'runner';
+  $('#plan').innerHTML = `<h3>Historisk personlig referens: ${esc(result.name)}</h3><p>Planen återger verifierade delsträckor från valt resultat. Den prognostiserar inte saknade tider och ersätter inte GPX-baserad banplanering.</p><table class="segment-table"><tr><th>Kontrollpunkt</th><th>km</th><th>Verifierad delsträcka</th></tr>${segments}</table>`;
 }
 
 function renderComparison() {
@@ -105,10 +117,10 @@ function renderHistory() {
   }).join('');
 }
 
-function render() { renderFacts(); renderFilters(); renderRows(); renderRunner(); renderComparison(); renderMapDuel(); chart(); renderPercentiles(); renderHistory(); }
+function render() { renderFacts(); renderFilters(); renderRows(); renderRunner(); renderPlan(); renderComparison(); renderMapDuel(); chart(); renderPercentiles(); renderHistory(); }
 
 fetch('data.json').then((response) => response.json()).then((data) => { state.data = data; state.year = data.editions.slice().sort((a, b) => b.year - a.year || b.edition_id.localeCompare(a.edition_id))[0].edition_id; $('#year').innerHTML = data.editions.map((item) => `<option value="${esc(item.edition_id)}">${esc(item.edition_label)}</option>`).join(''); $('#year').value = state.year; render(); });
-$('#year').onchange = (event) => { state.year = event.target.value; state.selected = null; state.compare = []; state.duel = []; render(); };
+$('#year').onchange = (event) => { state.year = event.target.value; state.selected = null; state.club = ''; state.compare = []; state.duel = []; render(); };
 $('#search').oninput = (event) => { state.query = event.target.value; renderRows(); };
 $('#club').onchange = (event) => { state.club = event.target.value; renderRows(); };
 $('#sort').onchange = (event) => { state.sort = event.target.value; renderRows(); };

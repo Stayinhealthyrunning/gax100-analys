@@ -1,6 +1,6 @@
 const fs=require('fs'), vm=require('vm');
 const html=fs.readFileSync('web/index.html','utf8'); const js=fs.readFileSync('web/app.js','utf8'); const css=fs.readFileSync('web/styles.css','utf8'); const data=JSON.parse(fs.readFileSync('web/data.json','utf8'));
-if(!html.includes('id="year"')||!html.includes('id="facts"')||!html.includes('id="comparison"')||!html.includes('id="history"')||!html.includes('id="map-duel"')) throw new Error('Standardsektioner saknas');
+if(!html.includes('id="year"')||!html.includes('id="facts"')||!html.includes('id="comparison"')||!html.includes('id="history"')||!html.includes('id="map-duel"')||!html.includes('id="plan"')) throw new Error('Standardsektioner saknas');
 if(!js.includes('data-duel')||!js.includes('state.duel.length < 5')||!js.includes('result.rank')) throw new Error('Historisk jämförelse, Kartduell-kontrakt eller placeringsfält saknas');
 new vm.Script(js); if(!css.includes('@media(max-width:899px)')||!css.includes('@media(max-width:380px)')) throw new Error('Responsiva brytpunkter saknas');
 if(data.editions.length!==13||data.results.length!==826) throw new Error(`Fel export: editions=${data.editions.length} results=${data.results.length}`);
