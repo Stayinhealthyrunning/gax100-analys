@@ -35,6 +35,11 @@ test('desktop: upplagor, sökning, filter, sortering, individuell analys och jä
   await expect(page.locator('#result-count')).toContainText('2021');
   await page.locator('#year').selectOption('gax100-2021-b');
   await expect(page.locator('#result-count')).toContainText('2021');
+  await page.locator('#year').selectOption('gax100-2025');
+  await expect(page.locator('#result-count')).toContainText('2025');
+  await expect(page.locator('#facts')).toContainText('109');
+  await expect(page.locator('#facts')).toContainText('40');
+  await expect(page.locator('#quality-rows')).toContainText('2025');
   await page.locator('#year').selectOption(first.edition_id);
 
   await page.locator('#search').fill(first.name.slice(0, Math.max(3, first.name.length - 1)));
@@ -50,6 +55,11 @@ test('desktop: upplagor, sökning, filter, sortering, individuell analys och jä
   }
   await page.locator('#rows [data-id]').click();
   await expect(page.locator('#runner')).not.toHaveClass(/empty/);
+  if (await page.locator('#plan-target').count()) {
+    await page.locator('#plan-target').fill('24:00:00');
+    await page.locator('#apply-plan-target').click();
+    await expect(page.locator('#plan')).toContainText('Simulerad delsträcka');
+  }
 
   await page.locator('#search').fill('');
   await page.locator('#rows [data-compare]').nth(0).click();
