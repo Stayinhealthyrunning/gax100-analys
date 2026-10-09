@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>GAX100 – historiska banor och kartjämförelse</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyo4MCZoO2Zdg1E=" crossorigin="">
+<style>
+:root{font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;color:#142c37;background:#f2f6f8}
+*{box-sizing:border-box}body{margin:0}main{max-width:1450px;margin:auto;padding:20px}a{color:#17638a}a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #ef9f2b;outline-offset:3px}
+.hero{background:linear-gradient(110deg,#092b39,#176c77);border-radius:17px;color:white;padding:28px 32px}.hero h1{font-size:clamp(28px,4vw,44px);line-height:1.15;margin:10px 0}.hero p{margin:6px 0;max-width:820px}.hero a{color:#e1f6ff}.eyebrow{letter-spacing:.13em;font-size:12px;text-transform:uppercase;font-weight:700}
+.panel{background:white;border:1px solid #d9e3e7;border-radius:13px;padding:20px;margin:18px 0;box-shadow:0 3px 14px #11364709}h2{font-size:22px;margin:0 0 9px}h3{font-size:16px;margin:10px 0 6px}p{margin:8px 0}.note{color:#49626f;font-size:14px}.pill{display:inline-block;border:1px solid #c4d8de;border-radius:999px;padding:3px 10px;font-size:12px;background:#f4fbfd;font-weight:650}
+.buttons{display:flex;flex-wrap:wrap;gap:10px;align-items:center}button,select,.upload{min-height:44px;border-radius:8px;border:1px solid #a9bec6;background:#fff;padding:9px 12px;color:#173949;font:inherit}button{cursor:pointer}button:hover{background:#e6f3f7}label{display:block;font-weight:650;font-size:14px}.map-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:15px}
+.route-card{border:1px solid #dbe5ea;border-radius:11px;overflow:hidden;min-width:0}.route-header{padding:14px;background:#f7fafb;display:flex;gap:8px;justify-content:space-between;align-items:center;flex-wrap:wrap}.route-header label{flex:1}.route-header select{width:100%;margin-top:5px}.external{font-size:13px;white-space:nowrap}
+.embed{display:block;width:100%;height:510px;border:0;background:#e6eef1}.caption{padding:9px 14px;color:#526774;font-size:13px}.list{display:flex;flex-wrap:wrap;gap:8px}.source{display:inline-block;border:1px solid #dbe5ea;padding:7px 9px;border-radius:8px;text-decoration:none}
+.upload{display:inline-flex;align-items:center;gap:8px;background:#eff9fb;cursor:pointer;color:#11485c;font-weight:700}.upload input{position:absolute;opacity:0;width:1px;height:1px}
+#overlay-map{height:530px;border:1px solid #cddce2;border-radius:10px;background:#dfeaec}#overlay-meta{padding:10px 0;display:flex;flex-wrap:wrap;gap:8px}
+.track-chip{display:inline-flex;gap:6px;align-items:center;background:#f0f5f7;border:1px solid #cbd9de;border-radius:8px;padding:6px 9px;font-size:13px}.dot{height:10px;width:10px;border-radius:50%}#profile{display:block;width:100%;height:230px;border:1px solid #dce4e7;border-radius:10px;background:#fcfefe}
+#local-status{margin:10px 0;color:#345363}#local-status[role="alert"]{color:#9f3224}
+details{padding:10px 0}summary{cursor:pointer;font-weight:650}
+footer{font-size:13px;color:#526774;margin:25px 0}
+@media(max-width:900px){main{padding:12px}.hero{padding:20px}.map-grid{grid-template-columns:1fr}.embed{height:440px}#overlay-map{height:410px}}
+@media(max-width:490px){.panel{padding:14px}.route-header{display:block}.embed{height:345px}#overlay-map{height:360px}}
+</style>
+</head>
+<body>
+<main>
+<header class="hero">
+<div class="eyebrow">Loppanalys.se · GAX100 testversion</div>
+<h1>Historiska banor på karta</h1>
+<p>Jämför publicerade ruttkartor och granska GPX-spår direkt i webbläsaren. Ingen installation, lokal server eller inloggning behövs.</p>
+<p><a href="./">← Till GAX100 Analys</a></p>
+</header>
+<section class="panel" id="public-routes">
+<h2>1. Visa historiska banor direkt</h2>
+<p class="note">Nedan visas Plotaroutes egna inbäddade kartor. Rutterna är <strong>historiska kandidater</strong>, inte verifierade officiella årsbanor. Inga ruttkoordinater kopieras till Loppanalys.se. Du kan byta år i varje karta för att jämföra två varianter.</p>
+<div class="map-grid">
+<div class="route-card">
+<div class="route-header"><label for="left-route">Vänster karta<select id="left-route"></select></label><a id="left-link" class="external" target="_blank" rel="noopener noreferrer">Öppna källan ↗</a></div>
+<iframe id="left-map" class="embed" loading="lazy" title="Historisk GAX100-bana vänster" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+<div class="caption" id="left-status"></div>
+</div>
+<div class="route-card">
+<div class="route-header"><label for="right-route">Höger karta<select id="right-route"></select></label><a id="right-link" class="external" target="_blank" rel="noopener noreferrer">Öppna källan ↗</a></div>
+<iframe id="right-map" class="embed" loading="lazy" title="Historisk GAX100-bana höger" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+<div class="caption" id="right-status"></div>
+</div>
+</div>
+<p class="note">Om någon karta inte laddas, välj ”Öppna källan” ovanför den. Plotaroute tillåter inbäddning av offentliga rutter, men kartorna styrs av tjänsten själv.</p>
+<h3>Ytterligare källor</h3>
+<div class="list">
+<a class="source" href="https://connect.garmin.com/app/course/484861455" target="_blank" rel="noopener noreferrer">2026 – arrangörens Garmin-kurs ↗</a>
+<a class="source" href="https://tracedetrail.fr/en/trace/48826" target="_blank" rel="noopener noreferrer">2018 – Trace de Trail ↗</a>
+<a class="source" href="https://tracedetrail.fr/en/trace/139697" target="_blank" rel="noopener noreferrer">2021 – Trace de Trail ↗</a>
+</div>
+</section>
+<section class="panel" id="overlay-routes">
+<h2>2. Lägg flera GPX-spår ovanpå varandra</h2>
+<p>Vill du se exakt var dina GPX-filer skiljer sig åt kan du öppna dem här. Välj flera filer samtidigt. <strong>Filerna stannar i din webbläsare</strong> och laddas inte upp till webbservern.</p>
+<div class="buttons">
+<label class="upload" for="gpx-upload">Välj GPX-filer <input id="gpx-upload" type="file" multiple accept=".gpx,application/gpx+xml,application/xml,text/xml"></label>
+<button type="button" id="zoom-all">Visa hela banan</button>
+<button type="button" id="zoom-knab">Zooma Knäbäckshusen</button>
+<button type="button" id="clear-tracks">Rensa spåren</button>
+</div>
+<p class="note">Tips: markera filerna för 2021, 2022 och den odaterade banan i samma filval. Tider från ruttexporter används inte som löpartider. Hopp större än 250 meter förbinds inte.</p>
+<div id="local-status" role="status" aria-live="polite">Välj GPX-filer för att visa flera banlinjer på samma karta.</div>
+<div id="overlay-map" aria-label="Kartjämförelse med valda GPX-filer"></div>
+<div id="overlay-meta"></div>
+<h3>Höjdprofiler</h3>
+<svg id="profile" viewBox="0 0 1000 230" role="img" aria-label="Höjdprofiler för valda GPX-spår"></svg>
+</section>
+<section class="panel">
+<h2>Vad kartorna visar</h2>
+<p>Bansträckningen vid Knäbäckshusen ändrades från 2024, då löparna började använda väg intill den tidigare strandpassagen. Det kan vara en mindre lokal skillnad, och kartornas ruttetiketter innebär inte att vi har verifierat varje års tävlingsbana.</p>
+<details><summary>Datakällor och metod</summary><p>De publicerade kartorna tillhandahålls av Plotaroute, som uttryckligen stöder inbäddning av offentliga rutter. GPX-filer du väljer analyseras endast lokalt i din webbläsare; separata GPX-segment och avbrott behandlas utan syntetisk förbindelse. Höjdprofilen utgår från GPX-höjddata, som kan vara brusiga. Individuell löparreplay och historisk resultatjämförelse är separata funktioner i GAX100 Analys.</p></details>
+</section>
+<footer>GAX100 Analys · Fristående testversion · <a href="./">Tillbaka till resultat och analyser</a></footer>
+</main>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+"use strict";
+const routes = [
+  {id:"2332034",name:"2023 – Plotaroute F1",note:"Kandidat för sista året före ändringen"},
+  {id:"2659350",name:"2024 – Plotaroute",note:"Kandidat för vägpassagen från 2024"},
+  {id:"1589517",name:"2021 – Plotaroute final",note:"Kandidat med avbrott i den exporterade GPX-filen"},
+  {id:"2310208",name:"2022 – Plotaroute M6",note:"Kandidat för 2022"},
+  {id:"2337511",name:"2020 – Plotaroute M4",note:"Kandidat för 2020"},
+  {id:"2343997",name:"2016 – Plotaroute PT",note:"Kandidat för 2016"}
+];
+function configureIframe(which,defaultId){
+  const selector=document.getElementById(which+"-route"),iframe=document.getElementById(which+"-map"),link=document.getElementById(which+"-link"),status=document.getElementById(which+"-status");
+  for(const route of routes){const option=document.createElement("option");option.value=route.id;option.textContent=route.name;selector.appendChild(option);}
+  function update(){const route=routes.find(function(r){return r.id===selector.value;});link.href="https://www.plotaroute.com/route/"+route.id;iframe.src="https://www.plotaroute.com/embedmap/"+route.id;status.textContent=route.note+" · Källa: Plotaroute";}
+  selector.value=defaultId;selector.addEventListener("change",update);update();
+}
+configureIframe("left","2332034");configureIframe("right","2659350");
+const statusNode=document.getElementById("local-status"),trackMeta=document.getElementById("overlay-meta"),profile=document.getElementById("profile");
+const colors=["#dc3849","#1866da","#129857","#9f56ba","#d28a20","#20a5a5","#7b5c45","#536a86"];
+const earth=6371008.8;let map=null,layerGroup=null,loaded=[],currentBounds=null;
+function distance(a,b){const p1=a[0]*Math.PI/180,p2=b[0]*Math.PI/180,dphi=(b[0]-a[0])*Math.PI/180,dl=(b[1]-a[1])*Math.PI/180;const q=Math.sin(dphi/2)**2+Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)**2;return 2*earth*Math.asin(Math.sqrt(q));}
+function parseGpx(xml){
+ const doc=new DOMParser().parseFromString(xml,"application/xml");if(doc.querySelector("parsererror"))throw new Error("Ogiltig GPX/XML");
+ const blocks=[...doc.getElementsByTagName("trkseg")];const routePoints=doc.getElementsByTagName("rtept");
+ if(!blocks.length&&routePoints.length)blocks.push({getElementsByTagName:function(){return routePoints;}});
+ const runs=[];let count=0;let previous=null;
+ blocks.forEach(function(block){
+  const pts=block.getElementsByTagName("trkpt").length?block.getElementsByTagName("trkpt"):block.getElementsByTagName("rtept");let run=[];
+  Array.from(pts).forEach(function(node){
+   const lat=Number(node.getAttribute("lat")),lon=Number(node.getAttribute("lon")),eleNode=node.getElementsByTagName("ele")[0];
+   const ele=eleNode?Number(eleNode.textContent):null;
+   if(!Number.isFinite(lat)||!Number.isFinite(lon)||Math.abs(lat)>90||Math.abs(lon)>180)return;
+   const point=[lat,lon,Number.isFinite(ele)?ele:null];count++;
+   if(run.length&&distance(run[run.length-1],point)>250){if(run.length>1)runs.push(run);run=[];}
+   run.push(point);
+  });
+  if(run.length>1)runs.push(run);
+ });
+ if(!runs.length)throw new Error("GPX-filen saknar användbar bangeometri");
+ return {runs:runs,count:count};
+}
+function initMap(){
+ if(typeof L==="undefined"){statusNode.setAttribute("role","alert");statusNode.textContent="Kartbiblioteket kunde inte laddas. Prova att tillåta unpkg.com och OpenStreetMap, eller använd Plotaroute-kartorna ovan.";return false;}
+ if(map)return true;
+ map=L.map("overlay-map",{preferCanvas:true}).setView([55.64097,14.27477],11);
+ L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>-bidragsgivare',maxZoom:18}).addTo(map);
+ layerGroup=L.featureGroup().addTo(map);
+ return true;
+}
+function drawProfiles(){
+ while(profile.firstChild)profile.removeChild(profile.firstChild);
+ if(!loaded.length)return;
+ const data=[],valid=[];
+ loaded.forEach(function(track,index){
+  let km=0;const pts=[];
+  track.runs.forEach(function(run){
+   run.forEach(function(pt,i){if(i)km+=distance(run[i-1],pt)/1000;if(Number.isFinite(pt[2])){pts.push([km,pt[2]]);valid.push(pt[2]);}});
+  });
+  data.push({pts:pts,color:track.color,maxKm:km});
+ });
+ if(!valid.length)return;
+ const min=Math.min(...valid),max=Math.max(...valid),spread=Math.max(1,max-min),fullKm=Math.max(...data.map(function(d){return d.maxKm;}),1);
+ function elem(name,attrs,text){const el=document.createElementNS("http://www.w3.org/2000/svg",name);Object.keys(attrs).forEach(function(k){el.setAttribute(k,String(attrs[k]));});if(text!=null)el.textContent=text;profile.appendChild(el);return el;}
+ for(let i=0;i<5;i++){const y=200-i*42;elem("line",{x1:50,y1:y,x2:970,y2:y,stroke:"#e0e9ec"});elem("text",{x:8,y:y+4,fill:"#50656d","font-size":12},Math.round(min+spread*(i/4))+"m");}
+ for(const d of data){if(d.pts.length<2)continue;let last=[];const every=Math.max(1,Math.floor(d.pts.length/1300));for(let i=0;i<d.pts.length;i+=every){const p=d.pts[i];last.push((50+920*p[0]/fullKm).toFixed(1)+","+(200-168*(p[1]-min)/spread).toFixed(1));}elem("polyline",{points:last.join(" "),fill:"none",stroke:d.color,"stroke-width":2.5,"stroke-linejoin":"round"});}
+ elem("text",{x:930,y:222,fill:"#50656d","font-size":12,"text-anchor":"end"},fullKm.toFixed(1)+" km");
+}
+function refresh(){
+ trackMeta.replaceChildren();currentBounds=null;if(!initMap())return;
+ layerGroup.clearLayers();
+ for(const track of loaded){
+  for(const run of track.runs){const step=Math.max(1,Math.floor(run.length/12000));const positions=run.filter(function(p,i){return i%step===0||i===run.length-1;}).map(function(p){return[p[0],p[1]];});L.polyline(positions,{color:track.color,weight:3,opacity:.9}).addTo(layerGroup);}
+  const chip=document.createElement("span");chip.className="track-chip";const dot=document.createElement("span");dot.className="dot";dot.style.background=track.color;chip.appendChild(dot);chip.appendChild(document.createTextNode(track.name+" · "+track.count+" punkter"));trackMeta.appendChild(chip);
+ }
+ if(layerGroup.getLayers().length){currentBounds=layerGroup.getBounds();if(currentBounds.isValid())map.fitBounds(currentBounds.pad(.08));}
+ drawProfiles();
+ statusNode.setAttribute("role","status");statusNode.textContent=loaded.length?loaded.length+" spår visas. Använd kartan för att zooma och panorera.":"Välj GPX-filer för att visa flera banlinjer på samma karta.";
+}
+document.getElementById("gpx-upload").addEventListener("change",async function(event){
+ const files=Array.from(event.target.files||[]).slice(0,8);if(!files.length)return;
+ let success=0,errors=[];
+ for(const file of files){try{if(file.size>20*1024*1024)throw new Error("filen är över 20 MB");const parsed=parseGpx(await file.text());loaded.push({name:file.name,runs:parsed.runs,count:parsed.count,color:colors[loaded.length%colors.length]});success++;}catch(err){errors.push(file.name+": "+err.message);}}
+ event.target.value="";
+ refresh();if(errors.length){statusNode.setAttribute("role","alert");statusNode.textContent=success+" filer inlästa. Fel: "+errors.join("; ");}
+});
+document.getElementById("clear-tracks").addEventListener("click",function(){loaded=[];if(map&&layerGroup)layerGroup.clearLayers();refresh();});
+document.getElementById("zoom-all").addEventListener("click",function(){if(map&&currentBounds&&currentBounds.isValid())map.fitBounds(currentBounds.pad(.08));});
+document.getElementById("zoom-knab").addEventListener("click",function(){if(initMap())map.setView([55.64097,14.27477],14);});
+initMap();
+</script>
+</body>
+</html>
