@@ -113,8 +113,15 @@ test('kartarkiv i webbläsare: publika källkartor och filväljare', async ({ pa
   await expect(page.locator('#local-status')).toContainText('1 spår visas');
   await expect(page.locator('#overlay-map')).toBeVisible();
   await expect(page.locator('#overlay-meta')).toContainText('qa-track.gpx');
+  // Leaflet styles must actually be loaded: without them the tile panes float
+  // outside the map and GPX paths cannot be seen even though parsing succeeds.
+  expect(await page.locator('.leaflet-pane').first().evaluate(
+    (element) => getComputedStyle(element).position
+  )).toBe('absolute');
+  await expect(page.locator('.leaflet-overlay-pane svg path')).not.toHaveCount(0);
+  await expect(page.locator('#base-layer')).toHaveValue('none');
   await page.locator('#base-layer').selectOption('none');
-  await expect(page.locator('#tile-status')).toContainText('neutral bakgrund');
+  await expect(page.locator('#tile-status')).toContainText('utan extern bakgrund');
   await page.locator('#clear-tracks').click();
   await expect(page.locator('#overlay-empty')).toBeVisible();
   await assertNoHorizontalOverflow(page);
