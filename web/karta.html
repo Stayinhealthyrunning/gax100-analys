@@ -15,7 +15,14 @@
 .route-card{border:1px solid #dbe5ea;border-radius:11px;overflow:hidden;min-width:0}.route-header{padding:14px;background:#f7fafb;display:flex;gap:8px;justify-content:space-between;align-items:center;flex-wrap:wrap}.route-header label{flex:1}.route-header select{width:100%;margin-top:5px}.external{font-size:13px;white-space:nowrap}
 .embed{display:block;width:100%;height:510px;border:0;background:#e6eef1}.caption{padding:9px 14px;color:#526774;font-size:13px}.list{display:flex;flex-wrap:wrap;gap:8px}.source{display:inline-block;border:1px solid #dbe5ea;padding:7px 9px;border-radius:8px;text-decoration:none}
 .upload{display:inline-flex;align-items:center;gap:8px;background:#eff9fb;cursor:pointer;color:#11485c;font-weight:700}.upload input{position:absolute;opacity:0;width:1px;height:1px}
-#overlay-map{width:100%;max-width:100%;height:530px;border:1px solid #cddce2;border-radius:10px;background:#dfeaec;overflow:hidden}#overlay-meta{padding:10px 0;display:flex;flex-wrap:wrap;gap:8px}
+#overlay-map{width:100%;max-width:100%;height:530px;border:1px solid #cddce2;border-radius:10px;background:#eaf0f3;overflow:hidden}
+#overlay-map[hidden],.map-empty[hidden]{display:none}
+.map-empty{min-height:360px;display:grid;place-items:center;border:1px dashed #abc4cc;border-radius:10px;background:#f2f8fa;text-align:center;padding:28px;color:#345363}
+.map-empty>div{max-width:530px}
+.map-empty h3{font-size:20px;color:#163b49}
+#base-layer{max-width:220px}
+#tile-status{font-size:13px;color:#4b6572;margin:8px 0 0}
+.leaflet-container{background:#eaf0f3 !important}#overlay-meta{padding:10px 0;display:flex;flex-wrap:wrap;gap:8px}
 .track-chip{display:inline-flex;gap:6px;align-items:center;background:#f0f5f7;border:1px solid #cbd9de;border-radius:8px;padding:6px 9px;font-size:13px}.dot{height:10px;width:10px;border-radius:50%}#profile{display:block;width:100%;max-width:100%;height:230px;border:1px solid #dce4e7;border-radius:10px;background:#fcfefe}
 #local-status{margin:10px 0;color:#345363}#local-status[role="alert"]{color:#9f3224}
 details{padding:10px 0}summary{cursor:pointer;font-weight:650}
@@ -63,10 +70,17 @@ footer{font-size:13px;color:#526774;margin:25px 0}
 <button type="button" id="zoom-all">Visa hela banan</button>
 <button type="button" id="zoom-knab">Zooma Knäbäckshusen</button>
 <button type="button" id="clear-tracks">Rensa spåren</button>
+<label for="base-layer">Kartbakgrund
+<select id="base-layer"><option value="carto">Ljus karta</option><option value="osm">OpenStreetMap</option><option value="none">Utan kartbakgrund</option></select>
+</label>
 </div>
 <p class="note">Tips: markera filerna för 2021, 2022 och den odaterade banan i samma filval. Tider från ruttexporter används inte som löpartider. Hopp större än 250 meter förbinds inte.</p>
 <div id="local-status" role="status" aria-live="polite">Välj GPX-filer för att visa flera banlinjer på samma karta.</div>
-<div id="overlay-map" aria-label="Kartjämförelse med valda GPX-filer"></div>
+<div id="overlay-empty" class="map-empty">
+<div><h3>Välj GPX-spår för att börja jämföra</h3><p>Kartan och höjdprofilen visas när du har valt en eller flera GPX-filer. Spåren stannar på din dator och skickas inte till webbplatsen.</p><p>Vill du se historiska banor utan egna filer? Använd Plotaroute-kartorna i avsnitt 1 ovan.</p></div>
+</div>
+<div id="overlay-map" aria-label="Kartjämförelse med valda GPX-filer" hidden></div>
+<div id="tile-status" aria-live="polite"></div>
 <div id="overlay-meta"></div>
 <h3>Höjdprofiler</h3>
 <svg id="profile" viewBox="0 0 1000 230" role="img" aria-label="Höjdprofiler för valda GPX-spår"></svg>
@@ -98,7 +112,7 @@ function configureIframe(which,defaultId){
 configureIframe("left","2332034");configureIframe("right","2659350");
 const statusNode=document.getElementById("local-status"),trackMeta=document.getElementById("overlay-meta"),profile=document.getElementById("profile");
 const colors=["#dc3849","#1866da","#129857","#9f56ba","#d28a20","#20a5a5","#7b5c45","#536a86"];
-const earth=6371008.8;let map=null,layerGroup=null,loaded=[],currentBounds=null;
+const earth=6371008.8;let map=null,layerGroup=null,baseLayer=null,loaded=[],currentBounds=null;
 function distance(a,b){const p1=a[0]*Math.PI/180,p2=b[0]*Math.PI/180,dphi=(b[0]-a[0])*Math.PI/180,dl=(b[1]-a[1])*Math.PI/180;const q=Math.sin(dphi/2)**2+Math.cos(p1)*Math.cos(p2)*Math.sin(dl/2)**2;return 2*earth*Math.asin(Math.sqrt(q));}
 function parseGpx(xml){
  const doc=new DOMParser().parseFromString(xml,"application/xml");if(doc.querySelector("parsererror"))throw new Error("Ogiltig GPX/XML");
@@ -120,42 +134,92 @@ function parseGpx(xml){
  if(!runs.length)throw new Error("GPX-filen saknar användbar bangeometri");
  return {runs:runs,count:count};
 }
+function changeBasemap(mode){
+ const info=document.getElementById("tile-status");
+ if(!map)return;
+ if(baseLayer){map.removeLayer(baseLayer);baseLayer=null;}
+ if(mode==="none"){
+  info.textContent="Kartbilder är avstängda. GPX-spåren visas fortfarande mot en neutral bakgrund.";
+  return;
+ }
+ const isCarto=mode==="carto";
+ const url=isCarto
+  ? "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+  : "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
+ const opts=isCarto
+  ? {attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · &copy; <a href="https://carto.com/attributions">CARTO</a>',subdomains:"abcd",maxZoom:19}
+  : {attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',maxZoom:19};
+ const tile=L.tileLayer(url,opts),fallback=isCarto?"osm":"none";
+ let errors=0;
+ tile.on("tileerror",function(){
+  if(baseLayer!==tile)return;
+  errors++;
+  if(errors>=4){
+   const select=document.getElementById("base-layer");
+   select.value=fallback;
+   changeBasemap(fallback);
+   if(fallback==="none")info.textContent="Din webbläsare eller nätverket blockerar kartbilderna. GPX-linjerna fungerar ändå utan bakgrund.";
+   else info.textContent="Första kartleverantören kunde inte laddas. Försöker med OpenStreetMap.";
+  }
+ });
+ tile.on("load",function(){if(baseLayer===tile)info.textContent="";});
+ baseLayer=tile;
+ tile.addTo(map);
+}
 function initMap(){
- if(typeof L==="undefined"){statusNode.setAttribute("role","alert");statusNode.textContent="Kartbiblioteket kunde inte laddas. Prova att tillåta unpkg.com och OpenStreetMap, eller använd Plotaroute-kartorna ovan.";return false;}
+ if(typeof L==="undefined"){
+  statusNode.setAttribute("role","alert");
+  statusNode.textContent="Kartbiblioteket kunde inte laddas. Nätverket kan blockera unpkg.com. Försök på ett annat nätverk eller använd källkartorna ovan.";
+  return false;
+ }
  if(map)return true;
- map=L.map("overlay-map",{preferCanvas:true}).setView([55.64097,14.27477],11);
- L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>-bidragsgivare',maxZoom:18}).addTo(map);
+ map=L.map("overlay-map",{preferCanvas:true,zoomControl:true}).setView([55.64097,14.27477],11);
  layerGroup=L.featureGroup().addTo(map);
+ changeBasemap(document.getElementById("base-layer").value);
  return true;
 }
 function drawProfiles(){
  while(profile.firstChild)profile.removeChild(profile.firstChild);
  if(!loaded.length)return;
  const data=[],valid=[];
- loaded.forEach(function(track,index){
-  let km=0;const pts=[];
+ loaded.forEach(function(track){
+  let km=0;const runs=[];
   track.runs.forEach(function(run){
+   const pts=[];
    run.forEach(function(pt,i){if(i)km+=distance(run[i-1],pt)/1000;if(Number.isFinite(pt[2])){pts.push([km,pt[2]]);valid.push(pt[2]);}});
+   if(pts.length>1)runs.push(pts);
   });
-  data.push({pts:pts,color:track.color,maxKm:km});
+  data.push({runs:runs,color:track.color,maxKm:km});
  });
  if(!valid.length)return;
  const min=Math.min(...valid),max=Math.max(...valid),spread=Math.max(1,max-min),fullKm=Math.max(...data.map(function(d){return d.maxKm;}),1);
  function elem(name,attrs,text){const el=document.createElementNS("http://www.w3.org/2000/svg",name);Object.keys(attrs).forEach(function(k){el.setAttribute(k,String(attrs[k]));});if(text!=null)el.textContent=text;profile.appendChild(el);return el;}
  for(let i=0;i<5;i++){const y=200-i*42;elem("line",{x1:50,y1:y,x2:970,y2:y,stroke:"#e0e9ec"});elem("text",{x:8,y:y+4,fill:"#50656d","font-size":12},Math.round(min+spread*(i/4))+"m");}
- for(const d of data){if(d.pts.length<2)continue;let last=[];const every=Math.max(1,Math.floor(d.pts.length/1300));for(let i=0;i<d.pts.length;i+=every){const p=d.pts[i];last.push((50+920*p[0]/fullKm).toFixed(1)+","+(200-168*(p[1]-min)/spread).toFixed(1));}elem("polyline",{points:last.join(" "),fill:"none",stroke:d.color,"stroke-width":2.5,"stroke-linejoin":"round"});}
+ for(const d of data){for(const run of d.runs){const last=[];const every=Math.max(1,Math.floor(run.length/1300));for(let i=0;i<run.length;i+=every){const p=run[i];last.push((50+920*p[0]/fullKm).toFixed(1)+","+(200-168*(p[1]-min)/spread).toFixed(1));}const end=run[run.length-1];last.push((50+920*end[0]/fullKm).toFixed(1)+","+(200-168*(end[1]-min)/spread).toFixed(1));elem("polyline",{points:last.join(" "),fill:"none",stroke:d.color,"stroke-width":2.5,"stroke-linejoin":"round"});}}
  elem("text",{x:930,y:222,fill:"#50656d","font-size":12,"text-anchor":"end"},fullKm.toFixed(1)+" km");
 }
 function refresh(){
- trackMeta.replaceChildren();currentBounds=null;if(!initMap())return;
+ trackMeta.replaceChildren();currentBounds=null;
+ const empty=document.getElementById("overlay-empty"),mapNode=document.getElementById("overlay-map");
+ if(!loaded.length){
+  if(layerGroup)layerGroup.clearLayers();
+  empty.hidden=false;mapNode.hidden=true;
+  document.getElementById("tile-status").textContent="";
+  drawProfiles();statusNode.setAttribute("role","status");
+  statusNode.textContent="Inga GPX-filer valda. Välj en eller flera filer för att jämföra banorna.";
+  return;
+ }
+ empty.hidden=true;mapNode.hidden=false;
+ if(!initMap())return;
+ map.invalidateSize();
  layerGroup.clearLayers();
  for(const track of loaded){
   for(const run of track.runs){const step=Math.max(1,Math.floor(run.length/12000));const positions=run.filter(function(p,i){return i%step===0||i===run.length-1;}).map(function(p){return[p[0],p[1]];});L.polyline(positions,{color:track.color,weight:3,opacity:.9}).addTo(layerGroup);}
   const chip=document.createElement("span");chip.className="track-chip";const dot=document.createElement("span");dot.className="dot";dot.style.background=track.color;chip.appendChild(dot);chip.appendChild(document.createTextNode(track.name+" · "+track.count+" punkter"));trackMeta.appendChild(chip);
  }
  if(layerGroup.getLayers().length){currentBounds=layerGroup.getBounds();if(currentBounds.isValid())map.fitBounds(currentBounds.pad(.08));}
- drawProfiles();
- statusNode.setAttribute("role","status");statusNode.textContent=loaded.length?loaded.length+" spår visas. Använd kartan för att zooma och panorera.":"Välj GPX-filer för att visa flera banlinjer på samma karta.";
+ drawProfiles();statusNode.setAttribute("role","status");
+ statusNode.textContent=loaded.length+" spår visas på kartan. Zooma eller panorera för att jämföra linjerna.";
 }
 document.getElementById("gpx-upload").addEventListener("change",async function(event){
  const files=Array.from(event.target.files||[]).slice(0,8);if(!files.length)return;
@@ -166,8 +230,9 @@ document.getElementById("gpx-upload").addEventListener("change",async function(e
 });
 document.getElementById("clear-tracks").addEventListener("click",function(){loaded=[];if(map&&layerGroup)layerGroup.clearLayers();refresh();});
 document.getElementById("zoom-all").addEventListener("click",function(){if(map&&currentBounds&&currentBounds.isValid())map.fitBounds(currentBounds.pad(.08));});
-document.getElementById("zoom-knab").addEventListener("click",function(){if(initMap())map.setView([55.64097,14.27477],14);});
-initMap();
+document.getElementById("zoom-knab").addEventListener("click",function(){if(!loaded.length){statusNode.textContent="Välj minst en GPX-fil innan du zoomar till Knäbäckshusen.";return;}if(initMap())map.setView([55.64097,14.27477],14);});
+document.getElementById("base-layer").addEventListener("change",function(event){if(map)changeBasemap(event.target.value);});
+refresh();
 </script>
 </body>
 </html>
