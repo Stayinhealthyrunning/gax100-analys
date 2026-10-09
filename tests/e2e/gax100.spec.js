@@ -114,7 +114,7 @@ test('kartarkiv i webbläsare: publika källkartor och filväljare', async ({ pa
   await expect(page.locator('#overlay-map')).toBeVisible();
   await expect(page.locator('#overlay-meta')).toContainText('qa-track.gpx');
   await page.locator('#base-layer').selectOption('none');
-  await expect(page.locator('#tile-status')).toContainText('utan bakgrund');
+  await expect(page.locator('#tile-status')).toContainText('neutral bakgrund');
   await page.locator('#clear-tracks').click();
   await expect(page.locator('#overlay-empty')).toBeVisible();
   await assertNoHorizontalOverflow(page);
