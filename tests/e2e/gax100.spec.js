@@ -106,6 +106,17 @@ test('kartarkiv i webbläsare: publika källkartor och filväljare', async ({ pa
   await expect(page.locator('#left-map')).toHaveAttribute('src', 'https://www.plotaroute.com/embedmap/2310208');
   await expect(page.locator('#gpx-upload')).toHaveAttribute('multiple', '');
   await expect(page.locator('#zoom-knab')).toBeVisible();
+  await expect(page.locator('#overlay-empty')).toBeVisible();
+  await expect(page.locator('#overlay-map')).toBeHidden();
+  const sampleGpx = '<?xml version="1.0"?><gpx version="1.1" creator="QA"><trk><name>GAX100 QA</name><trkseg><trkpt lat="55.64000" lon="14.27400"><ele>15</ele></trkpt><trkpt lat="55.64020" lon="14.27420"><ele>18</ele></trkpt><trkpt lat="55.64040" lon="14.27440"><ele>21</ele></trkpt></trkseg></trk></gpx>';
+  await page.locator('#gpx-upload').setInputFiles({name:'qa-track.gpx',mimeType:'application/gpx+xml',buffer:Buffer.from(sampleGpx)});
+  await expect(page.locator('#local-status')).toContainText('1 spår visas');
+  await expect(page.locator('#overlay-map')).toBeVisible();
+  await expect(page.locator('#overlay-meta')).toContainText('qa-track.gpx');
+  await page.locator('#base-layer').selectOption('none');
+  await expect(page.locator('#tile-status')).toContainText('utan bakgrund');
+  await page.locator('#clear-tracks').click();
+  await expect(page.locator('#overlay-empty')).toBeVisible();
   await assertNoHorizontalOverflow(page);
   await page.screenshot({ path: testInfo.outputPath('kartarkiv-mobile.png'), fullPage: true });
 });
