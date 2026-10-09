@@ -91,3 +91,21 @@ for (const viewport of [{ width: 768, height: 1024 }, { width: 390, height: 844 
     await page.screenshot({ path: testInfo.outputPath(`responsive-${viewport.width}.png`), fullPage: true });
   });
 }
+
+
+test('kartarkiv i webbläsare: publika källkartor och filväljare', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/karta.html', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('h1')).toContainText('Historiska banor');
+  await expect(page.locator('#left-route option')).toHaveCount(6);
+  await expect(page.locator('#right-route option')).toHaveCount(6);
+  await expect(page.locator('#left-map')).toHaveAttribute('src', 'https://www.plotaroute.com/embedmap/2332034');
+  await expect(page.locator('#right-map')).toHaveAttribute('src', 'https://www.plotaroute.com/embedmap/2659350');
+  await page.locator('#left-route').selectOption('2310208');
+  await expect(page.locator('#left-link')).toHaveAttribute('href', 'https://www.plotaroute.com/route/2310208');
+  await expect(page.locator('#left-map')).toHaveAttribute('src', 'https://www.plotaroute.com/embedmap/2310208');
+  await expect(page.locator('#gpx-upload')).toHaveAttribute('multiple', '');
+  await expect(page.locator('#zoom-knab')).toBeVisible();
+  await assertNoHorizontalOverflow(page);
+  await page.screenshot({ path: testInfo.outputPath('kartarkiv-mobile.png'), fullPage: true });
+});
