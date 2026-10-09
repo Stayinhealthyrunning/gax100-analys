@@ -27,10 +27,10 @@ child.stdout.on('data', async (chunk) => {
     const raw = await gpx.text();
     assert.equal(root.status, 200);
     assert.equal(index.status, 200);
-    assert.equal(gpx.status, 200);
     assert.equal(catalog.files.length, 5);
     assert.match(html, /GAX100 lokal GPX-förhandsvisning/);
-    assert.match(raw, /<trkpt/);
+    if (gpx.status === 200) assert.match(raw, /<trkpt/);
+    else assert.equal(gpx.status, 404, 'CI får sakna det ignorerade privata GPX-råarkivet');
     finish();
   } catch (error) { finish(error); }
 });
