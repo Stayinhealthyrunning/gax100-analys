@@ -1,0 +1,59 @@
+name: Publish GAX100 preview
+
+# Runs with the Pages-allowed default branch while publishing the reviewed
+# preview files from the active GAX100 development branch.
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/gax100-pages.yml]
+  workflow_run:
+    workflows: ["GAX100 QA"]
+    branches: [codex/gax100-etapp2]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: gax100-pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout the GAX100 preview source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || 'codex/gax100-etapp2' }}
+
+      - name: Validate the static preview export
+        run: |
+          test -s web/index.html
+          test -s web/app.js
+          test -s web/statistics.js
+          test -s web/styles.css
+          test -s web/data.json
+          test ! -e web/CNAME
+          node --check web/app.js
+          node --check web/statistics.js
+          node -e "const fs=require('node:fs'); const d=JSON.parse(fs.readFileSync('web/data.json','utf8')); if(!Array.isArray(d.editions)||!Array.isArray(d.results)||!d.results.length) process.exit(1);"
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload static site
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: web/
+
+      - name: Deploy static site
+        id: deployment
+        uses: actions/deploy-pages@v4
