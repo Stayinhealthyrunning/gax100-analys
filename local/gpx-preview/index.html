@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GAX100 lokal GPX-förhandsvisning</title>
+  <style>
+    :root { color-scheme: dark; --bg:#10161b; --panel:#182229; --ink:#edf4f5; --muted:#a8b8bc; --line:#34505a; --accent:#66d6c0; --warn:#ffbd69; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.45 system-ui,sans-serif; }
+    main { max-width:1500px; margin:0 auto; padding:24px; }
+    h1,h2,h3 { margin:0 0 8px; line-height:1.1; }
+    p { margin:8px 0; }
+    .muted { color:var(--muted); }
+    .notice { border:1px solid var(--warn); background:#322719; padding:12px 14px; border-radius:10px; margin:16px 0; }
+    .layout { display:grid; grid-template-columns:300px minmax(0,1fr); gap:18px; align-items:start; }
+    .panel { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px; }
+    .controls { position:sticky; top:12px; }
+    .track { display:block; margin:12px 0; padding:8px; border:1px solid var(--line); border-radius:8px; }
+    .track input { margin-right:8px; }
+    .track strong { display:block; font-size:13px; overflow-wrap:anywhere; }
+    .track small { display:block; color:var(--muted); margin-left:22px; }
+    button { border:1px solid var(--line); border-radius:7px; background:#22323a; color:var(--ink); padding:8px 10px; cursor:pointer; margin:3px 2px 3px 0; }
+    button:hover,button:focus-visible { border-color:var(--accent); outline:2px solid transparent; }
+    .map-wrap { min-height:520px; overflow:hidden; border:1px solid var(--line); border-radius:10px; background:#0b1115; }
+    #map { display:block; width:100%; height:560px; }
+    .grid { stroke:#263d45; stroke-width:1; vector-effect:non-scaling-stroke; }
+    .axis-label { fill:var(--muted); font-size:12px; }
+    .route { fill:none; stroke-width:3; vector-effect:non-scaling-stroke; stroke-linejoin:round; stroke-linecap:round; }
+    .reference { fill:var(--warn); stroke:#241c10; stroke-width:2; vector-effect:non-scaling-stroke; }
+    .deviation { fill:#ff6b6b; stroke:#300d0d; stroke-width:1; vector-effect:non-scaling-stroke; }
+    #profile { display:block; width:100%; height:220px; background:#0b1115; border:1px solid var(--line); border-radius:10px; }
+    .profile-line { fill:none; stroke-width:2; vector-effect:non-scaling-stroke; }
+    .legend { display:flex; flex-wrap:wrap; gap:10px 16px; margin:10px 0; }
+    .legend span { white-space:nowrap; }
+    .swatch { display:inline-block; width:12px; height:12px; border-radius:50%; margin-right:5px; vertical-align:-1px; }
+    table { width:100%; border-collapse:collapse; margin-top:10px; font-size:13px; }
+    th,td { text-align:left; vertical-align:top; padding:7px; border-bottom:1px solid var(--line); }
+    th { color:var(--muted); font-weight:600; }
+    .status { color:var(--warn); }
+    @media (max-width:900px) { main { padding:14px; } .layout { grid-template-columns:1fr; } .controls { position:static; } #map { height:440px; } }
+    @media (max-width:520px) { main { padding:9px; } #map { height:350px; } th,td { padding:5px 4px; } }
+  </style>
+</head>
+<body>
+<main>
+  <h1>GAX100 lokal GPX-förhandsvisning</h1>
+  <p class="muted">Interaktiv forskningsvy för de fem lokala råfilerna. Spåren strömmas från den lokala servern och publiceras inte.</p>
+  <div class="notice"><strong>Lokalt och osäkerhetsmärkt.</strong> Detta är inte den publika GAX100-appen. Filernas årsanknytning, rättigheter och officiella status är inte slutligt verifierade. Segment med hopp över 250 m kopplas inte ihop.</div>
+  <div class="layout">
+    <aside class="panel controls">
+      <h2>Spår</h2>
+      <div id="track-list">Läser lokalt arkiv …</div>
+      <button id="select-all" type="button">Visa alla</button>
+      <button id="select-none" type="button">Rensa</button>
+      <hr>
+      <button id="fit-all" type="button">Visa valda</button>
+      <button id="zoom-knaeb" type="button">Zooma Knäbäckshusen</button>
+      <p class="muted">Röda markeringar visar lokala punkter över 50 m från ett annat valt spår. Detta är en geometrisk avvikelse, inte en verifierad historisk banändring.</p>
+    </aside>
+    <section>
+      <div class="panel">
+        <h2>Karta</h2>
+        <div id="map-status" class="muted">Välj minst ett spår.</div>
+        <div id="legend" class="legend"></div>
+        <div class="map-wrap"><svg id="map" viewBox="0 0 1000 560" role="img" aria-label="Valda GPX-spår"></svg></div>
+      </div>
+      <div class="panel" style="margin-top:18px">
+        <h2>Höjdprofil</h2>
+        <p class="muted">Höjdprofilen använder GPX-filernas höjdvärden. Avbrott visas som separata linjer utan påhittad koppling.</p>
+        <svg id="profile" viewBox="0 0 1000 220" role="img" aria-label="Höjdprofil för valda spår"></svg>
+      </div>
+      <div class="panel" style="margin-top:18px">
+        <h2>Källor och mätvärden</h2>
+        <div id="details" class="muted">Välj spår för att läsa lokala metadata.</div>
+      </div>
+    </section>
+  </div>
+</main>
+<script>
+const ref = { lat:55.64097, lon:14.27477 };
+const colors = ['#66d6c0','#ffbd69','#8fb8ff','#f783ac','#c9a7ff'];
+let catalog = null;
+let selected = [];
+let loaded = new Map();
+let zoomLocal = false;
+const earth = 6371008.8;
+const $ = (selector) => document.querySelector(selector);
+const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+function project(point) { const lat0 = ref.lat * Math.PI / 180; return { x:(point.lon-ref.lon)*Math.PI/180*earth*Math.cos(lat0), y:(point.lat-ref.lat)*Math.PI/180*earth, ele:point.ele }; }
+function distance(a,b) { return Math.hypot(a.x-b.x,a.y-b.y); }
+function parseGpx(xml, meta) {
+  const doc = new DOMParser().parseFromString(xml, 'application/xml');
+  const segmentNodes = [...doc.querySelectorAll('trkseg')];
+  const nodes = segmentNodes.length ? segmentNodes : [doc];
+  const runs = [];
+  nodes.forEach((segment) => {
+    let run = [];
+    [...segment.querySelectorAll('trkpt')].forEach((node) => {
+      const point = project({ lat:Number(node.getAttribute('lat')), lon:Number(node.getAttribute('lon')), ele:Number(node.querySelector('ele')?.textContent) });
+      if (!Number.isFinite(point.x) || !Number.isFinite(point.y)) return;
+      if (run.length && distance(run[run.length-1], point) > 250) { if (run.length > 1) runs.push(run); run = []; }
+      run.push(point);
+    });
+    if (run.length > 1) runs.push(run);
+  });
+  let total = 0; const profileRuns = runs.map((run) => { let km = total; const profile = run.map((point,index) => { if (index) total += distance(run[index-1], point); return { x:total/1000, y:point.ele, point }; }); return profile; });
+  return { file:meta.file, meta, runs, profileRuns, distanceKm:total/1000 };
+}
+function routeSegments(route) { return route.runs.flatMap((run) => run.slice(1).map((point,index) => [run[index],point])); }
+function colorFor(route) { const index=catalog.files.findIndex((item)=>item.file===route.file); return colors[index<0?0:index%colors.length]; }
+function pointToSegment(point,a,b) { const dx=b.x-a.x, dy=b.y-a.y, len=dx*dx+dy*dy; if (!len) return distance(point,a); const t=Math.max(0,Math.min(1,((point.x-a.x)*dx+(point.y-a.y)*dy)/len)); return Math.hypot(point.x-(a.x+t*dx),point.y-(a.y+t*dy)); }
+function nearest(point,segments) { let best=Infinity; segments.forEach((segment) => { best=Math.min(best,pointToSegment(point,segment[0],segment[1])); }); return best; }
+function pathData(run, bounds) { return run.map((point,index) => (index ? 'L' : 'M') + ((point.x-bounds.minX)/(bounds.maxX-bounds.minX)*960+20).toFixed(1) + ',' + (540-(point.y-bounds.minY)/(bounds.maxY-bounds.minY)*500).toFixed(1)).join(' '); }
+function chooseBounds(routes) {
+  if (zoomLocal) return { minX:-6000, maxX:6000, minY:-6000, maxY:6000 };
+  const points = routes.flatMap((route) => route.runs.flat());
+  if (!points.length) return { minX:-1000,maxX:1000,minY:-1000,maxY:1000 };
+  const xs=points.map((point)=>point.x), ys=points.map((point)=>point.y); const pad=3000;
+  return { minX:Math.min(...xs)-pad,maxX:Math.max(...xs)+pad,minY:Math.min(...ys)-pad,maxY:Math.max(...ys)+pad };
+}
+function renderMap(routes) {
+  const svg=$('#map'); const bounds=chooseBounds(routes); const dx=Math.max(1,bounds.maxX-bounds.minX), dy=Math.max(1,bounds.maxY-bounds.minY); const grid=[];
+  for (let i=0;i<=8;i+=1) { const x=20+i*960/8; const y=40+i*500/8; grid.push('<line class="grid" x1="'+x+'" y1="40" x2="'+x+'" y2="540"/><line class="grid" x1="20" y1="'+y+'" x2="980" y2="'+y+'"/>'); }
+  const lines=routes.map((route)=>route.runs.map((run)=>'<path class="route" stroke="'+colorFor(route)+'" d="'+pathData(run,bounds)+'"/>').join('')).join('');
+  const rx=(ref.lat-ref.lat); const refPoint=project(ref); const refX=((refPoint.x-bounds.minX)/dx*960+20).toFixed(1); const refY=(540-(refPoint.y-bounds.minY)/dy*500).toFixed(1);
+  let marks='';
+  if (routes.length>1) {
+    const allSegments=routes.map(routeSegments);
+    routes.forEach((route,routeIndex)=>{
+      route.runs.forEach((run)=>{
+        run.forEach((point,pointIndex)=>{
+          if (pointIndex%8!==0) return;
+          const other=allSegments.filter((_,index)=>index!==routeIndex).flat();
+          if (other.length && nearest(point,other)>50) marks += '<circle class="deviation" cx="'+((point.x-bounds.minX)/dx*960+20).toFixed(1)+'" cy="'+(540-(point.y-bounds.minY)/dy*500).toFixed(1)+'" r="3"/>';
+        });
+      });
+    });
+  }
+  svg.innerHTML=grid.join('')+lines+marks+'<circle class="reference" cx="'+refX+'" cy="'+refY+'" r="6"/><text class="axis-label" x="28" y="30">Knäbäckshusen referens</text><text class="axis-label" x="780" y="550">lokal projektion, meter</text>';
+  $('#map-status').textContent=routes.length ? routes.length+' spår visas · röda punkter >50 m från annat valt spår · skala '+Math.round(dx)+'×'+Math.round(dy)+' m' : 'Välj minst ett spår.';
+}
+function renderProfile(routes) {
+  const svg=$('#profile'); if (!routes.length) { svg.innerHTML=''; return; }
+  const values=routes.flatMap((route)=>route.profileRuns.flat()).filter((point)=>Number.isFinite(point.y)); if (!values.length) { svg.innerHTML='<text class="axis-label" x="20" y="30">Ingen höjddata</text>'; return; }
+  const maxX=Math.max(...routes.map((route)=>route.distanceKm),1), minY=Math.min(...values.map((point)=>point.y)), maxY=Math.max(...values.map((point)=>point.y)); const dy=Math.max(1,maxY-minY); let content='';
+  routes.forEach((route)=>route.profileRuns.forEach((run)=>{ const d=run.map((point,i)=>(i?'L':'M')+(20+point.x/maxX*960).toFixed(1)+','+(200-(point.y-minY)/dy*160).toFixed(1)).join(' '); content+='<path class="profile-line" stroke="'+colorFor(route)+'" d="'+d+'"/>'; }));
+  svg.innerHTML=content+'<text class="axis-label" x="22" y="216">0 km</text><text class="axis-label" x="900" y="216">'+maxX.toFixed(1)+' km</text><text class="axis-label" x="22" y="18">höjd '+Math.round(minY)+'–'+Math.round(maxY)+' m</text>';
+}
+function renderDetails(routes) {
+  $('#legend').innerHTML=routes.map((route)=>'<span><i class="swatch" style="background:'+colorFor(route)+'"></i>'+esc(route.file)+'</span>').join('');
+  $('#details').innerHTML=routes.length ? '<table><thead><tr><th>Fil/källa</th><th>Uppmätt</th><th>Segment</th><th>Avbrott</th><th>Osäkerhetsstatus</th></tr></thead><tbody>'+routes.map((route)=>'<tr><td><strong>'+esc(route.file)+'</strong><br><span class="muted">'+esc(route.meta.creator||'creator saknas')+'</span></td><td>'+route.distanceKm.toFixed(2)+' km</td><td>'+route.runs.length+'</td><td>'+route.meta.jumps_over_250m.length+' rapporterade >250 m</td><td class="status">lokal kandidat; inte officiell/publiceringsklar årsfil</td></tr>').join('')+'</tbody></table>' : 'Välj spår för att läsa lokala metadata.';
+}
+function render() { const routes=selected.map((file)=>loaded.get(file)).filter(Boolean); renderMap(routes); renderProfile(routes); renderDetails(routes); }
+async function load(file) { if (loaded.has(file)) return loaded.get(file); const response=await fetch('/gpx/'+encodeURIComponent(file)); const route=parseGpx(await response.text(),catalog.files.find((item)=>item.file===file)); loaded.set(file,route); return route; }
+async function setSelected(files) { selected=files; await Promise.all(files.map(load)); render(); }
+function buildList() { $('#track-list').innerHTML=catalog.files.map((meta,index)=>'<label class="track"><input type="checkbox" data-file="'+esc(meta.file)+'"><strong style="color:'+colors[index]+'">'+esc(meta.file)+'</strong><small>'+esc(meta.creator||'creator saknas')+' · '+meta.points+' punkter · '+meta.distance_km+' km</small><small>lokal kandidat · rättigheter/årsanknytning ej klarlagda</small></label>').join(''); document.querySelectorAll('[data-file]').forEach((box)=>box.addEventListener('change',()=>setSelected([...document.querySelectorAll('[data-file]:checked')].map((item)=>item.dataset.file)))); }
+fetch('/api/index').then((response)=>response.json()).then((data)=>{ catalog=data; buildList(); $('#select-all').onclick=()=>{ document.querySelectorAll('[data-file]').forEach((box)=>box.checked=true); setSelected(catalog.files.map((item)=>item.file)); }; $('#select-none').onclick=()=>{ document.querySelectorAll('[data-file]').forEach((box)=>box.checked=false); setSelected([]); }; $('#fit-all').onclick=()=>{ zoomLocal=false; render(); }; $('#zoom-knaeb').onclick=()=>{ zoomLocal=true; render(); }; }).catch((error)=>{ $('#track-list').textContent='Kunde inte läsa lokalt GPX-arkiv: '+error.message; });
+</script>
+</body>
+</html>

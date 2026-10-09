@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="sv">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GAX100 Analys</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main>
+  <header class="hero" id="race-header">
+    <p class="eyebrow">THE GAX 100 MILES</p>
+    <h1>GAX100 Analys</h1>
+    <p>Verifierade resultat, mellantider och källspårning per tävlingsupplaga.</p>
+    <label>Upplaga <select id="year" aria-label="Välj tävlingsupplaga"></select></label>
+    <p class="map-preview-link"><a href="karta.html" style="display:inline-block;margin-top:12px;padding:11px 16px;border-radius:9px;background:#e6f7f5;color:#0c4c53;font-weight:700;text-decoration:none">Visa GAX100:s historiska banor på karta →</a></p>
+  </header>
+
+  <section id="race-facts">
+    <div class="section-heading"><h2>Loppet i siffror</h2><details class="help"><summary aria-label="Om loppet i siffror">ⓘ</summary><p>Startande visas bara när källan skiljer start från publicerade poster. Fullföljde är FINISHED med positiv sluttid. Könstider kräver minst fem giltiga tider per grupp; median och medel redovisas separat.</p></details></div>
+    <div id="facts" class="facts"></div>
+  </section>
+
+  <section id="runner-finder">
+    <div class="section-heading"><h2>Hitta din löpare</h2><details class="help"><summary aria-label="Om sökningen">ⓘ</summary><p>Sökningen använder publicerade namn och klubbvärden för vald upplaga. Samma namn över år är inte en verifierad personidentitet.</p></details></div>
+    <div class="filters"><input id="search" type="search" placeholder="Sök namn eller klubb" aria-label="Sök namn eller klubb"><select id="club" aria-label="Filtrera klubb"><option value="">Alla klubbar</option></select></div>
+    <p id="result-count" class="muted" aria-live="polite"></p>
+    <div id="runner" class="runner empty">Välj en rad i resultatdatabasen för individuell visning.</div>
+  </section>
+
+  <section id="direct-comparison">
+    <div class="section-heading"><h2>Direktjämförelse 2.0</h2><details class="help"><summary aria-label="Om Direktjämförelse 2.0">ⓘ</summary><p>Exakt två resultatrader jämförs. Gemensamma passager används bara när upplaga, kontrollpunkt och källavstånd är verifierat likvärdiga. Saknade ändpunkter ger inget segmentvärde.</p></details></div>
+    <p class="muted">Välj exakt två resultat. Endast gemensamma verkliga mellantider jämförs.</p>
+    <div id="comparison" class="runner empty">Inga två resultat valda.</div>
+    <button id="clear-comparison" type="button">Rensa valda</button>
+  </section>
+
+  <section id="map-duel">
+    <div class="section-heading"><h2>Kartduell</h2><details class="help"><summary aria-label="Om Kartduell">ⓘ</summary><p>Kartduellens valkontrakt stöder 2–5 resultat. Lokala kandidatspår finns i forskningsarkivet, men replay är avstängd tills årsanknytning, publiceringsrätt, checkpoint-koordinater och tillräckliga tidsankare har verifierats.</p></details></div>
+    <div id="map-duel-panel" class="runner empty">Välj 2–5 resultat i resultatdatabasen.</div>
+    <p class="muted">Valet och datakontraktet kan förberedas. Kandidat-GPX finns dokumenterade i forskningsarkivet, men ingen GPS-position eller historisk banjämförelse visas som verifierad i den publika appen.</p>
+  </section>
+
+  <section id="personal-plan">
+    <div class="section-heading"><h2>Personlig loppplan</h2><details class="help"><summary aria-label="Om personlig loppplan">ⓘ</summary><p>Den här versionen visar en historisk personlig referensprofil från valt resultat när minst två verkliga mellantider finns. Den är inte en måltidssimulering eller prognos.</p></details></div>
+    <div id="plan" class="runner empty">Välj ett resultat med minst två verifierade mellantider.</div>
+  </section>
+
+  <section id="field-overview">
+    <div class="section-heading"><h2>Loppets dynamik och fältets trösklar</h2><details class="help"><summary aria-label="Om fältstatistiken">ⓘ</summary><p>Histogrammet använder FINISHED med positiv sluttid. Percentilerna P10, P25, P50, P75 och P90 använder linjär interpolation med h=(n−1)×p.</p></details></div>
+    <div class="stats-grid">
+      <div><h3>Sluttidsfördelning</h3><div id="histogram" class="chart" role="img" aria-label="Sluttidsfördelning"></div></div>
+      <div><h3>Tid mot placering</h3><div id="scatter" class="chart" role="img" aria-label="Tid mot placering"></div></div>
+    </div>
+    <h3>Percentiler</h3>
+    <div id="percentiles" class="runner empty">Ingen verifierad sluttidsdata.</div>
+    <p id="stats-note" class="muted"></p>
+  </section>
+
+  <section id="course-history">
+    <div class="section-heading"><h2>Historisk jämförelse</h2><details class="help"><summary aria-label="Om historisk jämförelse">ⓘ</summary><p>Volymer och importerade observationer kan jämföras mellan upplagor. Sluttidsjämförelser över år kräver verifierad banjämförbarhet och ska därför inte läsas som ett prestationsmått här.</p></details></div>
+    <p class="muted">Tabellen visar uppmätta källvärden per upplaga. Saknade år är inte noll.</p>
+    <div class="table-wrap"><table><thead><tr><th>Upplaga</th><th>FINISHED</th><th>DNF</th><th>Median</th><th>Snabbaste</th><th>Mellantider</th></tr></thead><tbody id="history"></tbody></table></div>
+  </section>
+
+  <section id="quality-overview">
+    <div class="section-heading"><h2>Datakvalitet per upplaga</h2><details class="help"><summary aria-label="Om datakvaliteten">ⓘ</summary><p>Översikten skiljer på publicerade resultatposter, verifierade sluttider, statuskoder, kön och importerade mellantider. Ett streck betyder att källan inte fastställer värdet.</p></details></div>
+    <div class="table-wrap quality-table-wrap"><table class="quality-table"><thead><tr><th>Upplaga</th><th>Resultat</th><th>FINISHED / DNF / DNS</th><th>Kön</th><th>Startande</th><th>Mellantider</th><th>Källstatus</th></tr></thead><tbody id="quality-rows"></tbody></table></div>
+  </section>
+
+  <section id="results-database">
+    <div class="section-heading"><h2>Resultatdatabas</h2><details class="help"><summary aria-label="Om resultatdatabasen">ⓘ</summary><p>Resultatraderna är importerade från officiella källor med bevarad källproveniens. Saknat kön, klubb, status eller tid visas som saknat och fylls inte i med antaganden.</p></details></div>
+    <label>Sortera <select id="sort" aria-label="Sortera resultat"><option value="time">Sluttid</option><option value="name">Namn</option><option value="status">Status</option></select></label>
+    <div class="table-wrap result-table-wrap"><table class="result-table"><thead><tr><th>Namn</th><th>Kön</th><th>Klubb</th><th>Status</th><th>Sluttid</th><th>Val</th></tr></thead><tbody id="rows"></tbody></table></div>
+    <div id="result-pagination" class="pagination" aria-label="Resultatpaginering"></div>
+  </section>
+
+  <section id="methodology">
+    <div class="section-heading"><h2>Data och metod</h2><details class="help"><summary aria-label="Om metod och datakällor">ⓘ</summary><p>Originalkällor, normaliserade värden och härledda mått hålls isär. Ingen saknad mellantid, GPS-position, identitet eller status rekonstrueras som sanning.</p></details></div>
+    <details><summary>Så fungerar analysen</summary><p>KPI:er och diagram bygger på importerade officiella resultat. Median är mittvärdet; vid jämnt antal är den medelvärdet av de två mittersta. Percentiler använder linjär interpolation med h=(n−1)×p och avrundas till hela sekunder före presentation. Segmenttid kräver två verkliga, kronologiska observationer med verifierat avstånd; saknade eller bakåtriktade observationer ger inget segmentvärde. GPS/replay kräver årsverifierad, publicerbar geometri och verifierade tidsankare; lokala kandidatspår behandlas därför inte som publik löparposition.</p><p>2025 importeras nu från arrangörens officiella PDF med 69 FINISHED, 40 DNF och 10 DNS. 2026 års resultatindex har ingen importerad mellantidsserie i detta underlag.</p></details>
+    <p><a href="https://gax100.se/resultat/" rel="noopener noreferrer">Officiellt resultatindex</a> · <a href="https://gax100.se/bana-karta/" rel="noopener noreferrer">Officiell bana och karta</a></p>
+  </section>
+</main>
+<script src="statistics.js"></script>
+<script src="time.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

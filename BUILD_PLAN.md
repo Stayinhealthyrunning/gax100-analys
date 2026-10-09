@@ -16,7 +16,20 @@
 3. Importera till kuraterad tabell med source-scoped edition/result-ID och fältproveniens.
 4. Normalisera status, kön, klubb, tider och kontrollpunkter; bevara råvärden och markera osäkerheter.
 5. Jämför GPX/banversioner före och efter 2024 utan att anta geometrisk jämförbarhet.
-6. Kör counts/status/QA mot officiella sidor och förbered analysverktygets datakontrakt först efter verifierad täckning.
+6. Kör counts/status/QA mot officiella sidor och exportera endast verifierade fält till webblagret.
+7. 2025 är nu importerat från arrangörens officiella PDF via `data/verified/result-2025-official.json`; fixture-filen är en spårbar transkription, inte en ersättning för original-PDF:en.
+
+### ETAPP 2B – datakvalitet och verifierad interaktion
+
+SQLite-importen är implementerad i `scripts/build_database.js`. Den är idempotent och skiljer editions, resultat och tidsobservationer. Äldre tidsformat med rangsuffix är parserade utan att rangvärdet påverkar klocktiden; tidskronologin valideras per resultat. Frontendens mobilresultat, kvalitetstabell, individuell segmentfart, jämförbara kontrollpunkter och historisk referens/simulering är underlagsstyrda. Kartduellens valkontrakt är aktivt, medan deltagarreplay och officiell återpublicerad årsgeometri är separata gated capabilities.
+
+## ETAPP 3 – verifierad analysprodukt
+
+1. Kör full Chromium-QA vid 1440, 900, 768 och 390 px och granska artefakterna visuellt.
+2. Färdigställ only-if-verified standardblock: resultatöversikt, individuell analys, jämförbara mellantider och percentiler.
+3. Hämta/arkivera 2023/2024/2026-GPX först efter årsanknytning och rättighet; håll lokal forskningspreview skild från publicerat webblager.
+4. Aktivera höjdprofil, banjämförelse, mellantidsankrad position och GPS-replay var för sig utifrån respektive datakrav.
+5. Publicera inte nya GAX100-geometrier eller lägg till loppet i huvudkatalogen utan separat godkännande.
 
 ## Definition of done för ETAPP 1
 
