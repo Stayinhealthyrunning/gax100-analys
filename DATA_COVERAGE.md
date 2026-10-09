@@ -6,7 +6,7 @@
 
 ## Uppmätt importtäckning
 
-Importerade editions: **13** (2014–2024, 2021-A, 2021-B och 2026). Importerade resultatposter: **826**. Tidsobservationer: **1 838**. Normaliserad status efter korrigerad äldre tidsparser och explicit DNF-klassificering: **FINISHED 582**, **DNF 139**, **UNKNOWN 105**, **DNS 0**. Verifierat startantal finns för 2015 (**53**), 2021-A (**38**), 2023 (**89**) och 2024 (**87**); övriga upplagor lämnas som ej fastställda. 2026 års officiella PDF verifierar kön för alla 110 importerade resultat: **22 Kvinnor**, **88 Män**. 2025: **0**, eftersom den officiella detalj-URL:n svarade HTTP 404. Se `data/IMPORT_REPORT.md` för editionsfördelning och återuppbyggnadskommandon.
+Importerade editions: **14** (2014–2026, med två verkliga 2021-upplagor). Importerade resultatposter: **945**. Tidsobservationer: **1 838**. Normaliserad status: **FINISHED 651**, **DNF 179**, **DNS 10**, **UNKNOWN 105**. Verifierat startantal finns för 2015 (**53**), 2021-A (**38**), 2023 (**89**), 2024 (**87**) och 2025 (**109 = 69 FINISHED + 40 DNF**); övriga upplagor lämnas som ej fastställda. 2026 års officiella PDF verifierar kön för alla 110 importerade resultat: **22 Kvinnor**, **88 Män**. 2025 importeras från arrangörens officiella PDF med 69 placerade FINISHED, 40 DNF och 10 DNS; DNF/DNS utan entydig könsrubrik lämnas utan könsantagande. Se `data/IMPORT_REPORT.md` för editionsfördelning och återuppbyggnadskommandon.
 
 ## Editionsmatris 2014–2026
 
@@ -24,12 +24,12 @@ Importerade editions: **13** (2014–2024, 2021-A, 2021-B och 2026). Importerade
 | 2022 | [årsida](https://gax100.se/resultat/resultat-2022/) | verifierad lista | importerad status/finish | ej separat | damer/herrar | klubbfält | verifierad | verifierad: 44/80/130/mål | PM hänvisar till 2022-bana | Plotaroute 2310208 lokalt auditerad; ej officiellt fastställd | nedladdad och normaliserad; PM-länk registrerad |
 | 2023 | [årsida](https://gax100.se/resultat/resultat-2023/) | verifierad: 69 av 89 enligt sidan | importerad explicit/listad status | ej separat | damer/herrar | klubbfält | verifierad | verifierad: 44/80/130/mål | 2023 PM/banbeskrivning | Plotaroute 2332034 identifierad; AllTrails lokalt auditerad men rättighetsbegränsad | nedladdad och normaliserad; official GPX saknas |
 | 2024 | [årsida](https://gax100.se/resultat/resultat-2024/) | verifierad: 54 av 87 enligt sidan | importerad explicit/listad status | ej separat | damer/herrar | klubbfält | verifierad | verifierad: Magleberg/Haväng/Sandhammaren/mål | ny sträcka vid Knäbäckshusen från 2024 | Plotaroute 2659350 identifierad; ej lokalt arkiverad/officiellt verifierad | nedladdad och normaliserad; historisk banversion textverifierad |
-| 2025 | [indexlänk](https://gax100.se/resultat/) | indexlänk verifierad | ej verifierad | ej verifierad | ej verifierad | ej verifierad | ej verifierad | ej verifierad | efter-2024 ej verifierad | ej verifierad | identifierad; detaljsida åtkomstfel |
+| 2025 | [resultatindex](https://gax100.se/resultat/) och [officiell resultat-PDF](https://gax100.se/wp-content/uploads/2025/07/GAX-Resultat-2025.pdf) | verifierad: 69 FINISHED | verifierad: 40 DNF | verifierad: 10 DNS | kön verifierat för 69 målrader: 14 Damer/55 Herrar; övriga ej antaget | klubbfält på publicerade rader | verifierad på 69 målrader | inga mellantider i PDF | efter-2024; års-GPX ej verifierad | ej verifierad | indexlänk och PDF identifierade/verifierade; PDF nedladdad och 119 rader normaliserade |
 | 2026 | [resultatindex](https://gax100.se/resultat/) och [officiell resultat-PDF](https://gax100.se/wp-content/uploads/2026/07/Resultat-till-hemsidan.pdf) | verifierad HTML/PDF; 66 verifierade sluttider | verifierad HTML/PDF | verifierad HTML/PDF | kvinnor/män verifierat från PDF: 22/88 | klubbfält | verifierad | ej importerade i indexutdrag | aktuell 2026-bana | [arrangörens Garmin-kurs](https://connect.garmin.com/app/course/484861455) verifierad visuellt: 161,45 km/697 hm; GPX-export ej arkiverad | index + PDF nedladdade/normaliserade; kön har PDF-proveniens, mellantider saknas |
 
 ## Filformat, åtkomst och GPX
 
-- Resultat 2014–2024 publiceras som HTML-tabeller på årsidor. 2025 finns som indexlänk men detaljsidan kunde inte hämtas i sessionen. 2026 har HTML-tabell samt officiell PDF med separata Kvinnor/Män-tabeller; PDF:en är nedladdad i råarkivet och används endast som verifierad könskälla.
+- Resultat 2014–2024 publiceras som HTML-tabeller på årsidor. 2025 länkas från resultatindexet till en officiell PDF (`GAX-Resultat-2025.pdf`) med 3 sidor och statusrader; den är nedladdad i råarkivet och importerad via den spårbara transkriptionsfilen `data/verified/result-2025-official.json`. 2026 har HTML-tabell samt officiell PDF med separata Kvinnor/Män-tabeller.
 - `GaxPM2023.pdf` är PDF, lokalt arkiverad i råarkivet, och beskriver historiska banavvikelser samt hänvisar till års-GPX.
 - Arrangörens bana-sida säger att aktuell GPX är uppdaterad för 2026 och länkar Garmin Connect-kursen ovan. Garmin Connect visar kursen `GAX100M-2026`, 161,45 km och 697 m stigning; fristående GPX-export kunde inte arkiveras i denna körning.
 - Fem lokala GPX-filer är nu tekniskt verifierade som geometriunderlag; ingen är klassad som arrangörens officiella, redistribuerbara årsfil. Se `GPX_COVERAGE.md` och `data/gpx-audit.json`.
@@ -48,10 +48,10 @@ Tom sluttid är inte automatiskt DNF/DNS. Råtext som uttryckligen börjar med `
 | Race facts/status/KPI | delvis möjligt | flera resultatkällor, heterogena äldre statusfält |
 | Runner finder/result database | delvis möjligt | HTML-tabeller finns, råarkiv/result-ID saknas |
 | Individual analysis | delvis möjligt | sluttider finns, normalisering återstår |
-| Direct Comparison 2.0 | saknar underlag | segment- och banjämförbarhet ej verifierad |
-| Kartduell/replay | saknar underlag | autentiska publicerbara GPX/replay saknas |
-| Personlig loppplan | delvis möjligt | splits finns för vissa år, ej full täckning |
-| Field overview/percentiles | delvis möjligt | listor finns, counts/status måste QA-extraheras |
+| Direct Comparison 2.0 | delvis möjligt | exakt gemensamma kontrollpunkter med likvärdigt källavstånd jämförs; övriga par visar ärligt tomläge |
+| Kartduell/replay | delvis möjligt | 2–5-val och lokal/publicerad källkarta är möjliga; löparreplay och verifierad årsgeometri är fortsatt gated |
+| Personlig loppplan | delvis möjligt | historisk segmentprofil och proportionell mål-tidssimulering finns där minst två kronologiska segment verifierats; inte prognos |
+| Field overview/percentiles | fullt möjligt för importerade sluttider | median och linjär interpolation är testade; placeringar visas endast när källan har dem |
 | Course history | delvis möjligt | textuell historik finns, års-GPX-geometri saknas |
 | Method/provenance | fullt möjligt | standard och källor är identifierade |
 

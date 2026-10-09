@@ -81,6 +81,17 @@ button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-v
 .segment-table { width: 100%; border-collapse: collapse; }
 .segment-table th, .segment-table td { padding: 6px; text-align: left; border-bottom: 1px solid #e3eaed; }
 .segment-table th { font-size: 13px; color: var(--muted); }
+.plan-controls { display: flex; align-items: end; gap: 8px; flex-wrap: wrap; margin: 12px 0; }
+.plan-controls label { display: grid; gap: 4px; color: var(--muted); font-size: 13px; }
+.plan-controls input { min-width: 150px; }
+.quality-table th, .quality-table td { white-space: nowrap; }
+.quality-good { color: #18794e; font-weight: 650; }
+.quality-partial { color: #7a5b00; font-weight: 650; }
+.speed-chart { width: 100%; max-width: 760px; height: 180px; border: 1px solid var(--border); border-radius: 8px; background: #fcfefe; }
+.speed-chart .speed-bar { fill: #2563eb; opacity: .82; }
+.speed-chart .speed-reference { stroke: #db2777; stroke-dasharray: 6 5; stroke-width: 2; }
+.speed-chart .speed-axis { stroke: #94a3ad; }
+.speed-chart .speed-label { fill: var(--muted); font-size: 11px; }
 
 @media (max-width: 899px) {
   .facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -97,6 +108,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-v
   .fact:last-child { grid-column: auto; }
   .section-heading { align-items: flex-start; }
   .table-wrap { overflow-x: auto; }
+  .quality-table-wrap { overflow-x: auto; }
   .result-table-wrap { overflow: visible; }
   .result-table, .result-table tbody, .result-table tr, .result-table td { display: block; width: 100%; min-width: 0; }
   .result-table thead { display: none; }

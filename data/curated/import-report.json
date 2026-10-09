@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-09T11:59:36.233Z",
+  "generated_at": "2026-10-09T15:30:00.330Z",
   "stats": [
     {
       "source": "result-index-2026",
@@ -78,6 +78,13 @@
       "year": 2026,
       "imported": 0,
       "observations": 0
+    },
+    {
+      "source": "result-2025",
+      "year": 2025,
+      "imported": 119,
+      "observations": 0,
+      "extraction": "data/verified/result-2025-official.json"
     }
   ]
 }
