@@ -19,8 +19,11 @@
 | FE-007 | Personlig loppplan capability-gating | DONE | Planmodulen är synlig men gated tills tillräckligt historiskt underlag finns |
 | FE-008 | Historisk jämförelse mellan upplagor | DONE | Historiktabell visar verifierade FINISHED, DNF, tider och observationer per upplaga |
 | FE-009 | Kartduellens valkontrakt 2–5 resultat | DONE | UI begränsar valet till 2–5 och visar tydlig GPX-gating |
+| FE-010 | Mobil resultatinventering | DONE | Resultatdatabasen visas som läsbara kort under 600 px med paginering och åtkomliga åtgärder |
 | SEC-001 | HTML-escaping och exportkontroll | DONE | Externa textfält HTML-escapas och råarkivet ligger utanför webbutdata |
-| QA-001 | Riktig Chromium browser-QA vid 1440/900/768/390 | DONE | GitHub Actions körde Playwright-flöden för 1440/900/768/390; screenshots, trace/video vid fel och rapportartefakt är konfigurerade |
-| QA-003 | GitHub Actions exact-head QA och artefakter | DONE | Körningen på `4605fd4` byggde data, passerade käll-/databas-/semantiktester och Chromium-QA samt laddade upp rapportartefakter |
-| QA-002 | Uppdatera PROJECT_STATE, commit och push | DONE | Projektstatus uppdateras i denna commit |
+| QA-001 | Riktig Chromium browser-QA vid 1440/900/768/390 | DONE | GitHub Actions-körning `37927602400` på `e362a22` passerade Playwright-flöden för 1440/900/768/390 och laddade upp skärmbildsartefakt |
+| QA-003 | GitHub Actions exact-head QA och artefakter | DONE | `37927602400` byggde data, passerade käll-/databas-/semantiktester och Chromium-QA; artefaktens digest är `sha256:8197f7493316597e9026ed22bbf43d495c8e7278ac44aba6b6ccf488c652d237` |
+| QA-002 | Uppdatera PROJECT_STATE, commit och push | DONE | Projektstatus och arbetskö uppdateras tillsammans med verifierad korrigeringscommit |
+| QA-004 | Visuell granskning av Actions-skärmbilder | DONE | Artefakten innehåller `desktop-1440.png`, `desktop-900-map-duel.png`, `responsive-768.png` och `responsive-390.png`; samtliga granskade |
+| DATA-005 | Officiell 2026-könsproveniens | DONE | PDF-importen ger 110/110 könsvärden: 22 Kvinnor och 88 Män, med `result-2026-gender` som källa |
 | SRC-001 | Historiska GPX och 2025 alternativkälla | BLOCKED | Kräver autentisk källa eller dokumenterat verifierat hinder |
