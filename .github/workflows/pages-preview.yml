@@ -1,0 +1,52 @@
+name: Publish GAX100 preview
+
+# Publish the reviewed static web snapshot from the active development branch.
+# This does not merge PR #2 and does not add the site to Loppanalys.se.
+on:
+  push:
+    branches:
+      - codex/gax100-etapp2
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: gax100-pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout published commit
+        uses: actions/checkout@v4
+
+      - name: Verify static web snapshot
+        run: |
+          test -s web/index.html
+          test -s web/app.js
+          test -s web/statistics.js
+          test -s web/styles.css
+          test -s web/data.json
+          test ! -e web/CNAME
+          node --check web/app.js
+          node --check web/statistics.js
+          node -e "const fs=require('node:fs'); const d=JSON.parse(fs.readFileSync('web/data.json','utf8')); if(!Array.isArray(d.editions)||!Array.isArray(d.results)||!d.results.length) process.exit(1);"
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload preview content
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: web/
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
