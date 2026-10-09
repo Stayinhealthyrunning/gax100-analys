@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
 <title>GAX100 – historiska banor och kartjämförelse</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyo4MCZoO2Zdg1E=" crossorigin="">
+<link rel="stylesheet" href="vendor/leaflet-1.9.4.css">
 <style>
 :root{font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;color:#142c37;background:#f2f6f8}
 *{box-sizing:border-box}body{margin:0}main{max-width:1450px;margin:auto;padding:20px}a{color:#17638a}a:focus-visible,button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid #ef9f2b;outline-offset:3px}
@@ -71,10 +71,10 @@ footer{font-size:13px;color:#526774;margin:25px 0}
 <button type="button" id="zoom-knab">Zooma Knäbäckshusen</button>
 <button type="button" id="clear-tracks">Rensa spåren</button>
 <label for="base-layer">Kartbakgrund
-<select id="base-layer"><option value="carto">Ljus karta</option><option value="osm">OpenStreetMap</option><option value="none">Utan kartbakgrund</option></select>
+<select id="base-layer"><option value="none" selected>Visa spåren utan kartbilder</option><option value="osm">OpenStreetMap (kräver extern åtkomst)</option></select>
 </label>
 </div>
-<p class="note">Tips: markera filerna för 2021, 2022 och den odaterade banan i samma filval. Tider från ruttexporter används inte som löpartider. Hopp större än 250 meter förbinds inte.</p>
+<p class="note">Tips: markera filerna för 2021, 2022 och den odaterade banan i samma filval. Färgade banlinjer visas direkt utan externa kartbilder. Välj OpenStreetMap bara om dess kartbilder fungerar på ditt nätverk. Tider från ruttexporter är inte löpartider. Hopp över 250 meter förbinds inte.</p>
 <div id="local-status" role="status" aria-live="polite">Välj GPX-filer för att visa flera banlinjer på samma karta.</div>
 <div id="overlay-empty" class="map-empty">
 <div><h3>Välj GPX-spår för att börja jämföra</h3><p>Kartan och höjdprofilen visas när du har valt en eller flera GPX-filer. Spåren stannar på din dator och skickas inte till webbplatsen.</p><p>Vill du se historiska banor utan egna filer? Använd Plotaroute-kartorna i avsnitt 1 ovan.</p></div>
@@ -139,30 +139,24 @@ function changeBasemap(mode){
  if(!map)return;
  if(baseLayer){map.removeLayer(baseLayer);baseLayer=null;}
  if(mode==="none"){
-  info.textContent="Kartbilder är avstängda. GPX-spåren visas fortfarande mot en neutral bakgrund.";
+  info.textContent="Spåren visas utan extern bakgrund. Välj OpenStreetMap om du vill prova en vägkarta.";
   return;
  }
- const isCarto=mode==="carto";
- const url=isCarto
-  ? "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-  : "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
- const opts=isCarto
-  ? {attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> · &copy; <a href="https://carto.com/attributions">CARTO</a>',subdomains:"abcd",maxZoom:19}
-  : {attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',maxZoom:19};
- const tile=L.tileLayer(url,opts),fallback=isCarto?"osm":"none";
+ const tile=L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{
+  attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+  maxZoom:19,updateWhenIdle:true,keepBuffer:1
+ });
  let errors=0;
  tile.on("tileerror",function(){
   if(baseLayer!==tile)return;
   errors++;
-  if(errors>=4){
-   const select=document.getElementById("base-layer");
-   select.value=fallback;
-   changeBasemap(fallback);
-   if(fallback==="none")info.textContent="Din webbläsare eller nätverket blockerar kartbilderna. GPX-linjerna fungerar ändå utan bakgrund.";
-   else info.textContent="Första kartleverantören kunde inte laddas. Försöker med OpenStreetMap.";
+  if(errors>=3){
+   document.getElementById("base-layer").value="none";
+   changeBasemap("none");
+   info.textContent="Kartbilder blockerades av nätverket. GPX-spåren visas fortfarande utan bakgrund.";
   }
  });
- tile.on("load",function(){if(baseLayer===tile)info.textContent="";});
+ tile.on("load",function(){if(baseLayer===tile)info.textContent="OpenStreetMap laddad.";});
  baseLayer=tile;
  tile.addTo(map);
 }
@@ -173,7 +167,7 @@ function initMap(){
   return false;
  }
  if(map)return true;
- map=L.map("overlay-map",{preferCanvas:true,zoomControl:true}).setView([55.64097,14.27477],11);
+ map=L.map("overlay-map",{preferCanvas:false,zoomControl:true}).setView([55.64097,14.27477],11);
  layerGroup=L.featureGroup().addTo(map);
  changeBasemap(document.getElementById("base-layer").value);
  return true;
