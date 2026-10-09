@@ -49,7 +49,9 @@ jobs:
         run: |
           npm run test:statistics
           npm run test:time-parser
+          npm run test:time-format
           npm run test:database
+          npm run test:gender-2026
           npm run test:semantics
           npm run test:web
 

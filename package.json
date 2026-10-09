@@ -6,11 +6,13 @@
   "scripts": {
     "test:statistics": "node tests/test_statistics.js",
     "test:time-parser": "node tests/test_time_parser.js",
+    "test:time-format": "node tests/test_time_format.js",
     "test:database": "node tests/test_database.js",
+    "test:gender-2026": "node tests/test_gender_2026.js",
     "test:semantics": "node tests/test_semantics.js",
     "test:web": "node tests/test_web.js",
     "test:browser": "playwright test",
-    "test": "npm run test:statistics && npm run test:time-parser && npm run test:database && npm run test:semantics && npm run test:web && npm run test:browser"
+    "test": "npm run test:statistics && npm run test:time-parser && npm run test:time-format && npm run test:database && npm run test:gender-2026 && npm run test:semantics && npm run test:web && npm run test:browser"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0"

@@ -9,6 +9,7 @@ New-Item -ItemType Directory -Force -Path $htmlDir, $pdfDir | Out-Null
 
 $sources = @(
     @{ Id='result-index-2026'; Url='https://gax100.se/resultat/'; Kind='html' },
+    @{ Id='result-2026-gender'; Url='https://gax100.se/wp-content/uploads/2026/07/Resultat-till-hemsidan.pdf'; Kind='pdf' },
     @{ Id='result-2014'; Url='https://gax100.se/resultat/resultat-2014/'; Kind='html' },
     @{ Id='result-2015'; Url='https://gax100.se/resultat/resultat-2015/'; Kind='html' },
     @{ Id='result-2016'; Url='https://gax100.se/resultat/resultat-2016/'; Kind='html' },

@@ -5,6 +5,7 @@
 | ID | Källa | Användning | Status |
 |---|---|---|---|
 | GAX-RESULT | https://gax100.se/resultat/ | Index och officiella resultat 2026 samt länkar till 2014–2025 | Identifierad |
+| GAX-R2026-PDF | https://gax100.se/wp-content/uploads/2026/07/Resultat-till-hemsidan.pdf | Officiell 2026-tabell med separata Kvinnor/Män-listor; könsproveniens | Verifierad; nedladdad lokalt |
 | GAX-COURSE | https://gax100.se/bana-karta/ | Aktuell bana, GPX, banprofil och banbeskrivning | Identifierad |
 | GAX-GARMIN-2026 | https://connect.garmin.com/app/course/484861455 | Arrangörens länkade interaktiva kurs/GPX för 2026 | Identifierad; nedladdning återstår |
 | GAX-R2024 | https://gax100.se/resultat/resultat-2024/ | Exempel på mellantider och DNF-statistik | Identifierad |
@@ -34,4 +35,4 @@ Hämtad-datum, URL, sidtitel, relevant år/sektion och eventuella PDF/GPX-filer 
 
 ## ETAPP 2A råarkiv
 
-`scripts/fetch_sources.ps1` hämtar officiella HTML-sidor och `GaxPM2023.pdf` till lokalt ignorerat `data/raw/`. `data/raw/MANIFEST.json` innehåller hämtnings-tidpunkt, status, URL och SHA-256. Vid körningen laddades 13 HTML/PDF-källor; `result-2025` misslyckades med HTTP 404. Rådata publiceras inte i repot.
+`scripts/fetch_sources.ps1` hämtar officiella HTML-sidor, 2026-resultat-PDF:en och `GaxPM2023.pdf` till lokalt ignorerat `data/raw/`. `data/raw/MANIFEST.json` innehåller hämtnings-tidpunkt, status, URL och SHA-256. Vid senaste körningen fanns 16 manifestposter, 15 nedladdade och 2025 misslyckades med HTTP 404. Rådata publiceras inte i repot.

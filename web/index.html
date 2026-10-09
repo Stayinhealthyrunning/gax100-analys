@@ -65,7 +65,8 @@
   <section id="results-database">
     <div class="section-heading"><h2>Resultatdatabas</h2><details class="help"><summary aria-label="Om resultatdatabasen">ⓘ</summary><p>Resultatraderna är importerade från officiella källor med bevarad källproveniens. Saknat kön, klubb, status eller tid visas som saknat och fylls inte i med antaganden.</p></details></div>
     <label>Sortera <select id="sort" aria-label="Sortera resultat"><option value="time">Sluttid</option><option value="name">Namn</option><option value="status">Status</option></select></label>
-    <div class="table-wrap"><table><thead><tr><th>Namn</th><th>Kön</th><th>Klubb</th><th>Status</th><th>Sluttid</th><th>Val</th></tr></thead><tbody id="rows"></tbody></table></div>
+    <div class="table-wrap result-table-wrap"><table class="result-table"><thead><tr><th>Namn</th><th>Kön</th><th>Klubb</th><th>Status</th><th>Sluttid</th><th>Val</th></tr></thead><tbody id="rows"></tbody></table></div>
+    <div id="result-pagination" class="pagination" aria-label="Resultatpaginering"></div>
   </section>
 
   <section id="methodology">
@@ -75,6 +76,7 @@
   </section>
 </main>
 <script src="statistics.js"></script>
+<script src="time.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

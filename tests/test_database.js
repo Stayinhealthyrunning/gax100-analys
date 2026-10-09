@@ -13,5 +13,8 @@ assert(db.prepare('SELECT COUNT(*) n, COUNT(DISTINCT result_id) d FROM results')
 assert(db.prepare("SELECT COUNT(*) n FROM results WHERE status NOT IN ('FINISHED','DNF','DNS','DSQ','UNKNOWN')").get().n === 0, 'Okänd statuskod');
 assert(db.prepare('SELECT COUNT(*) n FROM observations WHERE elapsed_seconds IS NOT NULL AND elapsed_seconds < 0').get().n === 0, 'Negativ observationstid');
 assert(db.prepare('SELECT COUNT(*) n FROM results WHERE source_id IS NULL OR raw_json IS NULL').get().n === 0, 'Resultat saknar proveniens/råvärde');
+assert(db.prepare("SELECT starters FROM editions WHERE edition_id='gax100-2015'").get().starters === 53, '2015 startantal ska vara 53');
+assert(db.prepare("SELECT starters FROM editions WHERE edition_id='gax100-2021-a'").get().starters === 38, '2021-A startantal ska vara 38');
+assert(db.prepare("SELECT starters FROM editions WHERE edition_id='gax100-2026'").get().starters === null, '2026 startantal ska förbli ej fastställt');
 console.log(JSON.stringify({ pass: true, editions: editions.length, results: total, observations, statuses: db.prepare('SELECT status, COUNT(*) n FROM results GROUP BY status').all() }, null, 2));
 db.close();

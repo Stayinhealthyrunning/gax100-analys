@@ -1,12 +1,12 @@
 # DATA_COVERAGE.md
 
-## Inventeringsstatus 2026-10-08
+## Inventeringsstatus 2026-10-09
 
 `Identifierad` = länk/underlag känt. `Verifierad` = läst i officiell sida/PDF. `Nedladdad` = råfil arkiverad lokalt. `Normaliserad` = kuraterad tabell med proveniens. Råarkivet är lokalt och ignorerat; normaliserad SQLite byggs reproducerbart men publiceras inte.
 
 ## Uppmätt importtäckning
 
-Importerade editions: **13** (2014–2024, 2021-A, 2021-B och 2026). Importerade resultatposter: **826**. Tidsobservationer: **1 838**. Normaliserad status efter korrigerad äldre tidsparser och explicit DNF-klassificering: **FINISHED 582**, **DNF 139**, **UNKNOWN 105**, **DNS 0**. 2025: **0**, eftersom den officiella detalj-URL:n svarade HTTP 404. Se `data/IMPORT_REPORT.md` för editionsfördelning och återuppbyggnadskommandon.
+Importerade editions: **13** (2014–2024, 2021-A, 2021-B och 2026). Importerade resultatposter: **826**. Tidsobservationer: **1 838**. Normaliserad status efter korrigerad äldre tidsparser och explicit DNF-klassificering: **FINISHED 582**, **DNF 139**, **UNKNOWN 105**, **DNS 0**. Verifierat startantal finns för 2015 (**53**), 2021-A (**38**), 2023 (**89**) och 2024 (**87**); övriga upplagor lämnas som ej fastställda. 2026 års officiella PDF verifierar kön för alla 110 importerade resultat: **22 Kvinnor**, **88 Män**. 2025: **0**, eftersom den officiella detalj-URL:n svarade HTTP 404. Se `data/IMPORT_REPORT.md` för editionsfördelning och återuppbyggnadskommandon.
 
 ## Editionsmatris 2014–2026
 
@@ -25,11 +25,11 @@ Importerade editions: **13** (2014–2024, 2021-A, 2021-B och 2026). Importerade
 | 2023 | [årsida](https://gax100.se/resultat/resultat-2023/) | verifierad: 69 av 89 enligt sidan | importerad explicit/listad status | ej separat | damer/herrar | klubbfält | verifierad | verifierad: 44/80/130/mål | 2023 PM/banbeskrivning | AllTrails-hänvisning, ej autentisk fil | nedladdad och normaliserad; GPX saknas |
 | 2024 | [årsida](https://gax100.se/resultat/resultat-2024/) | verifierad: 54 av 87 enligt sidan | importerad explicit/listad status | ej separat | damer/herrar | klubbfält | verifierad | verifierad: Magleberg/Haväng/Sandhammaren/mål | ny sträcka vid Knäbäckshusen från 2024 | ej verifierad separat fil | nedladdad och normaliserad; historisk banversion textverifierad |
 | 2025 | [indexlänk](https://gax100.se/resultat/) | indexlänk verifierad | ej verifierad | ej verifierad | ej verifierad | ej verifierad | ej verifierad | ej verifierad | efter-2024 ej verifierad | ej verifierad | identifierad; detaljsida åtkomstfel |
-| 2026 | [resultatindex](https://gax100.se/resultat/) | verifierad HTML | verifierad HTML | verifierad HTML | kvinnor/män | klubbfält | verifierad | ej importerade i indexutdrag | aktuell 2026-bana | [Garmin-kurs](https://connect.garmin.com/app/course/484861455), ej GPX-arkiv | verifierad index; resultat nedladdade/normaliserade, mellantider saknas |
+| 2026 | [resultatindex](https://gax100.se/resultat/) och [officiell resultat-PDF](https://gax100.se/wp-content/uploads/2026/07/Resultat-till-hemsidan.pdf) | verifierad HTML/PDF; 66 verifierade sluttider | verifierad HTML/PDF | verifierad HTML/PDF | kvinnor/män verifierat från PDF: 22/88 | klubbfält | verifierad | ej importerade i indexutdrag | aktuell 2026-bana | [Garmin-kurs](https://connect.garmin.com/app/course/484861455), ej GPX-arkiv | index + PDF nedladdade/normaliserade; kön har PDF-proveniens, mellantider saknas |
 
 ## Filformat, åtkomst och GPX
 
-- Resultat 2014–2024 publiceras som HTML-tabeller på årsidor. 2025 finns som indexlänk men detaljsidan kunde inte hämtas i sessionen. 2026 har HTML-tabell och en nedladdningslänk vars fil-URL/format ännu inte följts.
+- Resultat 2014–2024 publiceras som HTML-tabeller på årsidor. 2025 finns som indexlänk men detaljsidan kunde inte hämtas i sessionen. 2026 har HTML-tabell samt officiell PDF med separata Kvinnor/Män-tabeller; PDF:en är nedladdad i råarkivet och används endast som verifierad könskälla.
 - `GaxPM2023.pdf` är PDF, lokalt arkiverad i råarkivet, och beskriver historiska banavvikelser samt hänvisar till års-GPX.
 - Arrangörens bana-sida säger att aktuell GPX är uppdaterad för 2026 och länkar Garmin Connect-kursen ovan. Ingen verifierad års-GPX är nedladdad som redistribuerbar projektfil.
 - Verifierad banhistorik: 2023 års PM samt aktuell bana-sida; 2024 års nya sträcka förbi Knäbäckshusen efter stormen Babet. Årsgeometri före/efter 2024 är inte verifierad genom GPX-jämförelse.
@@ -37,7 +37,7 @@ Importerade editions: **13** (2014–2024, 2021-A, 2021-B och 2026). Importerade
 
 ## Status- och fältregler
 
-Tom sluttid är inte automatiskt DNF/DNS. Råtext som uttryckligen börjar med `DNF` klassificeras som DNF; övrig fri text och cut-off-noteringar behåller UNKNOWN med råvärde och fältproveniens. Kontrollpunktsavstånd 43/44, 79/80 och 130/131 km är källvärden och får inte tyst avrundas. 2021 modelleras som två editions-ID:n även om sidan sammanför upplagorna.
+Tom sluttid är inte automatiskt DNF/DNS. Råtext som uttryckligen börjar med `DNF` klassificeras som DNF; övrig fri text och cut-off-noteringar behåller UNKNOWN med råvärde och fältproveniens. Kontrollpunktsavstånd 43/44, 79/80 och 130/131 km är källvärden och får inte tyst avrundas. 2021 modelleras som två editions-ID:n även om sidan sammanför upplagorna. Startantal lagras bara när arrangörens text uttryckligen anger det; ett publicerat resultatregister är inte automatiskt ett startregister.
 
 ## Genomförbarhetsbedömning mot standardblock
 

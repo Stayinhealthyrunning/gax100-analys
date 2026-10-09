@@ -5,7 +5,21 @@ async function loadData(page) {
 }
 
 async function assertNoHorizontalOverflow(page) {
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBeTruthy();
+  const violations = await page.evaluate(() => {
+    const candidates = [document.documentElement, document.body, ...document.querySelectorAll('main, main > *, section, .hero, .fact, .runner, .stats-grid, .chart, .filters, .pagination')];
+    return [...new Set(candidates)].map((element) => {
+      const rect = element.getBoundingClientRect();
+      return {
+        selector: element.id || element.className || element.tagName,
+        clientWidth: element.clientWidth,
+        scrollWidth: element.scrollWidth,
+        left: Math.round(rect.left * 10) / 10,
+        right: Math.round(rect.right * 10) / 10
+      };
+    }).filter((item) => item.scrollWidth > item.clientWidth + 1 || item.left < -1 || item.right > window.innerWidth + 1);
+  });
+  expect(violations, JSON.stringify(violations)).toEqual([]);
+  expect(await page.evaluate(() => getComputedStyle(document.documentElement).overflowX)).not.toBe('hidden');
 }
 
 test('desktop: upplagor, sökning, filter, sortering, individuell analys och jämförelse', async ({ page }, testInfo) => {
@@ -66,6 +80,13 @@ for (const viewport of [{ width: 768, height: 1024 }, { width: 390, height: 844 
     await expect(page.locator('.facts .fact')).toHaveCount(5);
     await expect(page.locator('#histogram')).toBeVisible();
     await expect(page.locator('#history')).toBeVisible();
+    if (viewport.width === 390) {
+      await expect(page.locator('.result-table tbody tr')).toHaveCount(12);
+      await expect(page.locator('#result-pagination')).toContainText('Sida');
+      await expect(page.locator('.result-actions button').first()).toBeVisible();
+      await page.locator('#result-pagination [data-page]').last().click();
+      await expect(page.locator('#result-pagination')).toContainText('Sida 2');
+    }
     await assertNoHorizontalOverflow(page);
     await page.screenshot({ path: testInfo.outputPath(`responsive-${viewport.width}.png`), fullPage: true });
   });
