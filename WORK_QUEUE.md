@@ -22,7 +22,7 @@
 | FE-010 | Mobil resultatinventering | DONE | Resultatdatabasen visas som läsbara kort under 600 px med paginering och åtkomliga åtgärder |
 | SEC-001 | HTML-escaping och exportkontroll | DONE | Externa textfält HTML-escapas och råarkivet ligger utanför webbutdata |
 | QA-001 | Riktig Chromium browser-QA vid 1440/900/768/390 | DONE | GitHub Actions-körning `37932828615` på exact head `66f0b60` lyckades och laddade upp skärmbildsartefakt; viewportflödena är verifierade i tidigare visuell granskning |
-| QA-003 | GitHub Actions exact-head QA och artefakter | DONE | `37932828615` byggde data, passerade käll-/databas-/semantik-/GPX-parser- och Chromium-QA på `66f0b60` och rapporterade en artefakt |
+| QA-003 | GitHub Actions exact-head QA och artefakter | DONE | `37937098006` byggde data, passerade käll-/databas-/semantik-/GPX-geometri-/preview- och Chromium-QA på `82dad5e` och rapporterade en artefakt |
 | QA-002 | Uppdatera PROJECT_STATE, commit och push | DONE | Projektstatus och arbetskö uppdateras tillsammans med verifierad korrigeringscommit |
 | QA-004 | Visuell granskning av Actions-skärmbilder | DONE | Artefakten innehåller `desktop-1440.png`, `desktop-900-map-duel.png`, `responsive-768.png` och `responsive-390.png`; samtliga granskade |
 | DATA-005 | Officiell 2026-könsproveniens | DONE | PDF-importen ger 110/110 könsvärden: 22 Kvinnor och 88 Män, med `result-2026-gender` som källa |

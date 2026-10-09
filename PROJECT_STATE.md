@@ -2,7 +2,7 @@
 
 ## Aktuellt
 
-ETAPP 1 är mergad till `main` via PR #1 (merge commit `8a11f78`). ETAPP 2 körs på branchen `codex/gax100-etapp2` och Draft PR #2. Aktuell arbetsversion innehåller korrigerad GPX-geometri och en lokal kartförhandsvisning; senaste commit från denna körning tillkommer efter verifiering. Resultatimport, databasvalidering, GPX-inventering och en testbar frontendgrund är implementerade enligt Loppanalys Standard 1.0.
+ETAPP 1 är mergad till `main` via PR #1 (merge commit `8a11f78`). ETAPP 2 körs på branchen `codex/gax100-etapp2` och Draft PR #2. Aktuell arbetsversion är `82dad5e` och innehåller korrigerad GPX-geometri och en lokal kartförhandsvisning. Resultatimport, databasvalidering, GPX-inventering och en testbar frontendgrund är implementerade enligt Loppanalys Standard 1.0.
 
 ## Genomfört
 
@@ -20,6 +20,7 @@ ETAPP 1 är mergad till `main` via PR #1 (merge commit `8a11f78`). ETAPP 2 körs
 - Fem lokala GPX-filer har analyserats reproducerbart: två Plotaroute-exporter, två Trace de Trail-spår och en AllTrails-fil. `data/gpx-audit.json` innehåller hash, punktantal, distans, bounds, höjddata och tidsproveniens; `GPX_COVERAGE.md` innehåller årskandidater, rättighetsläge och spatial kontroll vid Knäbäckshusen.
 - Den geografiska jämförelsen är korrigerad: `scripts/gpx_geometry.js` använder lokal metrisk projektion, 25 m resampling, punkt-till-linjesegment-avstånd, symmetriska median/P95/max-mått och tröskelandeler. Separata `<trkseg>` och hopp över 250 m kopplas inte ihop; 2021 Plotaroute-finalen markeras därför som avbrottsbehäftad med 58 avbrott.
 - `node scripts/serve_gpx_preview.js` startar en loopback-bunden lokal karta från de fem ignorerade rå-GPX-filerna. Den stöder spårval, flera spår, Knäbäckshusen-zoom, >50 m-avvikelsemarkeringar, höjdprofil och käll-/osäkerhetstabell. Inga råfiler eller härledda koordinater skrivs till `web/`.
+- GitHub Actions run `37937098006` på `82dad5e` lyckades med käll-, databas-, semantik-, GPX-geometri-, loopback-preview- och Chromium-QA. CI saknar avsiktligt det ignorerade privata GPX-råarkivet; preview-testet verifierar därför 404 som förväntat i CI och kräver 200 lokalt.
 - Officiell bana/karta anger att Knäbäckshusen-sträckan ändrades från 2024. Garmin Connect-kursen `GAX100M-2026` är visuellt verifierad och visar 161,45 km samt 697 m stigning, men fristående GPX-export kunde inte arkiveras.
 - Garmin Connects publika exportadresser för JSON/GPX/TCX/FIT/polyline testades mot kurs-id `484861455`; samtliga svarade HTTP 200 men med `application/json` och `{}`. Legends Tracking och RaceTracker undersöktes också; ingen verifierbar GAX100-banfil eller historisk positionsserie kunde hämtas utan att gå utanför publika gränssnitt.
 - `scripts/audit_sources.ps1` kördes och skapade `data/source-audit.json`; detta är en teknisk regex-audit, inte normaliserade resultatantal.
@@ -34,7 +35,7 @@ ETAPP 1 är mergad till `main` via PR #1 (merge commit `8a11f78`). ETAPP 2 körs
 
 ## Nästa steg
 
-1. Fortsätt från den nya korrigeringscommitten på `codex/gax100-etapp2`; Draft PR #2 ska förbli öppen och inte mergas.
+1. Fortsätt från `82dad5e` på `codex/gax100-etapp2`; Draft PR #2 ska förbli öppen och inte mergas.
 2. Begär eller hitta arrangörs-/upphovsrättsligt klarerad GPX för minst en årsvariant och officiella checkpoint-koordinater.
 3. När publicerbart underlag finns: separera förmågor per datakrav — verifierad geometri, offentlig höjdprofil, banjämförelse, mellantidsankrad position och tidsstämplad replay.
 4. Fortsätt undersöka RaceTracker/Legends historik och 2025-källan utan att kringgå inloggning eller åtkomstskydd.
