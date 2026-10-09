@@ -66,7 +66,7 @@ function renderRunner() {
     return `<tr><td>${esc(observation.name)}</td><td>${esc(observation.distance_km ?? 'källavstånd saknas')}</td><td>${esc(observation.raw_time)}</td><td>${time(segmentSeconds)}</td></tr>`;
   }).join('');
   $('#runner').className = 'runner';
-  $('#runner').innerHTML = `<h3>${esc(result.name)}</h3><p>${esc(result.status)} · sluttid ${time(result.finish_seconds)} · ${esc(result.club || 'klubb saknas')}</p><h4>Verkliga mellantider och delsträckor</h4>${segments ? `<table class="segment-table"><tr><th>Kontrollpunkt</th><th>km</th><th>Källtid</th><th>Delsträcka</th></tr>${segments}</table>` : '<p>Inga importerade mellantidsobservationer för detta resultat.</p>'}<p class="muted">GPS-position och replay är otillgängliga utan verifierad GPX-geometri.</p>`;
+  $('#runner').innerHTML = `<h3>${esc(result.name)}</h3><p>${esc(result.status)} · sluttid ${time(result.finish_seconds)} · ${esc(result.club || 'klubb saknas')}</p><h4>Verkliga mellantider och delsträckor</h4>${segments ? `<table class="segment-table"><tr><th>Kontrollpunkt</th><th>km</th><th>Källtid</th><th>Delsträcka</th></tr>${segments}</table>` : '<p>Inga importerade mellantidsobservationer för detta resultat.</p>'}<p class="muted">GPS-position och replay kräver årsverifierad, publicerbar GPX-geometri och tidsankare; lokala kandidatspår används inte som uppmätt löparposition.</p>`;
 }
 
 function renderPlan() {
@@ -100,7 +100,7 @@ function renderMapDuel() {
   const selected = state.duel.map((id) => state.data.results.find((result) => result.result_id === id)).filter(Boolean);
   if (selected.length < 2) { $('#map-duel-panel').className = 'runner empty'; $('#map-duel-panel').textContent = `${selected.length}/2–5 resultat valda. Välj minst två.`; return; }
   $('#map-duel-panel').className = 'runner';
-  $('#map-duel-panel').innerHTML = `<h3>Förberedda kartduellresultat (${selected.length}/5)</h3><ol>${selected.map((result) => `<li>${esc(result.name)} · ${esc(result.status)} · ${time(result.finish_seconds)}</li>`).join('')}</ol><p>Kartduell/replay är fortfarande gated: autentisk GPX-geometri och verifierad tidskoppling saknas.</p>`;
+  $('#map-duel-panel').innerHTML = `<h3>Förberedda kartduellresultat (${selected.length}/5)</h3><ol>${selected.map((result) => `<li>${esc(result.name)} · ${esc(result.status)} · ${time(result.finish_seconds)}</li>`).join('')}</ol><p>Kartduell/replay är fortfarande gated: lokala kandidatspår finns, men autentisk årsanknytning, publiceringsrätt, checkpoint-geometri och verifierad tidskoppling saknas.</p>`;
 }
 
 function chart() {

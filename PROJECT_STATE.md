@@ -17,8 +17,12 @@ ETAPP 1 är mergad till `main` via PR #1 (merge commit `8a11f78`). ETAPP 2 körs
 - 2021 är identifierat som två verkliga upplagor; 2024 års Knäbäckshusen-ändring är källverifierad textuellt.
 - `scripts/fetch_sources.ps1` har hämtat 13 HTML-källor, officiell 2026-resultat-PDF och `GaxPM2023.pdf` lokalt till ignorerat `data/raw/`; manifestet innehåller 16 poster, 15 nedladdade poster, URL, status, tidpunkt och SHA-256.
 - 2025 års resultat-URL svarar med HTTP 404; hindret är dokumenterat och inte återförsökt upprepade gånger.
+- Fem lokala GPX-filer har analyserats reproducerbart: två Plotaroute-exporter, två Trace de Trail-spår och en AllTrails-fil. `data/gpx-audit.json` innehåller hash, punktantal, distans, bounds, höjddata och tidsproveniens; `GPX_COVERAGE.md` innehåller årskandidater, rättighetsläge och spatial kontroll vid Knäbäckshusen.
+- Officiell bana/karta anger att Knäbäckshusen-sträckan ändrades från 2024. Garmin Connect-kursen `GAX100M-2026` är visuellt verifierad och visar 161,45 km samt 697 m stigning, men fristående GPX-export kunde inte arkiveras.
+- Garmin Connects publika exportadresser för JSON/GPX/TCX/FIT/polyline testades mot kurs-id `484861455`; samtliga svarade HTTP 200 men med `application/json` och `{}`. Legends Tracking och RaceTracker undersöktes också; ingen verifierbar GAX100-banfil eller historisk positionsserie kunde hämtas utan att gå utanför publika gränssnitt.
 - `scripts/audit_sources.ps1` kördes och skapade `data/source-audit.json`; detta är en teknisk regex-audit, inte normaliserade resultatantal.
 - `tests/test_source_pipeline.ps1` passerar: manifestet innehåller 16 poster, varav 15 nedladdade; 2025 är den enda konstaterade HTTP 404-posten och auditens begränsningsmarkeringar finns för nedladdade källor.
+- `tests/test_gpx.js` passerar och kontrollerar fem GPX-filers XML-läsbarhet, hash, geometri, höjddata och att exporttider inte används som löpartider. `scripts/compare_gpx.js 5000` visar cirka 302 m lokal kandidatavvikelse mellan Plotaroute-2021-finalen och övriga kandidatspår nära Knäbäckshusen, men detta är inte ensam officiell banverifiering.
 - `scripts/build_database.js` bygger SQLite från råarkivet; två körningar i följd är idempotenta.
 - `tests/test_database.js` passerar: 13 editions, 826 resultat, 1 838 observationer; FINISHED 582, DNF 139, UNKNOWN 105, DNS 0. Verifierat startantal är nu modellerat för 2015 (53), 2021-A (38), 2023 (89) och 2024 (87); övriga upplagor visas som ej fastställda. Äldre tidsformat reparerades efter faktisk kronologigranskning och explicit `DNF(...)`-råtext klassificeras nu källtroget.
 - ETAPP 3-grunden finns i `web/`: årsväljare, fem faktakort, löparsökning, resultattabell och individuell mellantidsvy från exporterad normaliserad data.
@@ -28,9 +32,10 @@ ETAPP 1 är mergad till `main` via PR #1 (merge commit `8a11f78`). ETAPP 2 körs
 
 ## Nästa steg
 
-1. Fortsätt från den verifierade korrigeringscommitten på `codex/gax100-etapp2`; Draft PR #2 ska förbli öppen och inte mergas.
-2. Hitta verifierad historisk GPX/2025-alternativkälla; annars behåll blockeringarna.
-3. Implementera endast ytterligare analysblock där verifierat underlag och standardkontrakt räcker.
+1. Fortsätt från den pushade GPX-inventeringen på `codex/gax100-etapp2`; Draft PR #2 ska förbli öppen och inte mergas.
+2. Begär eller hitta arrangörs-/upphovsrättsligt klarerad GPX för minst en årsvariant och officiella checkpoint-koordinater.
+3. När publicerbart underlag finns: bygg kartvisning och höjdprofil, därefter gated banjämförelse och replay.
+4. Fortsätt undersöka RaceTracker/Legends historik och 2025-källan utan att kringgå inloggning eller åtkomstskydd.
 
 ## Begränsningar
 

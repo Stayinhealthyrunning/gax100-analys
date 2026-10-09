@@ -27,3 +27,14 @@
 | QA-004 | Visuell granskning av Actions-skärmbilder | DONE | Artefakten innehåller `desktop-1440.png`, `desktop-900-map-duel.png`, `responsive-768.png` och `responsive-390.png`; samtliga granskade |
 | DATA-005 | Officiell 2026-könsproveniens | DONE | PDF-importen ger 110/110 könsvärden: 22 Kvinnor och 88 Män, med `result-2026-gender` som källa |
 | SRC-001 | Historiska GPX och 2025 alternativkälla | BLOCKED | Kräver autentisk källa eller dokumenterat verifierat hinder |
+
+## GPX- och kartanalys
+
+| ID | Uppgift | Status | Verifierbart acceptanskriterium |
+|---|---|---|---|
+| GPX-001 | Auditera befintliga rå-GPX | DONE | `tests/test_gpx.js` passerar; fem filer har hash, punktantal, distans, höjd- och tidsproveniens i `data/gpx-audit.json` |
+| GPX-002 | Identifiera publika kandidater 2014–2026 | DONE | `GPX_COVERAGE.md` listar Plotaroute-, Trace de Trail-, AllTrails- och Garmin-kandidater samt åtkomsthinder |
+| GPX-003 | Spatial kontroll vid Knäbäckshusen | DONE | `scripts/compare_gpx.js 5000` ger reproducerbara lokala avvikelsemått; resultatet behandlas som diagnostik, inte officiell banverifiering |
+| GPX-004 | Fastställa officiell/publicerbar årsgeometri | BLOCKED | Kräver arrangörens eller upphovspersonens uttryckliga rättighet och årsanknytning |
+| MAP-001 | Publik interaktiv kartvisning och höjdprofil | BLOCKED | Aktiveras först när minst en publicerbar geometri och verifierade checkpoint-koordinater finns |
+| MAP-002 | GPS-replay från deltagarpositioner | BLOCKED | Ban-GPX är inte tidsstämplad löparaktivitet; kräver autentisk positionshistorik och tillstånd |
