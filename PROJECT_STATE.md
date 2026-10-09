@@ -2,7 +2,7 @@
 
 ## Aktuellt
 
-ETAPP 1 är mergad till `main` via PR #1 (merge commit `8a11f78`). ETAPP 2 körs på branchen `codex/gax100-etapp2` och Draft PR #2. Resultatimport, databasvalidering och en testbar frontendgrund är implementerade enligt Loppanalys Standard 1.0.
+ETAPP 1 är mergad till `main` via PR #1 (merge commit `8a11f78`). ETAPP 2 körs på branchen `codex/gax100-etapp2` och Draft PR #2. Aktuell GitHub-head är `66f0b60` (`feat: audit historical GPX candidates and gate map data`). Resultatimport, databasvalidering, GPX-inventering och en testbar frontendgrund är implementerade enligt Loppanalys Standard 1.0.
 
 ## Genomfört
 
@@ -28,11 +28,11 @@ ETAPP 1 är mergad till `main` via PR #1 (merge commit `8a11f78`). ETAPP 2 körs
 - ETAPP 3-grunden finns i `web/`: årsväljare, fem faktakort, löparsökning, resultattabell och individuell mellantidsvy från exporterad normaliserad data.
 - `scripts/export_web_data.js` exporterade 13 editions, 826 resultat och 1 838 observationer till `web/data.json`; JavaScript-syntaxkontroller passerar.
 - `tests/test_statistics.js`, `tests/test_time_parser.js`, `tests/test_time_format.js`, `tests/test_gender_2026.js`, `tests/test_semantics.js` och `tests/test_web.js` passerar. Median för jämnt n använder de två mittersta värdena; percentiler använder linjär interpolation `h=(n−1)×p`; alla presenterade tider rundas till hela sekunder. 2026 års officiella PDF ger verifierat kön för 110/110 resultat (22 Kvinnor, 88 Män) med separat källproveniens. Frontend har nu paginerad mobil resultdatabas med åtkomliga åtgärder, kontrollerad responsiv kortpresentation, förbättrad overflow-QA, tomläge för saknade diagramunderlag och startantal där officiell text fastställer dem.
-- `.github/workflows/qa.yml`, `playwright.config.js`, `package.json` och `tests/e2e/gax100.spec.js` etablerar riktig Chromium browser-QA med screenshots, trace/video vid fel och artefaktuppladdning. GitHub Actions-körning `37927602400` på `e362a22` godkände alla fyra viewportflöden och producerade artefakten `gax100-playwright-qa-e362a229435c7827e76f22e49ee539db2b84d35c`. Skärmbilderna för 1440, 900, 768 och 390 px är visuellt granskade. Lokal npm saknas fortfarande i Codex-miljön.
+- `.github/workflows/qa.yml`, `playwright.config.js`, `package.json` och `tests/e2e/gax100.spec.js` etablerar riktig Chromium browser-QA med screenshots, trace/video vid fel och artefaktuppladdning. GitHub Actions-körning `37932828615` på exact head `66f0b60` lyckades och producerade en artefakt efter käll-, databas-, semantik-, GPX-parser- och Chromium-QA. Den tidigare körningen `37927602400` på `e362a22` hade redan visuellt granskade skärmbilder för 1440, 900, 768 och 390 px. Lokal npm saknas fortfarande i Codex-miljön.
 
 ## Nästa steg
 
-1. Fortsätt från den pushade GPX-inventeringen på `codex/gax100-etapp2`; Draft PR #2 ska förbli öppen och inte mergas.
+1. Fortsätt från commit `66f0b60` på `codex/gax100-etapp2`; Draft PR #2 ska förbli öppen och inte mergas.
 2. Begär eller hitta arrangörs-/upphovsrättsligt klarerad GPX för minst en årsvariant och officiella checkpoint-koordinater.
 3. När publicerbart underlag finns: bygg kartvisning och höjdprofil, därefter gated banjämförelse och replay.
 4. Fortsätt undersöka RaceTracker/Legends historik och 2025-källan utan att kringgå inloggning eller åtkomstskydd.
