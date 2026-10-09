@@ -1,4 +1,4 @@
-const state = { data: null, year: null, query: '', club: '', sort: 'time', page: 1, pageSize: 12, selected: null, compare: [], duel: [] };
+const state = { data: null, year: null, query: '', club: '', sort: 'time', page: 1, pageSize: 12, selected: null, compare: [], duel: [], planTarget: null };
 const $ = (selector) => document.querySelector(selector);
 const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
 const time = (seconds) => GaxTime.formatClock(seconds);
@@ -50,42 +50,72 @@ function renderRows() {
   $('#result-pagination').innerHTML = totalPages > 1
     ? `<button type="button" data-page="${state.page - 1}" ${state.page === 1 ? 'disabled' : ''}>Föregående</button><span>Sida ${state.page} av ${totalPages}</span><button type="button" data-page="${state.page + 1}" ${state.page === totalPages ? 'disabled' : ''}>Nästa</button>`
     : `<span>${visibleRows.length ? `Sida 1 av 1 · ${visibleRows.length} resultat` : 'Ingen resultatsida'}</span>`;
-  document.querySelectorAll('[data-id]').forEach((button) => { button.onclick = () => { state.selected = state.data.results.find((result) => result.result_id === button.dataset.id); renderRunner(); renderPlan(); }; });
+  document.querySelectorAll('[data-id]').forEach((button) => { button.onclick = () => { state.selected = state.data.results.find((result) => result.result_id === button.dataset.id); state.planTarget = null; renderRunner(); renderPlan(); }; });
   document.querySelectorAll('[data-compare]').forEach((button) => { button.onclick = () => { const id = button.dataset.compare; state.compare = state.compare.includes(id) ? state.compare.filter((item) => item !== id) : state.compare.length < 2 ? [...state.compare, id] : state.compare; renderRows(); renderComparison(); }; });
   document.querySelectorAll('[data-duel]').forEach((button) => { button.onclick = () => { const id = button.dataset.duel; state.duel = state.duel.includes(id) ? state.duel.filter((item) => item !== id) : state.duel.length < 5 ? [...state.duel, id] : state.duel; renderRows(); renderMapDuel(); }; });
   document.querySelectorAll('[data-page]').forEach((button) => { button.onclick = () => { state.page = Number(button.dataset.page); renderRows(); }; });
 }
 
+function buildSegments(result) {
+  let previousTime = 0;
+  let previousDistance = 0;
+  const segments = [];
+  for (const observation of (result?.observations || [])) {
+    const elapsed = Number(observation.elapsed_seconds);
+    const distanceKm = Number(observation.distance_km);
+    if (!Number.isFinite(elapsed) || !Number.isFinite(distanceKm) || elapsed < previousTime || distanceKm <= previousDistance) continue;
+    segments.push({ name: observation.name, distanceKm: distanceKm - previousDistance, checkpointKm: distanceKm, seconds: elapsed - previousTime });
+    previousTime = elapsed;
+    previousDistance = distanceKm;
+  }
+  return segments.filter((segment) => segment.seconds >= 0 && segment.distanceKm > 0);
+}
+
+function speedChart(segments, result) {
+  if (!segments.length) return '<p class="muted">Ingen verifierad hastighetsserie: det krävs kronologiska mellantider med källavstånd.</p>';
+  const totalSeconds = Number.isFinite(result.finish_seconds) ? result.finish_seconds : segments.reduce((sum, segment) => sum + segment.seconds, 0);
+  const totalDistance = segments.reduce((sum, segment) => sum + segment.distanceKm, 0);
+  if (!(totalSeconds > 0) || !(totalDistance > 0)) return '<p class="muted">Ingen verifierad referens för relativ fart.</p>';
+  const baseline = totalDistance / (totalSeconds / 3600);
+  const ratios = segments.map((segment) => (segment.distanceKm / (segment.seconds / 3600)) / baseline * 100);
+  const maxRatio = Math.max(120, ...ratios, 100) * 1.05;
+  const bars = ratios.map((ratio, index) => {
+    const height = Math.max(1, Math.min(140, ratio / maxRatio * 140));
+    const x = 48 + index * (820 / Math.max(segments.length, 1));
+    return `<rect class="speed-bar" x="${x.toFixed(1)}" y="${(165 - height).toFixed(1)}" width="${Math.max(3, 760 / Math.max(segments.length, 1) - 4).toFixed(1)}" height="${height.toFixed(1)}"><title>${esc(segments[index].name)}: ${Math.round(ratio)}% av referensfart</title></rect>`;
+  }).join('');
+  const referenceY = 165 - 140 * 100 / maxRatio;
+  return `<p class="muted">Relativ segmentfart mot valt loppresultats verifierade referensfart. Streckad linje = 100 %. Saknade segment visas inte.</p><svg class="speed-chart" viewBox="0 0 920 180" role="img" aria-label="Relativ segmentfart"><line class="speed-axis" x1="40" y1="165" x2="900" y2="165"/><line class="speed-reference" x1="40" y1="${referenceY.toFixed(1)}" x2="900" y2="${referenceY.toFixed(1)}"/><text class="speed-label" x="4" y="${(referenceY + 4).toFixed(1)}">100 %</text>${bars}<text class="speed-label" x="800" y="178">kontrollpunkter →</text></svg>`;
+}
+
 function renderRunner() {
   const result = state.selected;
   if (!result) { $('#runner').className = 'runner empty'; $('#runner').textContent = 'Välj en rad i resultatdatabasen för individuell visning.'; return; }
-  const observations = result.observations || [];
-  const segments = observations.map((observation, index) => {
-    const previous = index ? observations[index - 1].elapsed_seconds : 0;
-    const segmentSeconds = Number.isFinite(observation.elapsed_seconds) && (index === 0 || (Number.isFinite(previous) && observation.elapsed_seconds >= previous)) ? observation.elapsed_seconds - previous : null;
-    return `<tr><td>${esc(observation.name)}</td><td>${esc(observation.distance_km ?? 'källavstånd saknas')}</td><td>${esc(observation.raw_time)}</td><td>${time(segmentSeconds)}</td></tr>`;
+  const segments = buildSegments(result);
+  const rows = (result.observations || []).map((observation) => {
+    const segment = segments.find((item) => item.name === observation.name && item.checkpointKm === observation.distance_km);
+    return `<tr><td>${esc(observation.name)}</td><td>${esc(observation.distance_km ?? 'källavstånd saknas')}</td><td>${esc(observation.raw_time)}</td><td>${time(segment?.seconds)}</td></tr>`;
   }).join('');
   $('#runner').className = 'runner';
-  $('#runner').innerHTML = `<h3>${esc(result.name)}</h3><p>${esc(result.status)} · sluttid ${time(result.finish_seconds)} · ${esc(result.club || 'klubb saknas')}</p><h4>Verkliga mellantider och delsträckor</h4>${segments ? `<table class="segment-table"><tr><th>Kontrollpunkt</th><th>km</th><th>Källtid</th><th>Delsträcka</th></tr>${segments}</table>` : '<p>Inga importerade mellantidsobservationer för detta resultat.</p>'}<p class="muted">GPS-position och replay kräver årsverifierad, publicerbar GPX-geometri och tidsankare; lokala kandidatspår används inte som uppmätt löparposition.</p>`;
+  $('#runner').innerHTML = `<h3>${esc(result.name)}</h3><p>${esc(result.status)} · sluttid ${time(result.finish_seconds)} · ${esc(result.club || 'klubb saknas')}</p><h4>Verkliga mellantider och delsträckor</h4>${rows ? `<table class="segment-table"><tr><th>Kontrollpunkt</th><th>km</th><th>Källtid</th><th>Delsträcka</th></tr>${rows}</table>` : '<p>Inga importerade mellantidsobservationer för detta resultat.</p>'}<h4>Relativ segmentfart</h4>${speedChart(segments, result)}<p class="muted">GPS-position och replay kräver årsverifierad, publicerbar GPX-geometri och tidsankare; lokala kandidatspår används inte som uppmätt löparposition.</p>`;
 }
 
 function renderPlan() {
   const result = state.selected;
-  const observations = result?.observations || [];
-  if (observations.length < 2) { $('#plan').className = 'runner empty'; $('#plan').textContent = 'Personlig loppplan är gated: välj ett resultat med minst två verifierade mellantider.'; return; }
-  const segments = observations.map((observation, index) => {
-    const previous = index ? observations[index - 1].elapsed_seconds : 0;
-    const segmentSeconds = Number.isFinite(observation.elapsed_seconds) && (index === 0 || (Number.isFinite(previous) && observation.elapsed_seconds >= previous)) ? observation.elapsed_seconds - previous : null;
-    return `<tr><td>${esc(observation.name)}</td><td>${esc(observation.distance_km ?? 'källavstånd saknas')}</td><td>${time(segmentSeconds)}</td></tr>`;
-  }).join('');
+  const segments = buildSegments(result);
+  if (segments.length < 2) { $('#plan').className = 'runner empty'; $('#plan').textContent = 'Personlig loppplan är gated: välj ett resultat med minst två kronologiska mellantidssegment.'; return; }
+  const target = state.planTarget;
+  const referenceTotal = Number.isFinite(result.finish_seconds) ? result.finish_seconds : segments.reduce((sum, segment) => sum + segment.seconds, 0);
+  const simulated = Number.isFinite(target) && target > 0 ? segments.map((segment) => ({ ...segment, simulated: segment.seconds * target / referenceTotal })) : null;
+  const rows = segments.map((segment, index) => `<tr><td>${esc(segment.name)}</td><td>${segment.checkpointKm.toFixed(1)}</td><td>${time(segment.seconds)}</td>${simulated ? `<td>${time(simulated[index].simulated)}</td>` : ''}</tr>`).join('');
   $('#plan').className = 'runner';
-  $('#plan').innerHTML = `<h3>Historisk personlig referens: ${esc(result.name)}</h3><p>Planen återger verifierade delsträckor från valt resultat. Den prognostiserar inte saknade tider och ersätter inte GPX-baserad banplanering.</p><table class="segment-table"><tr><th>Kontrollpunkt</th><th>km</th><th>Verifierad delsträcka</th></tr>${segments}</table>`;
+  $('#plan').innerHTML = `<h3>Historisk referens och simulerad måltid: ${esc(result.name)}</h3><p>Referensen är ett faktiskt verifierat loppresultat. Simuleringen nedan är endast proportionell matematik från dessa segment; den är inte en prognos och fyller inte saknade observationer.</p><div class="plan-controls"><label for="plan-target">Valbar simulerad måltid (TT:MM:SS)</label><input id="plan-target" type="text" inputmode="numeric" placeholder="t.ex. 24:00:00" value="${target ? esc(time(target)) : ''}"><button type="button" id="apply-plan-target">Simulera</button><span id="plan-target-message" class="muted"></span></div><table class="segment-table"><tr><th>Kontrollpunkt</th><th>km</th><th>Historisk delsträcka</th>${simulated ? '<th>Simulerad delsträcka</th>' : ''}</tr>${rows}</table>`;
+  $('#apply-plan-target').onclick = () => { const value = $('#plan-target').value.trim(); const match = value.match(/^(\d+):([0-5]\d):([0-5]\d)$/); if (!match) { $('#plan-target-message').textContent = 'Ange TT:MM:SS.'; return; } state.planTarget = Number(match[1]) * 3600 + Number(match[2]) * 60 + Number(match[3]); renderPlan(); };
 }
 
 function renderComparison() {
   const selected = state.compare.map((id) => state.data.results.find((result) => result.result_id === id)).filter(Boolean);
   if (selected.length !== 2) { $('#comparison').className = 'runner empty'; $('#comparison').textContent = `${selected.length}/2 resultat valda.`; return; }
-  if (selected[0].edition_id !== selected[1].edition_id) { $('#comparison').className = 'runner empty'; $('#comparison').textContent = 'Direktjämförelse av gemensamma kontrollpunkter är gated: upplagorna har ingen verifierad jämförbarhetsgrupp i aktuell data.'; return; }
   const maps = selected.map((result) => new Map((result.observations || []).map((observation) => [observation.checkpoint_id, observation])));
   const common = [...maps[0].keys()].filter((key) => maps[1].has(key) && Number.isFinite(maps[0].get(key).elapsed_seconds) && Number.isFinite(maps[1].get(key).elapsed_seconds) && (maps[0].get(key).distance_km == null || maps[1].get(key).distance_km == null || maps[0].get(key).distance_km === maps[1].get(key).distance_km));
   const lines = common.map((key) => {
@@ -93,7 +123,8 @@ function renderComparison() {
     return `<tr><td>${esc(first.name)}</td><td>${time(first.elapsed_seconds)}</td><td>${time(second.elapsed_seconds)}</td><td>${gap >= 0 ? '+' : '-'}${time(Math.abs(gap))}</td></tr>`;
   }).join('');
   $('#comparison').className = 'runner';
-  $('#comparison').innerHTML = `<h3>${esc(selected[0].name)} vs ${esc(selected[1].name)}</h3>${lines ? `<table class="segment-table"><tr><th>Kontrollpunkt</th><th>${esc(selected[0].name)}</th><th>${esc(selected[1].name)}</th><th>Gap</th></tr>${lines}</table>` : '<p>Ingen gemensam verifierad mellantid.</p>'}`;
+  const crossEditionNote = selected[0].edition_id !== selected[1].edition_id ? '<p class="muted">Olika upplagor: endast exakt gemensamma kontrollpunkter med likvärdigt källavstånd visas. Sluttider över år jämförs inte som prestationsmått.</p>' : '';
+  $('#comparison').innerHTML = `<h3>${esc(selected[0].name)} vs ${esc(selected[1].name)}</h3>${crossEditionNote}${lines ? `<table class="segment-table"><tr><th>Kontrollpunkt</th><th>${esc(selected[0].name)}</th><th>${esc(selected[1].name)}</th><th>Gap</th></tr>${lines}</table>` : '<p>Ingen gemensam verifierad mellantid med likvärdigt källavstånd.</p>'}`;
 }
 
 function renderMapDuel() {
@@ -134,10 +165,23 @@ function renderHistory() {
   }).join('');
 }
 
-function render() { renderFacts(); renderFilters(); renderRows(); renderRunner(); renderPlan(); renderComparison(); renderMapDuel(); chart(); renderPercentiles(); renderHistory(); }
+function renderQuality() {
+  $('#quality-rows').innerHTML = state.data.editions.slice().sort((a, b) => b.year - a.year || b.edition_id.localeCompare(a.edition_id)).map((item) => {
+    const results = editionResults(item.edition_id);
+    const finished = results.filter((result) => result.status === 'FINISHED').length;
+    const dnf = results.filter((result) => result.status === 'DNF').length;
+    const dns = results.filter((result) => result.status === 'DNS').length;
+    const gender = results.filter((result) => result.gender).length;
+    const observations = results.reduce((sum, result) => sum + (result.observations || []).length, 0);
+    const source = item.source_id === 'result-2025' ? 'officiell PDF · importerad' : item.source_id === 'result-index-2026' ? 'officiellt index · importerad' : 'officiell resultatsida · importerad';
+    return `<tr><td>${esc(item.edition_label)}</td><td>${results.length}</td><td>${finished} / ${dnf} / ${dns}</td><td>${gender ? `${gender} poster` : 'saknas'}</td><td>${item.starters ?? 'ej fastställt'}</td><td>${observations || 'saknas'}</td><td class="${results.length ? 'quality-good' : 'quality-partial'}">${source}</td></tr>`;
+  }).join('');
+}
+
+function render() { renderFacts(); renderFilters(); renderRows(); renderRunner(); renderPlan(); renderComparison(); renderMapDuel(); chart(); renderPercentiles(); renderHistory(); renderQuality(); }
 
 fetch('data.json').then((response) => response.json()).then((data) => { state.data = data; state.year = data.editions.slice().sort((a, b) => b.year - a.year || b.edition_id.localeCompare(a.edition_id))[0].edition_id; $('#year').innerHTML = data.editions.map((item) => `<option value="${esc(item.edition_id)}">${esc(item.edition_label)}</option>`).join(''); $('#year').value = state.year; render(); });
-$('#year').onchange = (event) => { state.year = event.target.value; state.page = 1; state.selected = null; state.club = ''; state.compare = []; state.duel = []; render(); };
+$('#year').onchange = (event) => { state.year = event.target.value; state.page = 1; state.selected = null; state.club = ''; state.compare = []; state.duel = []; state.planTarget = null; render(); };
 $('#search').oninput = (event) => { state.query = event.target.value; state.page = 1; renderRows(); };
 $('#club').onchange = (event) => { state.club = event.target.value; state.page = 1; renderRows(); };
 $('#sort').onchange = (event) => { state.sort = event.target.value; state.page = 1; renderRows(); };

@@ -41,7 +41,8 @@ const starterFacts = {
   'gax100-2015': { count: 53, source: 'result-2015', note: 'Officiell resultatsida: Totalt startade 53 deltagare.' },
   'gax100-2021-a': { count: 38, source: 'result-2021', note: 'Officiell resultatsida: 38 startande på tisdagens upplaga.' },
   'gax100-2023': { count: 89, source: 'result-2023', note: 'Officiell resultatsida: 89 startande.' },
-  'gax100-2024': { count: 87, source: 'result-2024', note: 'Officiell resultatsida: 87 startande.' }
+  'gax100-2024': { count: 87, source: 'result-2024', note: 'Officiell resultatsida: 87 startande.' },
+  'gax100-2025': { count: 109, source: 'result-2025', note: 'Officiell resultat-PDF: 69 FINISHED + 40 DNF; 10 separata DNS-rader.' }
 };
 
 const manifest = JSON.parse(fs.readFileSync(path.join(rawDir, 'MANIFEST.json'), 'utf8').replace(/^\uFEFF/, ''));
@@ -124,6 +125,31 @@ for (const src of manifest.filter(x => x.kind === 'html' && x.status === 'downlo
     });
   }
   stats.push({ source, year, imported, observations });
+}
+
+// 2025 is published as an official PDF rather than an HTML result table. The
+// checked-in extraction fixture is a deterministic transcription of that PDF;
+// it carries the PDF source id and keeps DNF/DNS rows instead of inferring a
+// finish status from a missing time.
+const official2025 = manifest.find((item) => item.id === 'result-2025' && item.status === 'downloaded');
+const fixturePath = path.join(repo, 'data', 'verified', 'result-2025-official.json');
+if (official2025 && fs.existsSync(fixturePath)) {
+  const fixture = JSON.parse(fs.readFileSync(fixturePath, 'utf8'));
+  const source = 'result-2025';
+  const edition = { id: 'gax100-2025', label: '2025' };
+  const facts = starterFacts[edition.id];
+  insertEdition.run(edition.id, 2025, edition.label, source, facts.count, facts.source, facts.note);
+  let imported = 0;
+  for (const [index, row] of fixture.rows.entries()) {
+    const rawName = row.first ? `${row.first} ${row.last}` : row.last;
+    const rawRank = row.rank || '';
+    const resultId = crypto.createHash('sha256').update(`${edition.id}|${source}|${index + 1}|${rawName}|${rawRank}`).digest('hex').slice(0, 24);
+    const finishSeconds = parseClockSeconds(row.time || '');
+    const rawJson = JSON.stringify({ extraction: fixture.extraction_note, row });
+    insertResult.run(resultId, edition.id, source, index + 1, rawJson, rawName, row.gender || null, row.club || null, rawRank, row.time || null, row.status, row.gender || null, finishSeconds, row.gender ? source : null);
+    imported++;
+  }
+  stats.push({ source, year: 2025, imported, observations: 0, extraction: 'data/verified/result-2025-official.json' });
 }
 fs.writeFileSync(path.join(dbDir, 'import-report.json'), JSON.stringify({ generated_at: new Date().toISOString(), stats }, null, 2));
 console.log(JSON.stringify(stats, null, 2));

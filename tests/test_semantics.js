@@ -21,7 +21,8 @@ for (const e of editions) {
     if (r.status === 'FINISHED') assert(Number.isInteger(r.finish_seconds) && r.finish_seconds > 0, `${r.result_id}: FINISHED kräver positiv sluttid`);
   }
 }
-assert(db.prepare("SELECT COUNT(*) n FROM results WHERE status='DNS'").get().n === 0, 'DNS ska inte fabriceras');
+assert(db.prepare("SELECT COUNT(*) n FROM results WHERE status='DNS' AND source_id='result-2025'").get().n === 10, '2025 års officiella DNS ska behållas med proveniens');
+assert(db.prepare("SELECT COUNT(*) n FROM results WHERE status='DNS' AND source_id<>'result-2025'").get().n === 0, 'DNS får inte fabriceras i äldre källor');
 assert(db.prepare("SELECT COUNT(*) n FROM results WHERE status='UNKNOWN' AND raw_finish_time LIKE 'DNF%'").get().n === 0, 'Explicit DNF får inte ligga som UNKNOWN');
 assert(db.prepare('SELECT COUNT(*) n FROM results WHERE source_id IS NULL OR raw_json IS NULL').get().n === 0, 'proveniens saknas');
 console.log(JSON.stringify({pass:true, editions:editions.length, semantic_checks:'passed'},null,2));

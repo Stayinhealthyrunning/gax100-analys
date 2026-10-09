@@ -21,7 +21,7 @@ $sources = @(
     @{ Id='result-2022'; Url='https://gax100.se/resultat/resultat-2022/'; Kind='html' },
     @{ Id='result-2023'; Url='https://gax100.se/resultat/resultat-2023/'; Kind='html' },
     @{ Id='result-2024'; Url='https://gax100.se/resultat/resultat-2024/'; Kind='html' },
-    @{ Id='result-2025'; Url='https://gax100.se/resultat/resultat-2025/'; Kind='html' },
+    @{ Id='result-2025'; Url='https://gax100.se/wp-content/uploads/2025/07/GAX-Resultat-2025.pdf'; Kind='pdf' },
     @{ Id='course-current'; Url='https://gax100.se/bana-karta/'; Kind='html' },
     @{ Id='pm-2023'; Url='https://gax100.se/wp-content/uploads/2024/03/GaxPM2023.pdf'; Kind='pdf' }
 )

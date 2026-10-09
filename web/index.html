@@ -63,6 +63,11 @@
     <div class="table-wrap"><table><thead><tr><th>Upplaga</th><th>FINISHED</th><th>DNF</th><th>Median</th><th>Snabbaste</th><th>Mellantider</th></tr></thead><tbody id="history"></tbody></table></div>
   </section>
 
+  <section id="quality-overview">
+    <div class="section-heading"><h2>Datakvalitet per upplaga</h2><details class="help"><summary aria-label="Om datakvaliteten">ⓘ</summary><p>Översikten skiljer på publicerade resultatposter, verifierade sluttider, statuskoder, kön och importerade mellantider. Ett streck betyder att källan inte fastställer värdet.</p></details></div>
+    <div class="table-wrap quality-table-wrap"><table class="quality-table"><thead><tr><th>Upplaga</th><th>Resultat</th><th>FINISHED / DNF / DNS</th><th>Kön</th><th>Startande</th><th>Mellantider</th><th>Källstatus</th></tr></thead><tbody id="quality-rows"></tbody></table></div>
+  </section>
+
   <section id="results-database">
     <div class="section-heading"><h2>Resultatdatabas</h2><details class="help"><summary aria-label="Om resultatdatabasen">ⓘ</summary><p>Resultatraderna är importerade från officiella källor med bevarad källproveniens. Saknat kön, klubb, status eller tid visas som saknat och fylls inte i med antaganden.</p></details></div>
     <label>Sortera <select id="sort" aria-label="Sortera resultat"><option value="time">Sluttid</option><option value="name">Namn</option><option value="status">Status</option></select></label>
@@ -72,7 +77,7 @@
 
   <section id="methodology">
     <div class="section-heading"><h2>Data och metod</h2><details class="help"><summary aria-label="Om metod och datakällor">ⓘ</summary><p>Originalkällor, normaliserade värden och härledda mått hålls isär. Ingen saknad mellantid, GPS-position, identitet eller status rekonstrueras som sanning.</p></details></div>
-    <details><summary>Så fungerar analysen</summary><p>KPI:er och diagram bygger på importerade officiella resultat. Median är mittvärdet; vid jämnt antal är den medelvärdet av de två mittersta. Percentiler använder linjär interpolation. Segmenttid kräver två verkliga kronologiska observationer. GPS/replay kräver årsverifierad, publicerbar geometri och verifierade tidsankare; lokala kandidatspår behandlas därför inte som publik banfakta.</p><p>2025 saknar importerad detaljkälla efter dokumenterad HTTP 404. 2026 års resultatindex har ingen importerad mellantidsserie i detta underlag.</p></details>
+    <details><summary>Så fungerar analysen</summary><p>KPI:er och diagram bygger på importerade officiella resultat. Median är mittvärdet; vid jämnt antal är den medelvärdet av de två mittersta. Percentiler använder linjär interpolation med h=(n−1)×p och avrundas till hela sekunder före presentation. Segmenttid kräver två verkliga, kronologiska observationer med verifierat avstånd; saknade eller bakåtriktade observationer ger inget segmentvärde. GPS/replay kräver årsverifierad, publicerbar geometri och verifierade tidsankare; lokala kandidatspår behandlas därför inte som publik löparposition.</p><p>2025 importeras nu från arrangörens officiella PDF med 69 FINISHED, 40 DNF och 10 DNS. 2026 års resultatindex har ingen importerad mellantidsserie i detta underlag.</p></details>
     <p><a href="https://gax100.se/resultat/" rel="noopener noreferrer">Officiellt resultatindex</a> · <a href="https://gax100.se/bana-karta/" rel="noopener noreferrer">Officiell bana och karta</a></p>
   </section>
 </main>

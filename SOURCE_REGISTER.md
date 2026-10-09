@@ -5,6 +5,7 @@
 | ID | Källa | Användning | Status |
 |---|---|---|---|
 | GAX-RESULT | https://gax100.se/resultat/ | Index och officiella resultat 2026 samt länkar till 2014–2025 | Identifierad |
+| GAX-R2025-PDF | https://gax100.se/wp-content/uploads/2025/07/GAX-Resultat-2025.pdf | Officiell 2025-PDF med 69 FINISHED, 40 DNF och 10 DNS | Verifierad; nedladdad lokalt; 119 rader normaliserade |
 | GAX-R2026-PDF | https://gax100.se/wp-content/uploads/2026/07/Resultat-till-hemsidan.pdf | Officiell 2026-tabell med separata Kvinnor/Män-listor; könsproveniens | Verifierad; nedladdad lokalt |
 | GAX-COURSE | https://gax100.se/bana-karta/ | Aktuell bana, GPX, banprofil och banbeskrivning | Identifierad |
 | GAX-GARMIN-2026 | https://connect.garmin.com/app/course/484861455 | Arrangörens länkade interaktiva kurs/GPX för 2026 | Identifierad; nedladdning återstår |
@@ -43,7 +44,7 @@ Detaljer, hashvärden och spatial jämförelse finns i `GPX_COVERAGE.md` och `da
 
 ## Officiella resultatsidor 2014–2026
 
-Årsidorna följer `https://gax100.se/resultat/resultat-YYYY/` för 2014–2025. Resultatindexet är `https://gax100.se/resultat/` och listar alla länkar samt aktuell 2026-tabell. 2016, 2020 och 2021/2025 hade åtkomst- eller avgränsningshinder i denna inventering; se `DATA_COVERAGE.md`.
+Årsidorna följer `https://gax100.se/resultat/resultat-YYYY/` för 2014–2024. Resultatindexet är `https://gax100.se/resultat/` och listar alla länkar samt aktuell 2026-tabell; 2025 länkas därifrån som PDF `GAX-Resultat-2025.pdf`. HTML-formatet är heterogent och vissa äldre sidor saknar explicit status eller kön; 2025-PDF:en är nu verifierad och importerad via `data/verified/result-2025-official.json`.
 
 ## Standard
 
@@ -63,8 +64,9 @@ Hämtad-datum, URL, sidtitel, relevant år/sektion och eventuella PDF/GPX-filer 
 
 ## ETAPP 2A råarkiv
 
-`scripts/fetch_sources.ps1` hämtar officiella HTML-sidor, 2026-resultat-PDF:en och `GaxPM2023.pdf` till lokalt ignorerat `data/raw/`. `data/raw/MANIFEST.json` innehåller hämtnings-tidpunkt, status, URL och SHA-256. Vid senaste körningen fanns 16 manifestposter, 15 nedladdade och 2025 misslyckades med HTTP 404. Rådata publiceras inte i repot.
-### GPX-tillstånd och historisk banvisning
+`scripts/fetch_sources.ps1` hämtar officiella HTML-sidor, 2025/2026-resultat-PDF:er och `GaxPM2023.pdf` till lokalt ignorerat `data/raw/`. `data/raw/MANIFEST.json` innehåller hämtnings-tidpunkt, status, URL och SHA-256. Vid senaste verifierade körningen fanns 16 manifestposter, 16 nedladdade. Rådata publiceras inte i repot.
+
+## GPX-tillstånd och historisk banvisning
 
 | Källa | Funktion | Status |
 |---|---|---|
