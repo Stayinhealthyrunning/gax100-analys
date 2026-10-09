@@ -2,44 +2,27 @@
 
 ## Aktuellt
 
-ETAPP 1 är mergad till `main` via PR #1 (merge commit `8a11f78`). ETAPP 2 körs på branchen `codex/gax100-etapp2` och Draft PR #2. Aktuell arbetsversion är `82dad5e` och innehåller korrigerad GPX-geometri och en lokal kartförhandsvisning. Resultatimport, databasvalidering, GPX-inventering och en testbar frontendgrund är implementerade enligt Loppanalys Standard 1.0.
+ETAPP 2 körs på befintlig branch `codex/gax100-etapp2` och Draft PR #2. Senaste pushade head är `3e08e57` (`test: cover official 2025 edition and plan simulation`). PR:n är inte mergad och GAX100 är inte tillagd i huvudkatalogen.
 
-## Genomfört
+## Senast verifierat
 
-- `1900a94` verifierar vanlig filskrivning och Git-commit.
-- Branchen finns på GitHub och följer `origin/codex/gax100-etapp2`.
-- Officiella webbkällor för resultat, bana/karta och historiska resultat är identifierade.
-- 2026 års arrangörslänkade Garmin-kurs är identifierad: `https://connect.garmin.com/app/course/484861455`.
-- Arrangören anger att sträckan förbi Knäbäckshusen är ny från 2024 efter stormen Babet; detta är en prioriterad historisk banversion att dokumentera.
-- Dokumentationsramen för ETAPP 1 är skapad.
-- Standardfilen `LOPPANALYS_STANDARD_V1_0.md` är fullständigt läst via GitHub-klon.
-- `DATA_COVERAGE.md` innehåller editionsmatris 2014–2026, åtkomsthinder, GPX-läge och genomförbarhetsbedömning.
-- 2021 är identifierat som två verkliga upplagor; 2024 års Knäbäckshusen-ändring är källverifierad textuellt.
-- `scripts/fetch_sources.ps1` har hämtat 13 HTML-källor, officiell 2026-resultat-PDF och `GaxPM2023.pdf` lokalt till ignorerat `data/raw/`; manifestet innehåller 16 poster, 15 nedladdade poster, URL, status, tidpunkt och SHA-256.
-- 2025 års resultat-URL svarar med HTTP 404; hindret är dokumenterat och inte återförsökt upprepade gånger.
-- Fem lokala GPX-filer har analyserats reproducerbart: två Plotaroute-exporter, två Trace de Trail-spår och en AllTrails-fil. `data/gpx-audit.json` innehåller hash, punktantal, distans, bounds, höjddata och tidsproveniens; `GPX_COVERAGE.md` innehåller årskandidater, rättighetsläge och spatial kontroll vid Knäbäckshusen.
-- Den geografiska jämförelsen är korrigerad: `scripts/gpx_geometry.js` använder lokal metrisk projektion, 25 m resampling, punkt-till-linjesegment-avstånd, symmetriska median/P95/max-mått och tröskelandeler. Separata `<trkseg>` och hopp över 250 m kopplas inte ihop; 2021 Plotaroute-finalen markeras därför som avbrottsbehäftad med 58 avbrott.
-- `node scripts/serve_gpx_preview.js` startar en loopback-bunden lokal karta från de fem ignorerade rå-GPX-filerna. Den stöder spårval, flera spår, Knäbäckshusen-zoom, >50 m-avvikelsemarkeringar, höjdprofil och käll-/osäkerhetstabell. Inga råfiler eller härledda koordinater skrivs till `web/`.
-- GitHub Actions run `37937098006` på `82dad5e` lyckades med käll-, databas-, semantik-, GPX-geometri-, loopback-preview- och Chromium-QA. CI saknar avsiktligt det ignorerade privata GPX-råarkivet; preview-testet verifierar därför 404 som förväntat i CI och kräver 200 lokalt.
-- Officiell bana/karta anger att Knäbäckshusen-sträckan ändrades från 2024. Garmin Connect-kursen `GAX100M-2026` är visuellt verifierad och visar 161,45 km samt 697 m stigning, men fristående GPX-export kunde inte arkiveras.
-- Garmin Connects publika exportadresser för JSON/GPX/TCX/FIT/polyline testades mot kurs-id `484861455`; samtliga svarade HTTP 200 men med `application/json` och `{}`. Legends Tracking och RaceTracker undersöktes också; ingen verifierbar GAX100-banfil eller historisk positionsserie kunde hämtas utan att gå utanför publika gränssnitt.
-- `scripts/audit_sources.ps1` kördes och skapade `data/source-audit.json`; detta är en teknisk regex-audit, inte normaliserade resultatantal.
-- `tests/test_source_pipeline.ps1` passerar: manifestet innehåller 16 poster, varav 15 nedladdade; 2025 är den enda konstaterade HTTP 404-posten och auditens begränsningsmarkeringar finns för nedladdade källor.
-- `tests/test_gpx.js` passerar och kontrollerar fem GPX-filers XML-läsbarhet, hash, geometri, höjddata och att exporttider inte används som löpartider. `scripts/compare_gpx.js 5000` visar cirka 302 m lokal kandidatavvikelse mellan Plotaroute-2021-finalen och övriga kandidatspår nära Knäbäckshusen, men detta är inte ensam officiell banverifiering.
-- `scripts/build_database.js` bygger SQLite från råarkivet; två körningar i följd är idempotenta.
-- `tests/test_database.js` passerar: 13 editions, 826 resultat, 1 838 observationer; FINISHED 582, DNF 139, UNKNOWN 105, DNS 0. Verifierat startantal är nu modellerat för 2015 (53), 2021-A (38), 2023 (89) och 2024 (87); övriga upplagor visas som ej fastställda. Äldre tidsformat reparerades efter faktisk kronologigranskning och explicit `DNF(...)`-råtext klassificeras nu källtroget.
-- ETAPP 3-grunden finns i `web/`: årsväljare, fem faktakort, löparsökning, resultattabell och individuell mellantidsvy från exporterad normaliserad data.
-- `scripts/export_web_data.js` exporterade 13 editions, 826 resultat och 1 838 observationer till `web/data.json`; JavaScript-syntaxkontroller passerar.
-- `tests/test_statistics.js`, `tests/test_time_parser.js`, `tests/test_time_format.js`, `tests/test_gender_2026.js`, `tests/test_semantics.js` och `tests/test_web.js` passerar. Median för jämnt n använder de två mittersta värdena; percentiler använder linjär interpolation `h=(n−1)×p`; alla presenterade tider rundas till hela sekunder. 2026 års officiella PDF ger verifierat kön för 110/110 resultat (22 Kvinnor, 88 Män) med separat källproveniens. Frontend har nu paginerad mobil resultdatabas med åtkomliga åtgärder, kontrollerad responsiv kortpresentation, förbättrad overflow-QA, tomläge för saknade diagramunderlag och startantal där officiell text fastställer dem.
-- `.github/workflows/qa.yml`, `playwright.config.js`, `package.json` och `tests/e2e/gax100.spec.js` etablerar riktig Chromium browser-QA med screenshots, trace/video vid fel och artefaktuppladdning. GitHub Actions-körning `37932828615` på exact head `66f0b60` lyckades och producerade en artefakt efter käll-, databas-, semantik-, GPX-parser- och Chromium-QA. Den tidigare körningen `37927602400` på `e362a22` hade redan visuellt granskade skärmbilder för 1440, 900, 768 och 390 px. Lokal npm saknas fortfarande i Codex-miljön.
+- ETAPP 1 är mergad till `main` via PR #1 (`8a11f78`). Den centrala `LOPPANALYS_STANDARD_V1_0.md` är fullständigt läst via GitHub-klon.
+- Officiella resultatkällor, ban-/GPX-kandidater, åtkomsthinder och statusen identifierad/verifierad/nedladdad/normaliserad finns i `DATA_COVERAGE.md` och `SOURCE_REGISTER.md`.
+- 2025 års officiella resultatindexlänk verifierades till PDF:en `https://gax100.se/wp-content/uploads/2025/07/GAX-Resultat-2025.pdf`. Importen bygger 119 publicerade rader: 69 FINISHED, 40 DNF och 10 DNS. Startantal modelleras som 109 (FINISHED + DNF). DNF/DNS utan entydig PDF-könsrubrik lämnas utan könsantagande. Den deterministiska transkriptionen finns i `data/verified/result-2025-official.json`; original-PDF:en ligger lokalt i ignorerat råarkiv.
+- SQLite-exporten är nu 14 editions, 945 resultatposter och 1 838 observationer: FINISHED 651, DNF 179, DNS 10, UNKNOWN 105. `tests/test_database.js`, `tests/test_semantics.js`, `tests/test_web.js`, 2026-könstest, tids-/statistiktester och GPX-geometritest passerar.
+- Fem lokala GPX-filer är tekniskt auditerade i det ignorerade råarkivet. `scripts/gpx_geometry.js` använder metrisk projektion, 25 m resampling, punkt-till-linjesegment-avstånd, median/P95/max, tröskelandeler och gap-safe `<trkseg>`-hantering. Ingen kandidat är klassad som officiell redistribuerbar årsfil.
+- Lokal GPX-preview passerar med loopback-test och publicerar inte råfiler. `web/karta.html` är en noindex-förhandsvisning med Plotaroute-embeds och användarstyrd lokal GPX-filväljare; inga råfiler eller härledda GAX-koordinater ligger i webbutdata.
+- Frontend har fem faktakort, mobil resultatinventering med paginering, kvalitetstabell per upplaga, ärliga diagramtomlägen, relativ segmentfart med 100 %-referens, jämförelse endast av kompatibla kontrollpunkter samt personlig historisk referens med separat proportionell måltidssimulering.
+- GitHub Actions körning `37952354460` på `7757cf1` och slutlig körning `37952863584` på exakt head `3e08e57` passerade. Den slutliga körningen täcker källpipeline, SQLite, semantik, GPX, Chromium och screenshots. Artefakten granskades visuellt vid 1440, 900, 768 och 390 px; ingen horisontell overflow, kapad mobilresultatvy eller uppenbart layoutfel kvarstod.
+- Den slutliga E2E-sviten verifierar båda 2021-upplagorna, 2025 års statusimport, sökning, klubbfilter, sortering, resultatval, individuell analys, jämförelse, plan-simulering, Kartduellens 2–5-begränsning, GPX-gating, karta och mobilpaginering.
 
 ## Nästa steg
 
-1. Fortsätt från `82dad5e` på `codex/gax100-etapp2`; Draft PR #2 ska förbli öppen och inte mergas.
-2. Begär eller hitta arrangörs-/upphovsrättsligt klarerad GPX för minst en årsvariant och officiella checkpoint-koordinater.
-3. När publicerbart underlag finns: separera förmågor per datakrav — verifierad geometri, offentlig höjdprofil, banjämförelse, mellantidsankrad position och tidsstämplad replay.
-4. Fortsätt undersöka RaceTracker/Legends historik och 2025-källan utan att kringgå inloggning eller åtkomstskydd.
+1. Fortsätt från `3e08e57` på `codex/gax100-etapp2`; behåll Draft PR #2 öppen och merga inte.
+2. Begär arrangörens uttryckliga tillstånd och årsanknytning för 2023/2024/2026-GPX innan råspår eller härledd geometri publiceras.
+3. Fortsätt separera capability-gating: verifierad bangeometri, höjdprofil, banjämförelse, mellantidsankrad position och tidsstämplad löparreplay.
+4. Kör nya ändringar genom GitHub Actions och uppdatera denna fil före varje avslut.
 
 ## Begränsningar
 
-Råarkivet och SQLite-databasen är lokalt reproducerbara men råfiler/SQLite publiceras inte. Officiella resultatsidor är heterogena. Ingen verifierad, redistribuerbar GPX-årsfil är tillgänglig; geometrisk flerårsjämförelse och replay saknar därför underlag. 2025 saknar fortfarande importerbar detaljkälla efter dokumenterad HTTP 404. Lokal Playwright-körning är inte möjlig eftersom npm saknas i Codex-miljön; GitHub Actions används för riktig browser-QA.
+Ingen officiell, redistribuerbar historisk GPX-årsfil eller verifierad checkpoint-koordinatserie finns ännu. Ban-GPX-filerna är inte tidsstämplade löparpositioner; Kartduellens valkontrakt och källkartor kan visas, men replay och mellantidsankrad positionsrekonstruktion är fortsatt gated. 2026 Garmin-kurs är visuellt verifierad som 161,45 km/697 hm men fristående GPX-export kunde inte arkiveras. Lokal npm/Playwright-körning saknas i Codex-miljön; riktig browser-QA körs därför i GitHub Actions.
