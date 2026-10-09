@@ -53,7 +53,13 @@ jobs:
         uses: actions/upload-pages-artifact@v4
         with:
           path: web/
+          name: gax100-pages-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: Wait for artifact registration
+        run: sleep 12
 
       - name: Deploy static site
         id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          artifact_name: gax100-pages-${{ github.run_id }}-${{ github.run_attempt }}
