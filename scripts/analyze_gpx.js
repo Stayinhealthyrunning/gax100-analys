@@ -7,6 +7,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
+const { parseGpx } = require('./gpx_geometry');
 
 const repo = path.resolve(__dirname, '..');
 const inputDir = path.resolve(process.env.GAX_GPX_INPUT_DIR || path.join(repo, 'data', 'raw', 'gpx'));
@@ -58,26 +59,28 @@ function audit(fileName) {
       time: timeText || null
     };
   }).filter((point) => Number.isFinite(point.lat) && Number.isFinite(point.lon));
+  const geometry = parseGpx(source, { maxGapM: 250 });
   const distances = [];
-  const jumps = [];
   let cumulativeM = 0;
+  geometry.runs.forEach((run) => {
+    for (let i = 1; i < run.length; i += 1) {
+      const distance = haversine(run[i - 1], run[i]);
+      distances.push(distance);
+      cumulativeM += distance;
+    }
+  });
+  const jumps = geometry.interruptions.map((item) => ({ index: item.index, meters: Math.round(item.meters * 10) / 10 }));
   let nearest = null;
   let nearestRouteKm = null;
-  for (let i = 1; i < points.length; i += 1) {
-    const distance = haversine(points[i - 1], points[i]);
-    distances.push(distance);
-    cumulativeM += distance;
-    if (distance > 250) jumps.push({ index: i, meters: Math.round(distance * 10) / 10 });
-  }
   cumulativeM = 0;
-  for (let i = 0; i < points.length; i += 1) {
-    if (i > 0) cumulativeM += distances[i - 1];
-    const distance = haversine(points[i], KNAEBACKSHUSEN);
+  geometry.runs.forEach((run) => run.forEach((point, index) => {
+    if (index > 0) cumulativeM += haversine(run[index - 1], point);
+    const distance = haversine(point, KNAEBACKSHUSEN);
     if (!nearest || distance < nearest.meters) {
-      nearest = { index: i, meters: Math.round(distance * 10) / 10, lat: points[i].lat, lon: points[i].lon };
+      nearest = { index, meters: Math.round(distance * 10) / 10, lat: point.lat, lon: point.lon };
       nearestRouteKm = Math.round(cumulativeM / 10) / 100;
     }
-  }
+  }));
   const elevations = points.map((point) => point.ele).filter(Number.isFinite);
   const times = points.map((point) => point.time ? Date.parse(point.time) : NaN).filter(Number.isFinite);
   const creator = /<gpx\b[^>]*\bcreator="([^"]+)"/i.exec(source)?.[1] || null;
@@ -95,6 +98,9 @@ function audit(fileName) {
     name,
     sourceLink,
     points: points.length,
+    track_segments: geometry.rawSegments.length,
+    continuous_runs: geometry.runs.length,
+    interruptions_over_250m: jumps,
     distance_km: Math.round(totalDistanceM / 10) / 100,
     bounds: points.length ? {
       min_lat: Math.min(...points.map((point) => point.lat)),

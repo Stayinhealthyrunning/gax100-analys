@@ -11,6 +11,8 @@
     "test:gender-2026": "node tests/test_gender_2026.js",
     "test:gpx": "node tests/test_gpx.js",
     "test:gpx-parser": "node tests/test_gpx_parser.js",
+    "test:gpx-geometry": "node tests/test_gpx_geometry.js",
+    "test:gpx-preview": "node tests/test_gpx_preview.js",
     "test:semantics": "node tests/test_semantics.js",
     "test:web": "node tests/test_web.js",
     "test:browser": "playwright test",

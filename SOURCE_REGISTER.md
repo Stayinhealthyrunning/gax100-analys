@@ -53,6 +53,21 @@ Den normerande standarden är `Stayinhealthyrunning/Stayinhealthyrunning.github.
 
 Hämtad-datum, URL, sidtitel, relevant år/sektion och eventuella PDF/GPX-filer ska registreras när datainsamlingen genomförs.
 
+## GPX-tillstånd och historisk banvisning
+
+| Källa | Funktion | Status |
+|---|---|---|
+| [GAX100 tävlingsinformation](https://gax100.se/information/) | Arrangörskontakt och aktuell navigerings-/GPX-information | Kontakt `thegax100@gmail.com` identifierad; tillståndsförfrågan ej skickad |
+| [GaxPM2023.pdf](https://gax100.se/wp-content/uploads/2024/03/GaxPM2023.pdf) | Historisk banbeskrivning och hänvisning till 2023 års GPX-distribution | Lästs; AllTrails/Facebook nämns, men återpubliceringsrätt ej klarlagd |
+| [Resultat 2024](https://gax100.se/resultat/resultat-2024/) | Officiell resultat-/mellantidskälla för 2024 | Verifierad resultatsida; ingen direkt GPX-fil identifierad |
+
 ## ETAPP 2A råarkiv
 
 `scripts/fetch_sources.ps1` hämtar officiella HTML-sidor, 2026-resultat-PDF:en och `GaxPM2023.pdf` till lokalt ignorerat `data/raw/`. `data/raw/MANIFEST.json` innehåller hämtnings-tidpunkt, status, URL och SHA-256. Vid senaste körningen fanns 16 manifestposter, 15 nedladdade och 2025 misslyckades med HTTP 404. Rådata publiceras inte i repot.
+### GPX-tillstånd och historisk banvisning
+
+| Källa | Funktion | Status |
+|---|---|---|
+| [GAX100 tävlingsinformation](https://gax100.se/information/) | Arrangörskontakt och aktuell navigerings-/GPX-information | Kontakt `thegax100@gmail.com` identifierad; tillståndsförfrågan ej skickad |
+| [GaxPM2023.pdf](https://gax100.se/wp-content/uploads/2024/03/GaxPM2023.pdf) | Historisk banbeskrivning och hänvisning till 2023 års GPX-distribution | Lästs; AllTrails/Facebook nämns, men återpubliceringsrätt ej klarlagd |
+| [Resultat 2024](https://gax100.se/resultat/resultat-2024/) | Officiell resultat-/mellantidskälla för 2024 | Verifierad resultatsida; ingen direkt GPX-fil identifierad |

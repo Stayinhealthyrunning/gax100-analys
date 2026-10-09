@@ -1,48 +1,28 @@
 #!/usr/bin/env node
 
+/* Compare private GPX candidates without bridging GPX interruptions. */
 const fs = require('node:fs');
 const path = require('node:path');
+const { parseGpx, compareRoutes } = require('./gpx_geometry');
 
 const repo = path.resolve(__dirname, '..');
-const inputDir = path.join(repo, 'data', 'raw', 'gpx');
-const reference = { lat: 55.64097, lon: 14.27477 };
+const inputDir = path.resolve(process.env.GAX_GPX_INPUT_DIR || path.join(repo, 'data', 'raw', 'gpx'));
 const radiusM = Number(process.argv[2] || 5000);
-const earthM = 6371008.8;
-
-function distanceM(a, b) {
-  const lat1 = a.lat * Math.PI / 180;
-  const lat2 = b.lat * Math.PI / 180;
-  const dLat = (b.lat - a.lat) * Math.PI / 180;
-  const dLon = (b.lon - a.lon) * Math.PI / 180;
-  const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
-  return 2 * earthM * Math.asin(Math.sqrt(h));
-}
-
-function points(file) {
-  const xml = fs.readFileSync(path.join(inputDir, file), 'utf8');
-  return [...xml.matchAll(/<trkpt\b[^>]*>/gi)].map((match) => ({
-    lat: Number(/lat="([^"]+)"/.exec(match[0])[1]),
-    lon: Number(/lon="([^"]+)"/.exec(match[0])[1])
-  }));
-}
-
-function nearest(point, track) {
-  let minimum = Infinity;
-  for (const candidate of track) minimum = Math.min(minimum, distanceM(point, candidate));
-  return minimum;
-}
-
+const spacingM = Number(process.argv[3] || 25);
+const origin = { lat: 55.64097, lon: 14.27477 };
 const files = fs.readdirSync(inputDir).filter((file) => file.toLowerCase().endsWith('.gpx')).sort();
-const tracks = Object.fromEntries(files.map((file) => [file, points(file)]));
-const local = Object.fromEntries(files.map((file) => [file, tracks[file].filter((point) => distanceM(point, reference) <= radiusM)]));
-console.log(`Knäbäckshusen referens ${reference.lat},${reference.lon}; analysradie ${radiusM} m`);
-for (const file of files) console.log(`${file}\t${local[file].length} lokala punkter`);
-for (let i = 0; i < files.length; i += 1) {
-  for (let j = i + 1; j < files.length; j += 1) {
-    const a = files[i];
-    const b = files[j];
-    const ab = Math.max(...local[a].map((point) => nearest(point, local[b])));
-    const ba = Math.max(...local[b].map((point) => nearest(point, local[a])));
-    console.log(`${a} vs ${b}\tHausdorff-liknande lokal avvikelse ${Math.round(Math.max(ab, ba) * 10) / 10} m`);
+const routes = files.map((file) => ({ file, route: parseGpx(fs.readFileSync(path.join(inputDir, file), 'utf8'), { maxGapM: 250 }) }));
+
+console.log(`Reference: ${origin.lat},${origin.lon}; radius=${radiusM}m; spacing=${spacingM}m; gap threshold=250m`);
+for (let i = 0; i < routes.length; i += 1) {
+  for (let j = i + 1; j < routes.length; j += 1) {
+    const first = routes[i];
+    const second = routes[j];
+    const result = compareRoutes(first.route, second.route, { origin, radiusM, spacingM });
+    const line = result.line.symmetric;
+    const legacy = result.legacy_nearest_point.symmetric;
+    console.log(`${first.file} <> ${second.file}`);
+    console.log(`  line median=${line ? line.median_m.toFixed(1) : 'n/a'}m p95=${line ? line.p95_m.toFixed(1) : 'n/a'}m max=${line ? line.max_m.toFixed(1) : 'n/a'}m; >25m=${line ? (line.share_over['25'] * 100).toFixed(1) : 'n/a'}%; >50m=${line ? (line.share_over['50'] * 100).toFixed(1) : 'n/a'}%`);
+    console.log(`  legacy nearest-point max=${legacy ? legacy.max_m.toFixed(1) : 'n/a'}m; sampled=${result.sampled.a}/${result.sampled.b}; interruptions=${result.interruptions.a.length}/${result.interruptions.b.length}`);
   }
 }

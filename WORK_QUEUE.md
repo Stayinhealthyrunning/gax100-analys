@@ -36,5 +36,8 @@
 | GPX-002 | Identifiera publika kandidater 2014–2026 | DONE | `GPX_COVERAGE.md` listar Plotaroute-, Trace de Trail-, AllTrails- och Garmin-kandidater samt åtkomsthinder |
 | GPX-003 | Spatial kontroll vid Knäbäckshusen | DONE | `scripts/compare_gpx.js 5000` ger reproducerbara lokala avvikelsemått; resultatet behandlas som diagnostik, inte officiell banverifiering |
 | GPX-004 | Fastställa officiell/publicerbar årsgeometri | BLOCKED | Kräver arrangörens eller upphovspersonens uttryckliga rättighet och årsanknytning |
-| MAP-001 | Publik interaktiv kartvisning och höjdprofil | BLOCKED | Aktiveras först när minst en publicerbar geometri och verifierade checkpoint-koordinater finns |
-| MAP-002 | GPS-replay från deltagarpositioner | BLOCKED | Ban-GPX är inte tidsstämplad löparaktivitet; kräver autentisk positionshistorik och tillstånd |
+| GPX-005 | Korrigerad punkt-till-linjesegment-jämförelse | DONE | `scripts/gpx_geometry.js` projicerar, resamplar 25 m, hanterar `<trkseg>`/hopp och redovisar median/P95/max samt tröskelandelar; regressionstest passerar |
+| MAP-001 | Lokal interaktiv GPX-karta och höjdprofil | DONE | `node scripts/serve_gpx_preview.js` visar fem lokala spår, färgval, flerårigt urval, Knäbäckshusen-zoom, avvikelsemarkeringar och separata höjdprofiler |
+| MAP-002 | Publik verifierad bangeometri | BLOCKED | Kräver minst en officiell/publicerbar årsgeometri och klarlagda rättigheter |
+| MAP-003 | Mellantidsankrad positionsrekonstruktion | BLOCKED | Kräver verifierade checkpoint-koordinater och jämförbara kronologiska mellantider |
+| MAP-004 | GPS-replay från deltagarpositioner | BLOCKED | Ban-GPX är inte tidsstämplad löparaktivitet; kräver autentisk positionshistorik och tillstånd |

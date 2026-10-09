@@ -53,6 +53,8 @@ jobs:
           npm run test:database
           npm run test:gender-2026
           npm run test:gpx-parser
+          npm run test:gpx-geometry
+          npm run test:gpx-preview
           npm run test:semantics
           npm run test:web
 
