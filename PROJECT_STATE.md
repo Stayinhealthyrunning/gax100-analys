@@ -2,7 +2,7 @@
 
 ## Aktuellt
 
-ETAPP 2 körs på befintlig branch `codex/gax100-etapp2` och Draft PR #2. Senaste pushade head är `a45cd90` (`test: harden responsive overflow audit`). PR #2 är öppen, Draft och inte mergad. GAX100 är inte tillagd i huvudkatalogen.
+ETAPP 2 körs på befintlig branch `codex/gax100-etapp2` och Draft PR #2. Senaste GitHub-head är `3a04b49` (`docs: link to central GDPR privacy policy and right to object`). PR #2 är öppen, Draft och inte mergad. GAX100 är inte tillagd i huvudkatalogen.
 
 ## Senast verifierat
 
@@ -14,8 +14,8 @@ ETAPP 2 körs på befintlig branch `codex/gax100-etapp2` och Draft PR #2. Senast
 - Individuell analys har gap-säker segmentering, valbar delsträcka och relativfartsdiagram. Direktjämförelse använder endast gemensamma kontrollpunkter med likvärdigt källavstånd. Personlig plan kräver minst fem FINISHED från samma upplaga och använder historiska segmentproportioner + största restmetod.
 - Resultatdatabasen har namn/startnummer/klubbsökning, klubb- och könsfilter, sortering, 10-raders pagination, mobilkort, favorit och delningslänk. Utökade block visar explicit status-/data-gating.
 - Privacy-scan, source/data/semantic/GPX/database/statistics/time/web-tester passerar. Råarkiv, SQLite och raw JSON exporteras inte till `web/`; lokal GPX-preview är noindex och browser-lokal.
-- GitHub Actions QA `38212386732` passerade på exakt `a45cd90`. Artefakten innehåller verkliga screenshots för 1536, 1440, 1200, 1024, 900, 768, 390 och 360 px; samtliga granskades visuellt. Den första körningen `38212201934` föll på en för bred overflowkontroll av kvalitetstabellens avsiktliga scrollbar och ersattes av `a45cd90`.
-- Automatisk Pages-körning `38212470869` passerade efter QA-körningen. Publicerad URL `http://www.loppanalys.se/gax100-analys/` laddades och verifierades med aktuell 2026-data, könsfilter, percentilemarkörer och releasekandidatens UI. Pages API:s anonyma `/pages`-endpoint gav 404, men workflow-jobbet och publicerad sida är verifierade.
+- GitHub Actions QA `38212386732` passerade på exact-head `a45cd90` med screenshots för 1536, 1440, 1200, 1024, 900, 768, 390 och 360 px; samtliga granskades visuellt. Därefter passerade exact-head QA `38214549680` på docs-release-head `b46125f` och `38214751968` på aktuell GitHub-head `3a04b49`. Den första körningen `38212201934` föll på en för bred overflowkontroll av kvalitetstabellens avsiktliga scrollbar och ersattes av `a45cd90`.
+- Automatisk Pages-körning `38214840161` passerade efter aktuell QA. Publicerad URL `https://www.loppanalys.se/gax100-analys/` laddades och verifierades med aktuell 2026-data, könsfilter, percentilemarkörer, releasekandidatens UI och den centrala GDPR-länken. Pages API:s anonyma `/pages`-endpoint gav 404, men workflow-jobbet och publicerad sida är verifierade.
 
 ## Externa begränsningar
 
