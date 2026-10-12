@@ -1,4 +1,4 @@
-const state = { data: null, year: null, query: '', club: '', gender: '', status: '', searchScope: 'year', sort: 'time', page: 1, pageSize: 10, selected: null, compare: [], duel: [], favorites: new Set(), planTarget: null, targetSeconds: null, fieldSegmentIndex: null, finishGroup: 'all', labFrom: null, labTo: null, labGroup: 'all', segmentIndex: null };
+const state = { data: null, year: null, query: '', club: '', clubQuery: '', gender: '', status: '', searchScope: 'year', sort: 'time', page: 1, pageSize: 10, selected: null, compare: [], duel: [], favorites: new Set(), planTarget: null, targetSeconds: null, fieldSegmentIndex: null, finishGroup: 'all', labFrom: null, labTo: null, labGroup: 'all', segmentIndex: null };
 const $ = (selector) => document.querySelector(selector);
 function labelMobileTable(table, columnLabels) {
   if (!table) return;
@@ -26,7 +26,7 @@ function rows() {
   const filtered = (state.searchScope === 'all' ? state.data.results : editionResults(state.year)).filter((result) => {
     const matchesQuery = !query || `${result.name} ${result.bib || result.start_number || ''} ${result.club || ''}`.toLocaleLowerCase('sv-SE').includes(query);
     const matchesGender = !state.gender || result.gender === state.gender;
-    return matchesQuery && (!state.club || result.club === state.club) && matchesGender && (!state.status || result.status === state.status);
+    return matchesQuery && (!state.club || result.club === state.club) && (!state.clubQuery || String(result.club || '').toLocaleLowerCase('sv-SE').includes(state.clubQuery.trim().toLocaleLowerCase('sv-SE'))) && matchesGender && (!state.status || result.status === state.status);
   });
   return filtered.sort((left, right) => {
     const compare = state.sort === 'name'
@@ -73,6 +73,8 @@ function renderFilters() {
   const clubs = [...new Set((state.searchScope === 'all' ? state.data.results : editionResults(state.year)).filter((result) => result.club).map((result) => result.club))].sort((a, b) => a.localeCompare(b, 'sv'));
   $('#club').innerHTML = '<option value="">Alla klubbar</option>' + clubs.map((club) => `<option value="${esc(club)}">${esc(club)}</option>`).join('');
   $('#club').value = state.club;
+  $('#club-suggestions').innerHTML = clubs.map((club) => '<option value="' + esc(club) + '"></option>').join('');
+  $('#club-autocomplete').value = state.clubQuery;
   const genders = [...new Set((state.searchScope === 'all' ? state.data.results : editionResults(state.year)).filter((result) => result.gender).map((result) => result.gender))].sort((a, b) => a.localeCompare(b, 'sv'));
   $('#gender').innerHTML = '<option value="">Alla kön</option>' + genders.map((gender) => `<option value="${esc(gender)}">${esc(gender)}</option>`).join('');
   $('#gender').value = state.gender;
@@ -96,7 +98,9 @@ function renderRows() {
     : `<span>${visibleRows.length ? `Sida 1 av 1 · ${visibleRows.length} resultat` : 'Ingen resultatsida'}</span>`;
   // Search results are actionable directly below the finder, while the full database stays near the footer.
   const preview = $('#finder-preview');
-  preview.innerHTML = state.query.trim() ? '<div class="table-wrap finder-table-wrap"><table class="result-table"><thead><tr><th>Namn</th><th>År</th><th>Kön</th><th>Klubb</th><th>Status</th><th>Sluttid</th><th>Val</th></tr></thead><tbody>' + $('#rows').innerHTML + '</tbody></table></div>' :
+  const previewRows = [...$('#rows').querySelectorAll('tr')].slice(0,7).map((row) => row.outerHTML).join('');
+  preview.innerHTML = (state.query.trim() || state.clubQuery.trim()) ?
+    '<p class="muted">Visar upp till sju träffar direkt här. Alla ' + visibleRows.length + ' resultat finns i databasen nedan.</p><div class="table-wrap finder-table-wrap"><table class="result-table"><thead><tr><th>Namn</th><th>År</th><th>Kön</th><th>Klubb</th><th>Status</th><th>Sluttid</th><th>Val</th></tr></thead><tbody>' + previewRows + '</tbody></table></div>' :
     '<p class="muted">Skriv ett namn, startnummer eller en klubb för att visa och välja löpare här.</p>';
   const comparisonChips = state.compare.map((id) => state.data.results.find((result) => result.result_id === id)).filter(Boolean);
   const duelChips = state.duel.map((id) => state.data.results.find((result) => result.result_id === id)).filter(Boolean);
@@ -926,17 +930,18 @@ fetch('data.json').then((response) => response.json()).then((data) => { state.da
   state.compare = (params.get('compare') || '').split(',').filter((id) => validIds.has(id)).slice(0, 2);
   state.duel = (params.get('duel') || '').split(',').filter((id) => validIds.has(id)).slice(0, 5);
   render(); });
-$('#year').onchange = (event) => { state.year = event.target.value; state.page = 1; state.selected = null; state.club = ''; state.gender = ''; if (state.searchScope !== 'all') { state.compare = []; state.duel = []; } state.planTarget = null; state.targetSeconds = null; state.fieldSegmentIndex = null; state.finishGroup = 'all'; state.labFrom = null; state.labTo = null; state.labGroup = 'all'; state.segmentIndex = null; render(); syncUrl(true); };
-$('#search-scope').onchange = (event) => { state.searchScope = event.target.value; state.page = 1; state.club = ''; state.gender = ''; renderFilters(); renderRows(); syncUrl(true); };
+$('#year').onchange = (event) => { state.year = event.target.value; state.page = 1; state.selected = null; state.club = ''; state.clubQuery = ''; $('#club-autocomplete').value = ''; state.gender = ''; if (state.searchScope !== 'all') { state.compare = []; state.duel = []; } state.planTarget = null; state.targetSeconds = null; state.fieldSegmentIndex = null; state.finishGroup = 'all'; state.labFrom = null; state.labTo = null; state.labGroup = 'all'; state.segmentIndex = null; render(); syncUrl(true); };
+$('#search-scope').onchange = (event) => { state.searchScope = event.target.value; state.page = 1; state.club = ''; state.clubQuery = ''; $('#club-autocomplete').value = ''; state.gender = ''; renderFilters(); renderRows(); syncUrl(true); };
 $('#status-filter').onchange = (event) => { state.status = event.target.value; state.page = 1; renderRows(); };
 $('#search').oninput = (event) => { state.query = event.target.value; state.page = 1; renderRows(); };
-$('#club').onchange = (event) => { state.club = event.target.value; state.page = 1; renderRows(); };
+$('#club').onchange = (event) => { state.club = event.target.value; state.clubQuery = ''; $('#club-autocomplete').value = ''; state.page = 1; renderRows(); };
+$('#club-autocomplete').oninput = (event) => { state.clubQuery = event.target.value; state.club = ''; $('#club').value = ''; state.page = 1; renderRows(); };
 $('#gender').onchange = (event) => { state.gender = event.target.value; state.page = 1; renderRows(); };
 $('#sort').onchange = (event) => { state.sort = event.target.value; state.page = 1; renderRows(); };
 $('#page-size').onchange = (event) => { const chosen = Number(event.target.value); if (![10,25,50].includes(chosen)) return; state.pageSize = chosen; state.page = 1; renderRows(); };
 $('#reset-result-filters').onclick = () => {
-  state.query = ''; state.club = ''; state.gender = ''; state.status = ''; state.sort = 'time'; state.pageSize = 10; state.page = 1;
-  $('#search').value = ''; $('#sort').value = 'time'; $('#page-size').value = '10';
+  state.query = ''; state.club = ''; state.clubQuery = ''; state.gender = ''; state.status = ''; state.sort = 'time'; state.pageSize = 10; state.page = 1;
+  $('#search').value = ''; $('#club-autocomplete').value = ''; state.clubQuery = ''; $('#sort').value = 'time'; $('#page-size').value = '10';
   renderFilters(); renderRows();
 };
 window.addEventListener('popstate', () => {
