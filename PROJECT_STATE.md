@@ -1,5 +1,18 @@
 # Projektstatus: GAX100 Analys
 
+## Komplettering: oberoende paritetsarbete i Draft PR #3 (2026-10-12)
+
+Detta avsnitt beskriver **en separat granskningsbranch**, `audit/gax100-plan-precision-2026-10-12`, baserad på `codex/gax100-etapp2`. Det historiska ETAPP 2-läget nedan avser PR #2 före dessa förbättringar. PR #2 och PR #3 är fortsatt Draft och får inte mergas eller publiceras automatiskt.
+
+- Ny källanknuten statistikmodul `web/field.js` och regressionstester `tests/test_field.js`. Inkluderar edition- och checkpoint-scopade kompletta referenskohorter, mediansplit, kvartiler (n≥10), P10/P90 (n≥20), verifierad avslutningsdelsträcka, rapporterat kön/klubb samt senaste faktiskt observerade DNF-kontroll.
+- Utökad fältstatistik: målutfall mot verkliga FINISHED-tider med uttryckligen hypotetisk placering, könsurval i histogram/percentiler, klickbara resultat i placeringsdiagram och koppling mellan percentilmåltid och måltidssimulatorn.
+- Ny `GaxField.runnerGap()` för individuell kumulativ tidslucka mot en fast grupp fullföljare med exakt samma verkliga kontrollpunkter; segmentval synkroniseras med övrig individuell analys.
+- 2023 ger 70 kompletta profiler, 2024 ger 53. Flera äldre editioner har verifierade mellantider; 2025 och 2026 saknar publik splitserie och får därför ingen delsträckeprofil.
+- Jämför inte sluttider över banversioner som om banan vore identisk. Ingen icke godkänd GPX, höjd eller tidsstämplad GPS-replay har publicerats. Varken databasens 945 resultat eller den frysta importkedjan har ändrats.
+- Testkrav: `npm run test:field`, befintliga Node-test, uppdaterade Chromium E2E, source/semantic/privacy och responsiv screenshots. Exakt godkänd slut-SHA måste läsas ur Actions före merge; misslyckade mellancommits är inte releasebevis.
+- Kvarvarande standardluckor: licensierad tävlingshero/OG, ban- och höjdprofil/replay, full kartduell, verifierad personidentitet mellan år, vissa dataintensiva placering/åldersmoduler, event.json-driven generisk mall och oberoende GDPR-releasekontroll.
+
+
 ## Aktuellt
 
 ETAPP 2 körs på befintlig branch `codex/gax100-etapp2` och Draft PR #2. Senaste funktionella application head är `3a04b49` (`docs: link to central GDPR privacy policy and right to object`); därefter finns endast release-state-dokumentation på branchen. Använd `git log -1` för exakt aktuell branch-head. PR #2 är öppen, Draft och inte mergad. GAX100 är inte tillagd i huvudkatalogen.
