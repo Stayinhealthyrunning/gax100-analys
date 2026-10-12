@@ -38,18 +38,24 @@ for(const width of [360,768,1440]) {
 }
 
 
-test('latest edition advertises only source-supported analytics and safely guides to splits',async({page})=>{
+test('latest edition advertises only source-supported analytics and safely guides to splits',async({page},testInfo)=>{
   for (const width of [360,390,768,1440]) {
     await page.setViewportSize({width,height:900});
     await page.goto('/');
     await expect(page.locator('#year')).toHaveValue('gax100-2026');
     await expect(page.locator('#edition-capability-content .capability-item')).toHaveCount(4);
     await expect(page.locator('#edition-capability-content')).toContainText('otillräckligt underlag');
+    await expect(page.locator('#edition-capability-content .capability-item.unavailable')).toHaveCount(2);
+    await expect(page.locator('#edition-capability-content .capability-item.unavailable a')).toHaveCount(0);
+    await expect(page.locator('#edition-capability-content .capability-item.unavailable').first()).toHaveAttribute('aria-disabled','true');
+    await page.locator('#edition-capabilities').screenshot({path:testInfo.outputPath('source-coverage-empty-'+width+'.png')});
     await page.locator('#find-split-year').click();
     await expect(page.locator('#year')).toHaveValue('gax100-2024');
     await expect(page.locator('#segment-lab .field-segment-button')).toHaveCount(0); // the lab uses option controls
     await expect(page.locator('#lab-from')).toBeVisible();
     await expect(page.locator('#edition-capability-content')).toContainText('53 kompletta profiler');
+    await expect(page.locator('#edition-capability-content .capability-item.available')).toHaveCount(3);
+    await page.locator('#edition-capabilities').screenshot({path:testInfo.outputPath('source-coverage-2024-'+width+'.png')});
     await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth)).toBeLessThanOrEqual(1);
   }
 });
