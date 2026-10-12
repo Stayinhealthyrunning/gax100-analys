@@ -588,7 +588,7 @@ function renderHistory() {
   const editions = state.data.editions.slice().sort((a, b) => b.year - a.year || b.edition_id.localeCompare(a.edition_id));
   $('#history').innerHTML = editions.map((item) => {
     const results = editionResults(item.edition_id); const finished = results.filter((result) => result.status === 'FINISHED'); const times = finished.map((result) => result.finish_seconds); const observations = results.reduce((sum, result) => sum + (result.observations || []).length, 0); const fastest = times.filter(Number.isFinite).sort((a, b) => a - b)[0];
-    return `<tr><td>${esc(item.edition_label)}</td><td>${finished.length}</td><td>${results.filter((result) => result.status === 'DNF').length}</td><td>${time(median(times))}</td><td>${time(fastest)}</td><td>${observations}</td></tr>`;
+    return `<tr><td data-label="Upplaga">${esc(item.edition_label)}</td><td data-label="Fullföljde">${finished.length}</td><td data-label="DNF">${results.filter((result) => result.status === 'DNF').length}</td><td data-label="Median">${time(median(times))}</td><td data-label="Snabbaste">${time(fastest)}</td><td data-label="Mellantider">${observations}</td></tr>`;
   }).join('');
 }
 
