@@ -13,6 +13,14 @@ Detta avsnitt beskriver **en separat granskningsbranch**, `audit/gax100-plan-pre
 - Kvarvarande standardluckor: licensierad tävlingshero/OG, ban- och höjdprofil/replay, full kartduell, verifierad personidentitet mellan år, vissa dataintensiva placering/åldersmoduler, event.json-driven generisk mall och oberoende GDPR-releasekontroll.
 
 
+### Tillägg: delsträckelabb och resultatdatabas
+
+- Två verkliga ankare i en komplett, editionsbunden referenskohort kan väljas från Start via mellanliggande officiella kontroller till Mål. Den nya `GaxField.segmentLab()` räknar enbart med observerade passager/sluttider och samma källverifierade kontrollsekvens; kohort n≥5, Q25–Q75 n≥10, P10–P90 n≥20. Kvinnor/män kan väljas när gruppens n≥5. Ingen individuell topplista publiceras i labbet innan ålders- och suppressionsskyddet är färdiggranskat.
+- Verifierade checkpointavstånd bevaras från `web/plan.js` till `web/field.js`. Exempel: 2023 Magleberg 44 km → Haväng 80 km = 36 km, medan samma intervall 2024 saknar verifierad fysisk distans och måste visa detta.
+- Resultatdatabasen stöder 10 (standard), 25 eller 50 rader per sida, synligt aktuellt intervall, återställning, svenska sök-/sorteringsregler och deterministisk sekundärsortering på result_id.
+- Delningslänk från sökresultat i läget Alla år använder nu resultatets egen edition, inte en annan aktiv upplaga.
+- QA måste vara grön på den exakta slutliga PR #3-headen, även efter dokumentationscommits. Fullt geografiskt replay/positionsmodellering är fortfarande separat rättighets- och källgated.
+
 ## Aktuellt
 
 ETAPP 2 körs på befintlig branch `codex/gax100-etapp2` och Draft PR #2. Senaste funktionella application head är `3a04b49` (`docs: link to central GDPR privacy policy and right to object`); därefter finns endast release-state-dokumentation på branchen. Använd `git log -1` för exakt aktuell branch-head. PR #2 är öppen, Draft och inte mergad. GAX100 är inte tillagd i huvudkatalogen.
