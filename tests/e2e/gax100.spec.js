@@ -342,7 +342,7 @@ test('Delsträckelabbet: två riktiga kontroller, år, könsgrupper och återst�
   await expect(page.locator('#lab-to')).toHaveValue('4');
   await page.locator('#year').selectOption('gax100-2024');
   await expect(page.locator('#segment-lab-content')).toContainText('n=53');
-  await expect(page.locator('#lab-group option[value="female"]')).toBeDisabled();
+  await expect(page.locator('#lab-group option[value="female"]')).toHaveAttribute('disabled', '');
   await page.locator('#year').selectOption('gax100-2025');
   await expect(page.locator('#segment-lab-content')).toContainText('Delsträckelabbet är därför avstängt');
   await expect(page.locator('#lab-from')).toHaveCount(0);
