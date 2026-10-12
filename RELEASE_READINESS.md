@@ -38,17 +38,17 @@ Status: release candidate under review. Branch `codex/gax100-etapp2`, Draft PR #
 
 ## 5. Testresultat på slutlig commit
 
-This section is completed only after the final GitHub Actions run for the commit named below. It must include Node contract tests, source/data/semantic tests, GPX tests, privacy scan, Chromium tests and screenshot artifact review at 1536, 1440, 1200, 1024, 900, 768, 390 and 360 px.
+The final verification is complete for the commit named below. It includes Node contract tests, source/data/semantic tests, GPX tests, privacy scan, Chromium tests and screenshot artifact review at 1536, 1440, 1200, 1024, 900, 768, 390 and 360 px.
 
-- Final commit: **PENDING**
-- QA workflow: **PENDING**
-- Pages workflow for final SHA: **PENDING**
-- Visual screenshot review: **PENDING**
+- Final commit: **`a45cd90`**
+- QA workflow: **`38212386732` – success**
+- Pages workflow: **`38212470869` – success**, triggered by the successful QA workflow; published URL verified at [loppanalys.se/gax100-analys](http://www.loppanalys.se/gax100-analys/)
+- Visual screenshot review: **complete** for all eight requested widths; no real viewport overflow, clipped result cards or broken primary interaction was observed. The quality matrix remains intentionally scrollbarable on narrow screens.
 
 ## 6. Rekommendation om PR #2
 
-**Draft PR #2 is not yet recommended for merge** until the final exact-head QA run and visual artifact review are green, Pages deployment for that SHA is confirmed, and the maintainer has completed the privacy/rightsholder check. No merge has been performed.
+**Draft PR #2 is conditionally ready for maintainer review, not auto-merge.** Exact-head QA and Pages deployment are green. Merge still requires the maintainer’s privacy/rightsholder decision, particularly for public GPX use, and explicit approval. No merge has been performed.
 
 ## 7. Rekommendation om länk från Loppanalys.se
 
-**Do not link GAX100 from the Loppanalys.se catalogue yet.** The application is suitable for maintainer testing as a release candidate, but official GPX rights, remaining data capabilities and final Pages confirmation are still external release conditions.
+**Do not link GAX100 from the Loppanalys.se catalogue yet.** The application is suitable for maintainer testing and the static Pages deployment is live, but official GPX rights, remaining data capabilities and the final catalog decision are still external release conditions.

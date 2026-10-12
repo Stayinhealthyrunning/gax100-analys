@@ -9,8 +9,8 @@
 | REL-003 | Individuell segmentinteraktion | DONE | Verifierade segment kan väljas i tabellen och markeras i relativfartsdiagrammet; saknade observationer bryter serien |
 | REL-004 | Mobil/resultat- och sökinteraktion | DONE | 10-raders paginerade kort, köns-/klubbfilter, namn/startnummer/klubbsökning, favorit och delningslänk |
 | REL-005 | Privacy/security QA | DONE | `tests/test_public_privacy.js` skannar publik export efter råarkiv, SQLite, dynamisk kod och oskyddade externa skript |
-| REL-006 | Full browser-QA på åtta viewportbredder | IN PROGRESS | GitHub Actions-artifakt granskas visuellt för 1536, 1440, 1200, 1024, 900, 768, 390 och 360 px |
-| REL-007 | Release readiness och Pages-status | IN PROGRESS | `RELEASE_READINESS.md` innehåller slutlig commit, teststatus, begränsningar och explicit Pages-verifiering |
+| REL-006 | Full browser-QA på åtta viewportbredder | DONE | GitHub Actions-artifakt `38212386732` är grön och visuellt granskad för 1536, 1440, 1200, 1024, 900, 768, 390 och 360 px |
+| REL-007 | Release readiness och Pages-status | DONE | `RELEASE_READINESS.md` innehåller exakt commit, teststatus, kvarvarande luckor, rättigheter och Pages-körning `38212470869` |
 
 ## Färdigställandekörning
 
@@ -33,10 +33,10 @@
 | FE-009 | Kartduellens valkontrakt 2–5 resultat | DONE | UI begränsar valet till 2–5 och visar tydlig GPX-gating |
 | FE-010 | Mobil resultatinventering | DONE | Resultatdatabasen visas som läsbara kort under 600 px med paginering och åtkomliga åtgärder |
 | SEC-001 | HTML-escaping och exportkontroll | DONE | Externa textfält HTML-escapas och råarkivet ligger utanför webbutdata |
-| QA-001 | Riktig Chromium browser-QA vid 1440/900/768/390 | DONE | GitHub Actions-körning `37932828615` på exact head `66f0b60` lyckades; ny körning ska verifiera 2025-import, kvalitetstabell och plan-simulering |
-| QA-003 | GitHub Actions exact-head QA och artefakter | DONE | `37937098006` byggde data, passerade käll-/databas-/semantik-/GPX-geometri-/preview- och Chromium-QA på `82dad5e` och rapporterade en artefakt |
+| QA-001 | Riktig Chromium browser-QA vid åtta viewportbredder | DONE | GitHub Actions-körning `38212386732` på exact head `a45cd90` lyckades för 1536/1440/1200/1024/900/768/390/360 |
+| QA-003 | GitHub Actions exact-head QA och artefakter | DONE | `38212386732` byggde data, passerade source/database/semantics/GPX/privacy/Chromium och rapporterade artifact för `a45cd90` |
 | QA-002 | Uppdatera PROJECT_STATE, commit och push | DONE | Projektstatus och arbetskö uppdateras tillsammans med verifierad korrigeringscommit |
-| QA-004 | Visuell granskning av Actions-skärmbilder | DONE | Artefakten innehåller `desktop-1440.png`, `desktop-900-map-duel.png`, `responsive-768.png` och `responsive-390.png`; samtliga granskade |
+| QA-004 | Visuell granskning av Actions-skärmbilder | DONE | Artifact `gax100-playwright-qa-a45cd90...` innehåller och har granskats vid 1536/1440/1200/1024/900/768/390/360; inga kapade texter eller verklig viewportoverflow observerades |
 | DATA-005 | Officiell 2026-könsproveniens | DONE | PDF-importen ger 110/110 könsvärden: 22 Kvinnor och 88 Män, med `result-2026-gender` som källa |
 | DATA-006 | Officiell 2025-PDF och statusimport | DONE | `result-2025` är verifierad PDF; fixture-testet ger 69 FINISHED, 40 DNF, 10 DNS och 109 fastställda startande |
 | SRC-001 | Historiska GPX och 2025 alternativkälla | PARTIAL | 2025 är löst via officiell PDF; officiella/publicerbara 2023/2024-GPX och rättighet kvarstår |
