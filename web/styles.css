@@ -344,3 +344,18 @@ button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-v
 .gap-chart .gap-dot.selected { fill:#db2777; stroke:#a21caf; }
 .gap-chart .gap-dot:focus-visible { stroke:#f59e0b; stroke-width:4; outline:none; }
 .gap-chart .gap-checkpoint { font-size:13px; }
+
+/* Five explicitly separated KPI cards; remove wasted vertical rhythm on mobile. */
+#race-facts .fact {
+  border:1px solid #d8e5ea;
+  background:#f9fcfd;
+  box-shadow:0 1px 4px rgba(8,28,43,.025);
+}
+@media(max-width:600px) {
+  #race-facts .facts { gap:8px; }
+  #race-facts .fact { min-height:0; padding:10px 11px; }
+  #race-facts .fact:nth-child(3) { grid-column:span 2; }
+  #race-facts .fact h3 { margin-bottom:6px; }
+  #race-facts .fact small { margin-top:4px; line-height:1.35; }
+}
+@media(max-width:379px) { #race-facts .fact:nth-child(3) { grid-column:auto; } }
