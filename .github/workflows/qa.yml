@@ -2,7 +2,7 @@ name: GAX100 QA
 
 on:
   push:
-    branches: [codex/gax100-etapp2]
+    branches: [codex/gax100-etapp2, audit/gax100-plan-precision-2026-10-12]
   pull_request:
     branches: [codex/gax100-etapp2]
   workflow_dispatch:
