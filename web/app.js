@@ -623,12 +623,67 @@ function renderPercentiles() {
 }
 
 function renderHistory() {
-  const editions = state.data.editions.slice().sort((a, b) => b.year - a.year || b.edition_id.localeCompare(a.edition_id));
-  $('#history').innerHTML = editions.map((item) => {
-    const results = editionResults(item.edition_id); const finished = results.filter((result) => result.status === 'FINISHED'); const times = finished.map((result) => result.finish_seconds); const observations = results.reduce((sum, result) => sum + (result.observations || []).length, 0); const fastest = times.filter(Number.isFinite).sort((a, b) => a - b)[0];
-    return `<tr><td data-label="Upplaga">${esc(item.edition_label)}</td><td data-label="Fullföljde">${finished.length}</td><td data-label="DNF">${results.filter((result) => result.status === 'DNF').length}</td><td data-label="Median">${time(median(times))}</td><td data-label="Snabbaste">${time(fastest)}</td><td data-label="Mellantider">${observations}</td></tr>`;
+  const editions=state.data.editions.slice().sort((a,b)=>b.year-a.year || b.edition_id.localeCompare(a.edition_id));
+  const counts=editions.map((item)=>{
+    const results=editionResults(item.edition_id);
+    const finished=results.filter(r=>r.status==='FINISHED'&&Number.isFinite(r.finish_seconds)&&r.finish_seconds>0);
+    const dnf=results.filter(r=>r.status==='DNF');
+    const times=finished.map(r=>r.finish_seconds);
+    return {edition:item,finished:finished.length,dnf:dnf.length,
+      medianSeconds:median(times),fastestSeconds:times.length?Math.min(...times):null,
+      observations:results.reduce((acc,r)=>acc+(r.observations||[]).length,0)};
+  });
+  $('#history').innerHTML=counts.map(({edition,finished,dnf,medianSeconds,fastestSeconds,observations})=>
+    '<tr><td data-label="Upplaga">'+esc(edition.edition_label)+'</td>'+
+    '<td data-label="Fullföljde">'+finished+'</td><td data-label="DNF">'+dnf+'</td>'+
+    '<td data-label="Median">'+time(medianSeconds)+'</td><td data-label="Snabbaste">'+
+    time(fastestSeconds)+'</td><td data-label="Mellantider">'+observations+'</td></tr>'
+  ).join('');
+  $('#history').querySelectorAll('td[data-label]').forEach(cell=>
+    cell.setAttribute('aria-label',cell.dataset.label+': '+cell.textContent.trim()));
+  const chronological=counts.slice().reverse();
+  const maxCount=Math.max(1,...chronological.map(row=>Math.max(row.finished,row.dnf)));
+  const left=65,top=32,bottom=245,step=70,groupWidth=step-14;
+  const barWidth=24,gap=6;
+  const x=(index)=>left+index*step;
+  const height=(count)=>count/maxCount*(bottom-top);
+  const tickRows=[0,.25,.5,.75,1].map(fraction=>{
+    const y=bottom-fraction*(bottom-top);
+    return '<line class="gridline" x1="'+(left-15)+'" x2="1055" y1="'+y+
+      '" y2="'+y+'"/><text x="7" y="'+(y+5)+'">'+Math.round(fraction*maxCount)+'</text>';
   }).join('');
-  $('#history').querySelectorAll('td[data-label]').forEach((cell) => cell.setAttribute('aria-label', cell.dataset.label + ': ' + cell.textContent.trim()));
+  const bars=chronological.map(({edition,finished,dnf},index)=>{
+    const pos=x(index), hf=height(finished),hd=height(dnf);
+    const label=edition.year===2021?
+      (edition.edition_id.endsWith('-a')?'2021 A':'2021 B'):String(edition.year);
+    const selected=edition.edition_id===state.year;
+    return '<g class="history-edition '+(selected?'selected':'')+
+      '" tabindex="0" role="button" data-history-edition="'+esc(edition.edition_id)+
+      '" aria-label="Visa '+esc(edition.edition_label)+'. '+finished+
+      ' fullföljde, '+dnf+' DNF">'+
+      '<rect class="history-finished" x="'+pos+'" y="'+(bottom-hf)+'" width="'+barWidth+
+      '" height="'+hf+'"><title>'+esc(label)+': '+finished+' fullföljde</title></rect>'+
+      '<rect class="history-dnf" x="'+(pos+barWidth+gap)+'" y="'+(bottom-hd)+'" width="'+barWidth+
+      '" height="'+hd+'"><title>'+esc(label)+': '+dnf+' DNF</title></rect>'+
+      '<text x="'+(pos+groupWidth/2)+'" y="270" text-anchor="middle">'+esc(label)+'</text>'+
+      '</g>';
+  }).join('');
+  $('#history-vis').innerHTML='<div class="history-legend"><span class="finish">Fullföljde</span>'+
+    '<span class="dnf">DNF – officiell status</span></div>'+
+    '<svg viewBox="0 0 1120 295" role="group" aria-label="Antal fullföljare respektive officiella DNF per upplaga. Klicka eller tabba till ett år för att välja det." >'+
+    tickRows+'<text x="4" y="18">Antal</text><line class="axis" x1="'+left+'" x2="1055" y1="'+bottom+'" y2="'+bottom+'"/>'+
+    bars+'</svg>';
+  $('#history-vis').querySelectorAll('[data-history-edition]').forEach(node=>{
+    const show=()=>{
+      const editionId=node.dataset.historyEdition;
+      if(editionId===state.year)return;
+      $('#year').value=editionId;
+      $('#year').dispatchEvent(new Event('change',{bubbles:true}));
+      $('#race-facts').scrollIntoView({block:'start'});
+    };
+    node.onclick=show;
+    node.onkeydown=(event)=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();show();}};
+  });
 }
 
 function renderQuality() {
@@ -872,7 +927,7 @@ let chartZoomOpener = null;
 function enhanceChartViewports() {
   const dialog = $('#chart-zoom-dialog');
   if (!dialog) return;
-  document.querySelectorAll('#runner svg, #comparison svg, #histogram svg, #scatter svg').forEach((svg) => {
+  document.querySelectorAll('#runner svg, #comparison svg, #histogram svg, #scatter svg, #history-vis svg').forEach((svg) => {
     if (svg.closest('.chart-viewport')) return;
     const wrapper = document.createElement('div');
     wrapper.className = 'chart-viewport';
