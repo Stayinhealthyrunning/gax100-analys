@@ -318,3 +318,33 @@ test('individuell tidslucka använder fast verifierad referenskohort och klickba
   await expect(page.locator('#runner')).toContainText('Tidslucka mot fältet visas inte');
   await expect(page.locator('#runner .gap-chart')).toHaveCount(0);
 });
+
+
+test('Delsträckelabbet: två riktiga kontroller, år, könsgrupper och återställning', async ({page}) => {
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/');
+  await page.locator('#year').selectOption('gax100-2023');
+  await expect(page.locator('#lab-from')).toHaveValue('0');
+  await expect(page.locator('#lab-to')).toHaveValue('4');
+  await expect(page.locator('#segment-lab-content')).toContainText('n=70');
+  await page.locator('#lab-from').selectOption('1');
+  await page.locator('#lab-to').selectOption('2');
+  await expect(page.locator('#segment-lab-content')).toContainText('36 km');
+  await page.locator('#lab-group').selectOption('female');
+  await expect(page.locator('#segment-lab-content')).toContainText('n=16');
+  await expect(page.locator('#segment-lab-content')).not.toContainText('Snabbast');
+  await page.locator('#lab-last').click();
+  await expect(page.locator('#lab-from')).toHaveValue('3');
+  await expect(page.locator('#lab-to')).toHaveValue('4');
+  await expect(page.locator('#segment-lab-content')).toContainText('Distans saknas');
+  await page.locator('#lab-reset').click();
+  await expect(page.locator('#lab-from')).toHaveValue('0');
+  await expect(page.locator('#lab-to')).toHaveValue('4');
+  await page.locator('#year').selectOption('gax100-2024');
+  await expect(page.locator('#segment-lab-content')).toContainText('n=53');
+  await expect(page.locator('#lab-group option[value="female"]')).toBeDisabled();
+  await page.locator('#year').selectOption('gax100-2025');
+  await expect(page.locator('#segment-lab-content')).toContainText('Delsträckelabbet är därför avstängt');
+  await expect(page.locator('#lab-from')).toHaveCount(0);
+  await assertNoHorizontalOverflow(page);
+});
