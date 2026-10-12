@@ -46,7 +46,7 @@ if (masked.finish_seconds !== fixture.finish_seconds || masked.observations[0].e
 if (!isSuppressed('Exempel, Anna', fixtureRules) || isSuppressed('Other, Runner', fixtureRules)) {
   throw new Error('Name-fingerprint matching failed');
 }
-if (!/<meta\\s+name="robots"\\s+content="noindex, nofollow"/i.test(index)) {
+if (!index.includes('<meta name="robots" content="noindex, nofollow">')) {
   throw new Error('Public GAX analysis page must be noindex');
 }
 const data = JSON.parse(contents.find(item => item.file === 'web/data.json').text);
