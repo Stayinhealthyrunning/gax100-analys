@@ -2,7 +2,7 @@
 
 ## Aktuellt
 
-ETAPP 2 körs på befintlig branch `codex/gax100-etapp2` och Draft PR #2. Senaste GitHub-head är `3a04b49` (`docs: link to central GDPR privacy policy and right to object`). PR #2 är öppen, Draft och inte mergad. GAX100 är inte tillagd i huvudkatalogen.
+ETAPP 2 körs på befintlig branch `codex/gax100-etapp2` och Draft PR #2. Senaste funktionella application head är `3a04b49` (`docs: link to central GDPR privacy policy and right to object`); därefter finns endast release-state-dokumentation på branchen. Använd `git log -1` för exakt aktuell branch-head. PR #2 är öppen, Draft och inte mergad. GAX100 är inte tillagd i huvudkatalogen.
 
 ## Senast verifierat
 
