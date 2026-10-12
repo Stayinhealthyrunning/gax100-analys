@@ -297,3 +297,24 @@ test('sluttidsurval kvinnor och m채n 채r k채llaanknutna och kan anv채ndas som m�
   await expect(page.locator('#finish-group-selector [data-finish-group="all"]')).toHaveAttribute('aria-pressed','true');
   await expect(page.locator('#percentiles')).toContainText('Hela f채ltet');
 });
+
+
+test('individuell tidslucka anv채nder fast verifierad referenskohort och klickbar segmentmarkering', async ({ page }) => {
+  await page.goto('/');
+  const data = await loadData(page);
+  const chosen = data.results.find((r)=>r.edition_id==='gax100-2023'&&r.status==='FINISHED'&&r.observations.length===3);
+  expect(chosen).toBeTruthy();
+  await page.locator('#year').selectOption('gax100-2023');
+  await page.locator('#search').fill(chosen.name);
+  await page.locator('#finder-preview [data-id]').first().click();
+  await expect(page.locator('#runner .gap-chart')).toBeVisible();
+  await expect(page.locator('#runner')).toContainText('Fast referensgrupp');
+  await expect(page.locator('#runner .gap-dot')).toHaveCount(5);
+  await page.locator('#runner .gap-dot[data-segment-index="2"]').click();
+  await expect(page.locator('#runner .selected-segment')).toHaveCount(1);
+  await page.locator('#year').selectOption('gax100-2025');
+  await page.locator('#search').fill('');
+  await page.locator('#rows [data-id]').first().click();
+  await expect(page.locator('#runner')).toContainText('Tidslucka mot f채ltet visas inte');
+  await expect(page.locator('#runner .gap-chart')).toHaveCount(0);
+});
