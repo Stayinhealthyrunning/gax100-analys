@@ -371,13 +371,34 @@ function chart() {
   finished.forEach((result) => { counts[Math.min(bins - 1, Math.floor((result.finish_seconds - min) / step))] += 1; });
   const barWidth = 350 / bins; const maxCount = Math.max(...counts);
   const histogramTicks = [0, .25, .5, .75, 1].map((fraction) => `<line class="gridline" x1="32" y1="${140 - fraction * 105}" x2="400" y2="${140 - fraction * 105}"/><text x="2" y="${144 - fraction * 105}">${Math.round(maxCount * fraction)}</text>`).join('');
+  const histogramXAxis = [0, .25, .5, .75, 1].map((fraction) => {
+    const x = 38 + 350 * fraction;
+    return '<text x="' + x + '" y="155" text-anchor="middle">' + time(min + (max - min) * fraction).slice(0, 6) + '</text>';
+  }).join('');
   const percentileMarkers = [.1, .5, .9].map((probability) => { const value = percentile(finished.map((result) => result.finish_seconds), probability); const x = 38 + ((value - min) / Math.max(max - min, 1)) * 350; return `<line class="percentile-marker" x1="${x.toFixed(1)}" y1="18" x2="${x.toFixed(1)}" y2="140"/><text x="${Math.min(380, Math.max(34, x - 8)).toFixed(1)}" y="14">P${probability * 100}</text>`; }).join('');
-  $('#histogram').innerHTML = `<svg viewBox="0 0 ${width} ${height}" aria-label="Sluttid i ${bins} intervall"><line class="axis" x1="32" y1="140" x2="400" y2="140"/>${histogramTicks}${percentileMarkers}${counts.map((count, index) => `<rect class="bar" x="${38 + index * barWidth}" y="${140 - count / maxCount * 105}" width="${Math.max(2, barWidth - 5)}" height="${count / maxCount * 105}"/><text x="${38 + index * barWidth}" y="155">${time(min + index * step).slice(0, 8)}</text>`).join('')}<text x="4" y="20">antal</text><text x="142" y="158">sluttid (TT:MM) →</text></svg>`;
+  $('#histogram').innerHTML = `<svg viewBox="0 0 ${width} ${height}" aria-label="Sluttid i ${bins} intervall"><line class="axis" x1="32" y1="140" x2="400" y2="140"/>${histogramTicks}${percentileMarkers}${histogramXAxis}${counts.map((count, index) => `<rect class="bar" x="${38 + index * barWidth}" y="${140 - count / maxCount * 105}" width="${Math.max(2, barWidth - 5)}" height="${count / maxCount * 105}"/>`).join('')}<text x="4" y="20">antal</text><text x="142" y="158">sluttid (TT:MM) →</text></svg>`;
   const points = finished.filter((result) => /^\d+$/.test(String(result.rank || ''))).slice(0, 120);
   if (!points.length) { $('#scatter').textContent = 'Ingen verifierad placeringsdata i vald upplaga.'; $('#stats-note').textContent = `${finished.length} FINISHED-resultat med sluttid används; placeringsdiagrammet saknar verifierade placeringar.`; return; }
   const maxRank = Math.max(...points.map((result) => Number(result.rank)), 1); const maxTime = max;
+  const rankTicks = [0, .25, .5, .75, 1].map((fraction) => {
+    const x = 38 + 350 * fraction;
+    return '<line class="gridline" x1="' + x + '" x2="' + x + '" y1="20" y2="140"/>' +
+      '<text x="' + x + '" y="155" text-anchor="middle">' + Math.round(maxRank * fraction) + '</text>';
+  }).join('');
   const scatterTicks = [0, .25, .5, .75, 1].map((fraction) => `<line class="gridline" x1="32" y1="${135 - fraction * 120}" x2="400" y2="${135 - fraction * 120}"/><text x="2" y="${139 - fraction * 120}">${time(maxTime * fraction).slice(0, 5)}</text>`).join('');
-  $('#scatter').innerHTML = `<svg viewBox="0 0 420 160" aria-label="Tid mot placering"><line class="axis" x1="32" y1="140" x2="400" y2="140"/><line class="axis" x1="32" y1="10" x2="32" y2="140"/>${scatterTicks}${points.map((result) => `<circle class="dot" cx="${38 + Number(result.rank) / maxRank * 350}" cy="${135 - result.finish_seconds / maxTime * 120}" r="2.5"><title>${esc(result.name)}: placering ${esc(result.rank)}, ${time(result.finish_seconds)}</title></circle>`).join('')}<text x="160" y="155">placering →</text><text x="4" y="20">sluttid</text></svg>`;
+  $('#scatter').innerHTML = `<svg viewBox="0 0 420 160" aria-label="Tid mot placering"><line class="axis" x1="32" y1="140" x2="400" y2="140"/><line class="axis" x1="32" y1="10" x2="32" y2="140"/>${scatterTicks}${rankTicks}${points.map((result) => `<circle class="dot" data-chart-runner="${esc(result.result_id)}" role="button" tabindex="0" aria-label="Visa individuell analys för ${esc(result.name)}" cx="${38 + Number(result.rank) / maxRank * 350}" cy="${135 - result.finish_seconds / maxTime * 120}" r="2.5"><title>${esc(result.name)}: placering ${esc(result.rank)}, ${time(result.finish_seconds)}</title></circle>`).join('')}<text x="160" y="155">placering →</text><text x="4" y="20">sluttid</text></svg>`;
+  $('#scatter').querySelectorAll('[data-chart-runner]').forEach((point) => {
+    const open = () => {
+      const result = state.data.results.find((item) => item.result_id === point.dataset.chartRunner);
+      if (!result) return;
+      state.selected = result; state.segmentIndex = null; state.planTarget = null;
+      renderRunner(); renderPlan(); syncUrl(true);
+      $('#runner').focus({ preventScroll:true });
+      $('#runner-analysis').scrollIntoView({ block:'start' });
+    };
+    point.onclick = open;
+    point.onkeydown = (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); open(); } };
+  });
   $('#stats-note').textContent = `${finished.length} FINISHED-resultat med sluttid används. Diagrammen är beskrivande och bygger inte på saknade observationer.`;
 }
 
