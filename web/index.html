@@ -60,6 +60,7 @@
 
   <section id="field-overview">
     <div class="section-heading"><h2>Loppets dynamik och fältets trösklar</h2><details class="help"><summary aria-label="Om fältstatistiken">ⓘ</summary><p>Histogrammet använder FINISHED med positiv sluttid. Percentilerna P10, P25, P50, P75 och P90 använder linjär interpolation med h=(n−1)×p.</p></details></div>
+    <div id="finish-group-selector" class="finish-group-selector" role="group" aria-label="Välj fält för sluttidsdiagram och percentiler"></div>
     <div class="stats-grid">
       <div><h3>Sluttidsfördelning</h3><details class="help"><summary aria-label="Om sluttidsfördelningen">ⓘ</summary><p>Staplarna visar antal fullföljare i tidsintervall. Streck markerar percentiler av verifierade sluttider, inte prognoser. Ett tomt intervall betyder inga målgångar i just intervallet.</p></details><div id="histogram" class="chart" role="img" aria-label="Sluttidsfördelning"></div></div>
       <div><h3>Tid mot placering</h3><details class="help"><summary aria-label="Om tid mot placering">ⓘ</summary><p>Varje punkt avser ett resultat med officiell numerisk placering och giltig sluttid. Klicka på en punkt för att öppna den individuella analysen. Upplagor utan publicerade placeringar får inte beräknade punkter.</p></details><div id="scatter" class="chart" aria-label="Tid mot placering"></div></div>
