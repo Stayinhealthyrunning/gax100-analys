@@ -50,9 +50,15 @@ function renderFacts() {
   const starters = Number.isFinite(edition()?.starters) ? edition().starters : null;
   const starterLabel = starters === null ? 'Ej fastställt' : starters;
   const starterNote = edition()?.starters_note || 'officiell källa skiljer inte startande från publicerade poster';
-  const groupLine = (label, values) => values.length >= 5 ? `${label} · Mediantid ${time(median(values))} · Medeltid ${time(mean(values))} · n=${values.length}` : `${label} · Underlag saknas (n=${values.length})`;
+  const groupCard = (label, values, color) => {
+    const available = values.length >= 5;
+    return '<span class="gender-group '+color+'"><span class="group-header">'+esc(label)+' <span>n='+values.length+'</span></span>'+
+      (available ? '<span class="group-row"><span>Median</span><b>'+time(median(values))+'</b></span>'+
+        '<span class="group-row"><span>Medel</span><b>'+time(mean(values))+'</b></span>' :
+        '<span class="group-row"><span>Underlag saknas</span></span>')+'</span>';
+  };
   const finishRate = starters ? ` · ${Math.round(finished.length / starters * 100)} % av fastställda startande` : '';
-  $('#facts').innerHTML = `<div class="fact"><h3>STARTANDE</h3><strong>${starterLabel}</strong><small>${esc(starterNote)}</small></div><div class="fact"><h3>FULLFÖLJDE</h3><strong>${finished.length}</strong><small>${starters === null ? 'giltig officiell sluttid; startantal ej fastställt' : `giltig officiell sluttid av ${starters} startande${finishRate}`}</small></div><div class="fact"><h3>DNF</h3><strong>${dnf.length}</strong><small>${starters ? `${Math.round(dnf.length / starters * 100)} % av fastställda startande` : 'explicit källstödd status'}</small></div><div class="fact gender"><h3>TIDER KVINNOR / MÄN</h3><strong><span class="f">${esc(groupLine('Kvinnor', women.map((result) => result.finish_seconds)))}</span><span class="m">${esc(groupLine('Män', men.map((result) => result.finish_seconds)))}</span></strong></div><div class="fact"><h3>SNABBASTE TID</h3><strong>${best ? time(best.finish_seconds) : '—'}</strong><small>${best ? esc(best.name) : 'Ej fastställt'}</small></div>`;
+  $('#facts').innerHTML = `<div class="fact"><h3>STARTANDE</h3><strong>${starterLabel}</strong><small>${esc(starterNote)}</small></div><div class="fact"><h3>FULLFÖLJDE</h3><strong>${finished.length}</strong><small>${starters === null ? 'giltig officiell sluttid; startantal ej fastställt' : `giltig officiell sluttid av ${starters} startande${finishRate}`}</small></div><div class="fact"><h3>DNF</h3><strong>${dnf.length}</strong><small>${starters ? `${Math.round(dnf.length / starters * 100)} % av fastställda startande` : 'explicit källstödd status'}</small></div><div class="fact gender"><h3>TIDER KVINNOR / MÄN</h3><div class="gender-values">${groupCard('Kvinnor', women.map((result) => result.finish_seconds), 'f')}${groupCard('Män', men.map((result) => result.finish_seconds), 'm')}</div></div><div class="fact"><h3>SNABBASTE TID</h3><strong>${best ? time(best.finish_seconds) : '—'}</strong><small>${best ? esc(best.name) : 'Ej fastställt'}</small></div>`;
 }
 
 function renderFilters() {
