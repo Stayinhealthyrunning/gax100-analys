@@ -1,5 +1,36 @@
 # Projektstatus: GAX100 Analys
 
+## Visuell komponent-QA (tillägg 2026-10-12)
+
+- Föregående granskning av standardlayout bedömdes otillräcklig för visuell slutacceptans: aktiverade mobilvyer hade inte granskats analysdel för analysdel.
+- `tests/e2e/visual-parity.spec.js` har nu skärmbilder och funktionella scenarier för nio **aktiva** lägen på 390/1440 px (18 bilder), utöver ursprungliga responsivvyer 360–1536 px.
+- Konkret upptäckta fel: sönderbrutna 4–7-kolumnstabeller i mobil individanalys, direktjämförelse och loppplan; otillräckligt läsbar historiktabell; A/B-rollfärg som felaktigt gav magenta även till män. Dessa har kodrättats, med automatiska regressionstester.
+- Kvarstående: små SVG-axeltexter på mobil, bildhero, avancerat replay/kartduell, full WCAG/skärmläsarrevision och manuell jämförelse av varje aktivt läge med fyra referenssystem. Ingen release eller merge ska ske enbart på grön Playwright.
+- Full dokumentation: `reports/GAX100_VISUAL_COMPONENT_AUDIT_2026-10-12.md`. Exakt Actions-head för slutliga ändringar verifieras separat.
+
+
+## Komplettering: oberoende paritetsarbete i Draft PR #3 (2026-10-12)
+
+Detta avsnitt beskriver **en separat granskningsbranch**, `audit/gax100-plan-precision-2026-10-12`, baserad på `codex/gax100-etapp2`. Det historiska ETAPP 2-läget nedan avser PR #2 före dessa förbättringar. PR #2 och PR #3 är fortsatt Draft och får inte mergas eller publiceras automatiskt.
+
+- Ny källanknuten statistikmodul `web/field.js` och regressionstester `tests/test_field.js`. Inkluderar edition- och checkpoint-scopade kompletta referenskohorter, mediansplit, kvartiler (n≥10), P10/P90 (n≥20), verifierad avslutningsdelsträcka, rapporterat kön/klubb samt senaste faktiskt observerade DNF-kontroll.
+- Utökad fältstatistik: målutfall mot verkliga FINISHED-tider med uttryckligen hypotetisk placering, könsurval i histogram/percentiler, klickbara resultat i placeringsdiagram och koppling mellan percentilmåltid och måltidssimulatorn.
+- Ny `GaxField.runnerGap()` för individuell kumulativ tidslucka mot en fast grupp fullföljare med exakt samma verkliga kontrollpunkter; segmentval synkroniseras med övrig individuell analys.
+- 2023 ger 70 kompletta profiler, 2024 ger 53. Flera äldre editioner har verifierade mellantider; 2025 och 2026 saknar publik splitserie och får därför ingen delsträckeprofil.
+- Jämför inte sluttider över banversioner som om banan vore identisk. Ingen icke godkänd GPX, höjd eller tidsstämplad GPS-replay har publicerats. Varken databasens 945 resultat eller den frysta importkedjan har ändrats.
+- Testkrav: `npm run test:field`, befintliga Node-test, uppdaterade Chromium E2E, source/semantic/privacy och responsiv screenshots. Exakt godkänd slut-SHA måste läsas ur Actions före merge; misslyckade mellancommits är inte releasebevis.
+- Kvarvarande standardluckor: licensierad tävlingshero/OG, ban- och höjdprofil/replay, full kartduell, verifierad personidentitet mellan år, vissa dataintensiva placering/åldersmoduler, event.json-driven generisk mall och oberoende GDPR-releasekontroll.
+
+
+### Tillägg: delsträckelabb och resultatdatabas
+
+- Två verkliga ankare i en komplett, editionsbunden referenskohort kan väljas från Start via mellanliggande officiella kontroller till Mål. Den nya `GaxField.segmentLab()` räknar enbart med observerade passager/sluttider och samma källverifierade kontrollsekvens; kohort n≥5, Q25–Q75 n≥10, P10–P90 n≥20. Kvinnor/män kan väljas när gruppens n≥5. Ingen individuell topplista publiceras i labbet innan ålders- och suppressionsskyddet är färdiggranskat.
+- Verifierade checkpointavstånd bevaras från `web/plan.js` till `web/field.js`. Exempel: 2023 Magleberg 44 km → Haväng 80 km = 36 km, medan samma intervall 2024 saknar verifierad fysisk distans och måste visa detta.
+- Resultatdatabasen stöder 10 (standard), 25 eller 50 rader per sida, synligt aktuellt intervall, återställning, svenska sök-/sorteringsregler och deterministisk sekundärsortering på result_id.
+- Delningslänk från sökresultat i läget Alla år använder nu resultatets egen edition, inte en annan aktiv upplaga.
+- Den visuella QA-granskningen av faktaraden ledde till en ny kompakt uppställning av könens median, medeltid och antal med semantiska blå/rosa värden; responsivt testas både 390 och 1440 px.
+- QA måste vara grön på den exakta slutliga PR #3-headen, även efter dokumentationscommits. Fullt geografiskt replay/positionsmodellering är fortfarande separat rättighets- och källgated.
+
 ## Aktuellt
 
 ETAPP 2 körs på befintlig branch `codex/gax100-etapp2` och Draft PR #2. Senaste funktionella application head är `3a04b49` (`docs: link to central GDPR privacy policy and right to object`); därefter finns endast release-state-dokumentation på branchen. Använd `git log -1` för exakt aktuell branch-head. PR #2 är öppen, Draft och inte mergad. GAX100 är inte tillagd i huvudkatalogen.

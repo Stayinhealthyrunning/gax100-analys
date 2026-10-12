@@ -4,18 +4,33 @@
 <meta name="robots" content="noindex, nofollow">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>GAX100 Analys</title>
+  <title>GAX100 Analys – Loppanalys.se</title>
+  <meta name="description" content="Utforska GAX100:s verifierade resultat, mellantider, individuell analys, direktjämförelse och historiska loppplaner.">
+  <meta name="theme-color" content="#082235">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+<a class="skip-link" href="#runner-finder">Hoppa till löparsökningen</a>
 <main>
   <header class="hero" id="race-header">
-    <p class="eyebrow">THE GAX 100 MILES</p>
+    <p class="eyebrow">THE GAX 100 MILES · LOPPANALYS.SE</p>
+    <a class="back-link" href="https://www.loppanalys.se/" rel="home">← Alla lopp på Loppanalys.se</a>
     <h1>GAX100 Analys</h1>
     <p>Verifierade resultat, mellantider och källspårning per tävlingsupplaga.</p>
     <label>Upplaga <select id="year" aria-label="Välj tävlingsupplaga"></select></label>
     <p class="map-preview-link"><a href="karta.html" style="display:inline-block;margin-top:12px;padding:11px 16px;border-radius:9px;background:#e6f7f5;color:#0c4c53;font-weight:700;text-decoration:none">Visa GAX100:s historiska banor på karta →</a></p>
   </header>
+
+  <nav class="analysis-navigation" aria-label="Hoppa mellan analysdelar">
+    <a href="#runner-finder">Hitta löpare</a>
+    <a href="#runner-analysis">Individuell</a>
+    <a href="#direct-comparison">Direktjämförelse</a>
+    <a href="#personal-plan">Loppplan</a>
+    <a href="#field-overview">Fältstatistik</a>
+    <a href="#segment-lab">Delsträckelabb</a>
+    <a href="#course-history">Historik</a>
+    <a href="#results-database">Resultat</a>
+  </nav>
 
   <section id="race-facts">
     <div class="section-heading"><h2>Loppet i siffror</h2><details class="help"><summary aria-label="Om loppet i siffror">ⓘ</summary><p>Startande visas bara när källan skiljer start från publicerade poster. Fullföljde är FINISHED med positiv sluttid. Könstider kräver minst fem giltiga tider per grupp; median och medel redovisas separat.</p></details></div>
@@ -24,16 +39,23 @@
 
   <section id="runner-finder">
     <div class="section-heading"><h2>Hitta din löpare</h2><details class="help"><summary aria-label="Om sökningen">ⓘ</summary><p>Sökningen använder publicerade namn och klubbvärden för vald upplaga. Samma namn över år är inte en verifierad personidentitet.</p></details></div>
-    <div class="filters"><input id="search" type="search" placeholder="Sök namn, startnummer eller klubb" aria-label="Sök namn, startnummer eller klubb"><select id="club" aria-label="Filtrera klubb"><option value="">Alla klubbar</option></select><select id="gender" aria-label="Filtrera kön"><option value="">Alla kön</option></select></div>
+    <div class="filters"><input id="search" type="search" placeholder="Sök namn, startnummer eller klubb" aria-label="Sök namn, startnummer eller klubb" autocomplete="off"><label class="filter-label">Sökår <select id="search-scope" aria-label="Sök i vald upplaga eller alla år"><option value="year">Vald upplaga</option><option value="all">Alla år</option></select></label><select id="club" aria-label="Filtrera klubb"><option value="">Alla klubbar</option></select><label class="club-typeahead">Sök klubb <input id="club-autocomplete" type="search" list="club-suggestions" placeholder="Börja skriva klubb..." autocomplete="off" aria-label="Sök bland klubbnamn"></label><datalist id="club-suggestions"></datalist><select id="gender" aria-label="Filtrera kön"><option value="">Alla kön</option></select><select id="status-filter" aria-label="Filtrera status"><option value="">Alla statusar</option><option value="FINISHED">Fullföljde</option><option value="DNF">DNF</option><option value="DNS">DNS</option><option value="UNKNOWN">Okänd</option></select></div>
     <p id="result-count" class="muted" aria-live="polite"></p>
-    <div id="runner" class="runner empty">Välj en rad i resultatdatabasen för individuell visning.</div>
+    <div id="finder-preview" class="finder-preview" aria-label="Sökträffar och löparval" aria-live="polite"></div>
+    <div class="selection-bar" id="selection-bar" aria-live="polite"></div>
+    <p class="muted">Fler resultat och sortering finns i resultatdatabasen längre ned på sidan. Samma namn i olika upplagor kopplas inte automatiskt till samma person.</p>
+  </section>
+
+  <section id="runner-analysis">
+    <div class="section-heading"><h2>Individuell löparanalys</h2><details class="help"><summary aria-label="Om individuell löparanalys">ⓘ</summary><p>Den valda löparens verifierade resultat och passager. Endast källstödda segmenttider visas; en verklig GPS-position eller banrekonstruktion finns ännu inte för GAX100.</p></details></div>
+    <div id="runner" class="runner empty" tabindex="-1">Välj en löpare i sökresultaten ovan för individuell visning.</div>
   </section>
 
   <section id="direct-comparison">
     <div class="section-heading"><h2>Direktjämförelse 2.0</h2><details class="help"><summary aria-label="Om Direktjämförelse 2.0">ⓘ</summary><p>Exakt två resultatrader jämförs. Gemensamma passager används bara när upplaga, kontrollpunkt och källavstånd är verifierat likvärdiga. Saknade ändpunkter ger inget segmentvärde.</p></details></div>
-    <p class="muted">Välj exakt två resultat. Endast gemensamma verkliga mellantider jämförs.</p>
-    <div id="comparison" class="runner empty">Inga två resultat valda.</div>
-    <button id="clear-comparison" type="button">Rensa valda</button>
+    <p class="muted">Välj två löpare – också från olika år i sökläget Alla år. Gemensamma kontrollpunkter jämförs bara när samma banunderlag är verifierat; saknade uppgifter förblir tomma.</p>
+    <div id="comparison" class="runner empty">Inga två resultat valda.</div><details class="help"><summary aria-label="Om tidsluckan och jämförbarhet">ⓘ</summary><p>Gapanalysen visar tiden från start vid gemensamma, verkliga checkpoints inom samma upplaga. B minus A är positivt när A passerade först. Olika banversioner jämförs inte som likvärdiga lopp och ingen GPS-position påstås vara observerad.</p></details>
+    <div class="comparison-actions"><button id="swap-comparison" type="button">Byt A/B</button><button id="share-comparison" type="button">Dela jämförelsen</button><button id="clear-comparison" type="button">Rensa valda</button><span id="comparison-feedback" class="muted" role="status"></span></div>
   </section>
 
   <section id="map-duel">
@@ -43,41 +65,55 @@
   </section>
 
   <section id="personal-plan">
-    <div class="section-heading"><h2>Personlig loppplan</h2><details class="help"><summary aria-label="Om personlig loppplan">ⓘ</summary><p>Planen använder en verifierad historisk kohort från samma upplaga när minst fem FINISHED-resultat delar segmentserie. Den valda löparen är en separat historisk referens. En vald måltid fördelas matematiskt med medianiserade segmentproportioner och är inte en prognos.</p></details></div>
+    <div class="section-heading"><h2>Personlig loppplan</h2><details class="help"><summary aria-label="Om personlig loppplan">ⓘ</summary><p>Planen kräver minst fem FINISHED-resultat med en komplett och gemensam kronologisk kontrollpunktsserie i samma upplaga. Start och mål räknas med; historiska andelar normaliseras till 100 procent och hela måltiden fördelas exakt. Distans och GPS-position hittas aldrig på. Detta är en matematisk simulering, inte en prognos.</p></details></div>
     <div id="plan" class="runner empty">Välj ett resultat med minst två verifierade mellantider.</div>
   </section>
 
   <section id="field-overview">
     <div class="section-heading"><h2>Loppets dynamik och fältets trösklar</h2><details class="help"><summary aria-label="Om fältstatistiken">ⓘ</summary><p>Histogrammet använder FINISHED med positiv sluttid. Percentilerna P10, P25, P50, P75 och P90 använder linjär interpolation med h=(n−1)×p.</p></details></div>
+    <div id="finish-group-selector" class="finish-group-selector" role="group" aria-label="Välj fält för sluttidsdiagram och percentiler"></div>
     <div class="stats-grid">
-      <div><h3>Sluttidsfördelning</h3><div id="histogram" class="chart" role="img" aria-label="Sluttidsfördelning"></div></div>
-      <div><h3>Tid mot placering</h3><div id="scatter" class="chart" role="img" aria-label="Tid mot placering"></div></div>
+      <div><h3>Sluttidsfördelning</h3><details class="help"><summary aria-label="Om sluttidsfördelningen">ⓘ</summary><p>Staplarna visar antal fullföljare i tidsintervall. Streck markerar percentiler av verifierade sluttider, inte prognoser. Ett tomt intervall betyder inga målgångar i just intervallet.</p></details><div id="histogram" class="chart" aria-label="Sluttidsfördelning"></div></div>
+      <div><h3>Tid mot placering</h3><details class="help"><summary aria-label="Om tid mot placering">ⓘ</summary><p>Varje punkt avser ett resultat med officiell numerisk placering och giltig sluttid. Klicka på en punkt för att öppna den individuella analysen. Upplagor utan publicerade placeringar får inte beräknade punkter.</p></details><div id="scatter" class="chart" aria-label="Tid mot placering"></div></div>
     </div>
-    <h3>Percentiler</h3>
+    <h3>Percentiler</h3><details class="help"><summary aria-label="Om sluttidens percentiler">ⓘ</summary><p>P10, P25, P50, P75 och P90 beräknas med linjär interpolation av samtliga giltiga officiella sluttider för upplagan. P50 är medianen, inte medeltiden.</p></details>
     <div id="percentiles" class="runner empty">Ingen verifierad sluttidsdata.</div>
     <p id="stats-note" class="muted"></p>
+    <div class="field-tool" id="target-tool">
+      <div class="section-heading"><h3>Vad räcker tiden till?</h3><details class="help"><summary aria-label="Om hypotetisk måltid och ungefärlig placering">ⓘ</summary><p>Ange en hypotetisk måltid och jämför med alla verifierade FINISHED-tider i den valda upplagan. Positionen är ett retrospektivt ungefärligt resultat, inte en officiell tävlingsplacering. DNS, DNF och okända sluttider ingår inte. Medianen används som standard när underlaget räcker.</p></details></div>
+      <div id="target-placement" aria-live="polite"></div>
+    </div>
   </section>
 
   <section id="extended-analysis">
     <div class="section-heading"><h2>Utökad analys</h2><details class="help"><summary aria-label="Om utökad analys">ⓘ</summary><p>Blocken aktiveras bara när den valda upplagans källa och datamängd stöder beräkningen. Omarkerade analyser är databegränsningar, inte nollvärden.</p></details></div>
     <div id="extended-analysis-content"></div>
+    <div id="field-insights" class="field-insights" aria-live="polite"></div>
+    <div class="field-module segment-lab" id="segment-lab">
+      <div class="module-heading"><h3>Delsträckelabbet</h3>
+        <details class="help"><summary aria-label="Om delsträckelabbet">ⓘ</summary><p>Välj två verkliga kontrollpunkter i samma upplaga. Beräkningen använder ett och samma fält med kompletta, observerade passager. Resultaten är aggregerade: median vid minst fem, kvartiler vid minst tio och P10–P90 vid minst tjugo jämförbara resultat. En saknad kontroll, ett avstånd eller en historisk banjämförelse hittas aldrig på. Individuella topplistor publiceras inte här utan föregående integritetskontroll.</p></details>
+      </div>
+      <div id="segment-lab-content" aria-live="polite">Välj en upplaga med verifierade mellantider för att jämföra delsträckor.</div>
+    </div>
   </section>
 
   <section id="course-history">
     <div class="section-heading"><h2>Historisk jämförelse</h2><details class="help"><summary aria-label="Om historisk jämförelse">ⓘ</summary><p>Volymer och importerade observationer kan jämföras mellan upplagor. Sluttidsjämförelser över år kräver verifierad banjämförbarhet och ska därför inte läsas som ett prestationsmått här.</p></details></div>
     <p class="muted">Tabellen visar uppmätta källvärden per upplaga. Saknade år är inte noll.</p>
-    <div class="table-wrap"><table><thead><tr><th>Upplaga</th><th>FINISHED</th><th>DNF</th><th>Median</th><th>Snabbaste</th><th>Mellantider</th></tr></thead><tbody id="history"></tbody></table></div>
+    <div id="history-vis" class="history-vis" aria-label="Jämför antalet officiellt fullföljande och DNF mellan tävlingsupplagor"></div>
+    <p class="muted">Historikdiagrammet jämför endast rapporterat antal fullföljare och DNF. Det jämför inte prestationer på olika banor. Välj en upplaga i diagrammet för att undersöka den.</p>
+    <div class="table-wrap history-table-wrap"><table class="history-table"><thead><tr><th>Upplaga</th><th>FINISHED</th><th>DNF</th><th>Median</th><th>Snabbaste</th><th>Mellantider</th></tr></thead><tbody id="history"></tbody></table></div>
   </section>
 
   <section id="quality-overview">
     <div class="section-heading"><h2>Datakvalitet per upplaga</h2><details class="help"><summary aria-label="Om datakvaliteten">ⓘ</summary><p>Översikten skiljer på publicerade resultatposter, verifierade sluttider, statuskoder, kön och importerade mellantider. Ett streck betyder att källan inte fastställer värdet.</p></details></div>
-    <div class="table-wrap quality-table-wrap"><table class="quality-table"><thead><tr><th>Upplaga</th><th>Resultat</th><th>FINISHED / DNF / DNS</th><th>Kön</th><th>Startande</th><th>Mellantider</th><th>Källstatus</th></tr></thead><tbody id="quality-rows"></tbody></table></div>
+    <div class="table-wrap quality-table-wrap" role="region" tabindex="0" aria-label="Datakvalitet per upplaga. Rulla sidledes för samtliga kolumner"><table class="quality-table"><thead><tr><th>Upplaga</th><th>Resultat</th><th>FINISHED / DNF / DNS</th><th>Kön</th><th>Startande</th><th>Mellantider</th><th>Källstatus</th></tr></thead><tbody id="quality-rows"></tbody></table></div>
   </section>
 
   <section id="results-database">
     <div class="section-heading"><h2>Resultatdatabas</h2><details class="help"><summary aria-label="Om resultatdatabasen">ⓘ</summary><p>Resultatraderna är importerade från officiella källor med bevarad källproveniens. Saknat kön, klubb, status eller tid visas som saknat och fylls inte i med antaganden.</p></details></div>
-    <label>Sortera <select id="sort" aria-label="Sortera resultat"><option value="time">Sluttid</option><option value="name">Namn</option><option value="status">Status</option></select></label>
-    <div class="table-wrap result-table-wrap"><table class="result-table"><thead><tr><th>Namn</th><th>Kön</th><th>Klubb</th><th>Status</th><th>Sluttid</th><th>Val</th></tr></thead><tbody id="rows"></tbody></table></div>
+    <div class="result-database-controls"><label>Sortera <select id="sort" aria-label="Sortera resultat"><option value="time">Sluttid</option><option value="name">Namn</option><option value="status">Status</option></select></label><label>Visa per sida <select id="page-size" aria-label="Antal resultat per sida"><option value="10">10</option><option value="25">25</option><option value="50">50</option></select></label><button id="reset-result-filters" type="button">Återställ filter och sortering</button><span id="results-page-count" class="muted" aria-live="polite"></span></div>
+    <div class="table-wrap result-table-wrap"><table class="result-table"><thead><tr><th>Namn</th><th>År</th><th>Kön</th><th>Klubb</th><th>Status</th><th>Sluttid</th><th>Val</th></tr></thead><tbody id="rows"></tbody></table></div>
     <div id="result-pagination" class="pagination" aria-label="Resultatpaginering"></div>
   </section>
 
@@ -95,8 +131,19 @@
     <button id="help-dialog-close" type="submit">Stäng</button>
   </form>
 </dialog>
+<dialog id="chart-zoom-dialog" aria-labelledby="chart-zoom-title">
+  <form method="dialog" class="chart-zoom-toolbar">
+    <h2 id="chart-zoom-title">Förstorat diagram</h2>
+    <button id="chart-zoom-close" type="submit">Stäng diagrammet</button>
+  </form>
+  <div id="chart-zoom-content"></div>
+  <p class="muted">Den förstorade grafen visar samma verifierade observationer som originalet. Tryck Esc eller Stäng diagrammet för att återgå.</p>
+</dialog>
 <script src="statistics.js"></script>
 <script src="time.js"></script>
+<script src="plan.js"></script>
+<script src="comparison.js"></script>
+<script src="field.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

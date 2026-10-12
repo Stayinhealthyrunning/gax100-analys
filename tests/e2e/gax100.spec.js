@@ -65,13 +65,13 @@ test('desktop: upplagor, sökning, filter, sortering, individuell analys och jä
   if (await page.locator('#plan-target').count()) {
     await page.locator('#plan-target').fill('24:00:00');
     await page.locator('#apply-plan-target').click();
-    await expect(page.locator('#plan')).toContainText('Simulerad delsträcka');
+    await expect(page.locator('#plan')).toContainText('Beräknad segmenttid');
   }
 
   await page.locator('#search').fill('');
   await page.locator('#rows [data-compare]').nth(0).click();
   await page.locator('#rows [data-compare]').nth(1).click();
-  await expect(page.locator('#comparison')).toContainText('vs');
+  await expect(page.locator('#comparison .compare-person')).toHaveCount(2);
   await expect(page.locator('#comparison .segment-table')).toHaveCount(1);
   await page.screenshot({ path: testInfo.outputPath('desktop-1440.png'), fullPage: true });
   await assertNoHorizontalOverflow(page);
@@ -143,4 +143,267 @@ test('kartarkiv i webbläsare: publika källkartor och filväljare', async ({ pa
   await expect(page.locator('#overlay-empty')).toBeVisible();
   await assertNoHorizontalOverflow(page);
   await page.screenshot({ path: testInfo.outputPath('kartarkiv-mobile.png'), fullPage: true });
+});
+
+test('historisk loppplan fördelar hela måltiden och markerar tillförlitlig täckning', async ({ page }) => {
+  await page.goto('/');
+  const data = await loadData(page);
+  const selected = data.results.find((result) => result.edition_id === 'gax100-2023' &&
+    result.status === 'FINISHED' && result.observations?.length === 3);
+  expect(selected).toBeTruthy();
+  await page.locator('#year').selectOption('gax100-2023');
+  await page.locator('#search').fill(selected.name);
+  await page.locator('#rows [data-id]').first().click();
+  await expect(page.locator('#plan .segment-table tbody tr')).toHaveCount(4);
+  await expect(page.locator('#plan')).toContainText('Start');
+  await expect(page.locator('#plan')).toContainText('Mål');
+  await page.locator('#plan-target').fill('24:00:00');
+  await page.locator('#apply-plan-target').click();
+  await expect(page.locator('#plan .segment-table tbody tr').last().locator('td').nth(5)).toHaveText('24:00:00');
+  const spans = await page.locator('#plan .segment-table tbody tr td:nth-child(5)').allTextContents();
+  const total = spans.reduce((sum, value) => {
+    const parts = value.split(':').map(Number);
+    return sum + parts[0] * 3600 + parts[1] * 60 + parts[2];
+  }, 0);
+  expect(total).toBe(86400);
+  await page.locator('#reset-plan-target').click();
+  await expect(page.locator('#plan-target')).not.toHaveValue('24:00:00');
+
+  await page.locator('#year').selectOption('gax100-2025');
+  await page.locator('#search').fill('');
+  await page.locator('#rows [data-id]').first().click();
+  await expect(page.locator('#plan')).toContainText('Ingen historiskt vägd loppplan');
+});
+
+test('alla år: sök direkt, behåll jämförelseval och återställ via Back', async ({ page }) => {
+  await page.goto('/');
+  const data = await loadData(page);
+  const a = data.results.find((r) => r.edition_id === 'gax100-2023' && r.status === 'FINISHED' && r.observations.length >= 3);
+  const b = data.results.find((r) => r.edition_id === 'gax100-2022' && r.status === 'FINISHED' && r.observations.length >= 3);
+  expect(a && b).toBeTruthy();
+  await page.locator('#year').selectOption('gax100-2023');
+  await page.locator('#search-scope').selectOption('all');
+  await page.locator('#search').fill(a.name);
+  await expect(page.locator('#finder-preview [data-compare]').first()).toBeVisible();
+  const aRow = page.locator('#finder-preview tr').filter({ hasText:'2023' }).first();
+  await aRow.locator('[data-compare]').click();
+  await expect(page.locator('#selection-bar')).toContainText('2023');
+  await page.locator('#year').selectOption('gax100-2026');
+  await expect(page.locator('#selection-bar')).toContainText('2023');
+  await page.locator('#search').fill(b.name);
+  const bRow = page.locator('#finder-preview tr').filter({ hasText:'2022' }).first();
+  await bRow.locator('[data-compare]').click();
+  await expect(page.locator('#comparison .compare-person')).toHaveCount(2);
+  await expect(page.locator('#comparison')).toContainText('Olika års banor');
+  await expect(page.locator('#comparison .compare-figure')).toHaveCount(0);
+  await expect(page.locator('#selection-bar')).toContainText('2022');
+  await page.goBack();
+  await expect(page.locator('#selection-bar')).not.toContainText('2022');
+  await expect(page.locator('#selection-bar')).toContainText('2023');
+});
+test('verifierad 2024-delsträcka: tid utan uppfunnet avstånd', async ({ page }) => {
+  await page.goto('/');
+  const data = await loadData(page);
+  const result = data.results.find((r) => r.edition_id === 'gax100-2024' &&
+    r.status === 'FINISHED' && r.observations?.length >= 3);
+  expect(result).toBeTruthy();
+  await page.locator('#year').selectOption('gax100-2024');
+  await page.locator('#search').fill(result.name);
+  await page.locator('#finder-preview [data-id]').first().click();
+  await expect(page.locator('#runner .duration-chart')).toBeVisible();
+  await expect(page.locator('#runner .segment-table').first()).toContainText('Start');
+  await expect(page.locator('#runner .segment-table').first()).toContainText('Mål');
+  await expect(page.locator('#runner')).toContainText('Fysisk fart kan inte beräknas');
+  await page.locator('#runner .segment-select').first().click();
+  await expect(page.locator('#runner .selected-segment')).toHaveCount(1);
+});
+test('tid mot placering öppnar vald individ med korrekt URL', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('#year').selectOption('gax100-2024');
+  await expect(page.locator('#scatter [data-chart-runner]').first()).toBeVisible();
+  await page.locator('#scatter-runner-select').selectOption({ index: 1 });
+  await expect(page.locator('#runner')).not.toHaveClass(/empty/);
+  await expect(page).toHaveURL(/result=/);
+});
+
+
+test('fördjupad källstödd fältanalys 2023: kvartiler, kön och verklig spurt', async ({ page }) => {
+  await page.setViewportSize({width: 1200, height:900});
+  await page.goto('/');
+  await page.locator('#year').selectOption('gax100-2023');
+  await expect(page.locator('#field-insights')).toContainText('70 kompletta fullföljare');
+  await expect(page.locator('#field-insights .field-segment-button')).toHaveCount(4);
+  await expect(page.locator('#field-segment-detail')).toContainText('Q25–Q75');
+  await expect(page.locator('#field-segment-detail')).toContainText('P10–P90');
+  await page.locator('[data-field-segment="3"]').click();
+  await expect(page.locator('#field-segment-detail')).toContainText('Mål');
+  await expect(page.locator('#field-insights .sprint-groups')).toContainText('Kvinnor');
+  await expect(page.locator('#field-insights .sprint-groups')).toContainText('Män');
+  await expect(page.locator('#field-insights')).toContainText('19');
+  await expect(page.locator('#field-insights')).toContainText('Senaste passage');
+  await assertNoHorizontalOverflow(page);
+});
+test('källgating 2024/2025: tidsserie utan distans samt inga syntetiska passager', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('#year').selectOption('gax100-2024');
+  await expect(page.locator('#field-insights .field-segment-button')).toHaveCount(4);
+  await expect(page.locator('#field-segment-detail')).toContainText('Fysisk delsträckedistans saknas');
+  await expect(page.locator('#field-insights')).toContainText('Ingen verifierad observerad DNF-passage');
+  await page.locator('#year').selectOption('gax100-2025');
+  await expect(page.locator('#field-insights')).toContainText('Det finns inte fem fullständiga');
+  await expect(page.locator('#field-insights .field-segment-button')).toHaveCount(0);
+  await expect(page.locator('#field-insights')).toContainText('40');
+});
+test('måltid mot placering: medianstandard, scenariotid och verifierad gruppstorlek', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('#year').selectOption('gax100-2025');
+  await expect(page.locator('#target-placement')).toContainText('69');
+  const initial = await page.locator('#target-time-input').inputValue();
+  await page.locator('#target-time-input').fill('30:00:00');
+  await page.locator('#target-run').click();
+  await expect(page.locator('#target-time-input')).toHaveValue('30:00:00');
+  await expect(page.locator('#target-placement')).toContainText('Retrospektiv jämförelse');
+  await page.locator('#target-reset').click();
+  await expect(page.locator('#target-time-input')).toHaveValue(initial);
+  await page.locator('#target-time-input').fill('xx:00');
+  await page.locator('#target-run').click();
+  await expect(page.locator('#target-error')).toContainText('H:MM:SS');
+});
+
+
+test('sluttidsurval kvinnor och män är källaanknutna och kan användas som måltid', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('#year').selectOption('gax100-2023');
+  await expect(page.locator('#finish-group-selector [data-finish-group="female"]')).toBeEnabled();
+  await expect(page.locator('#finish-group-selector [data-finish-group="male"]')).toBeEnabled();
+  await expect(page.locator('#percentiles')).toContainText('Hela fältet, n=70');
+  await page.locator('#finish-group-selector [data-finish-group="female"]').click();
+  await expect(page.locator('#percentiles')).toContainText('Kvinnor, n=16');
+  await expect(page.locator('#stats-note')).toContainText('16');
+  await expect(page.locator('#histogram svg .bar.gender-female')).not.toHaveCount(0);
+  await page.locator('#percentiles [data-use-percentile="0.5"]').click();
+  await expect(page.locator('#target-time-input')).toBeVisible();
+  const target = await page.locator('#target-time-input').inputValue();
+  expect(target).toMatch(/^\d+:\d\d:\d\d$/);
+  // A target-time estimate always describes the complete edition.
+  await expect(page.locator('#target-placement')).toContainText('70');
+  await page.locator('#finish-group-selector [data-finish-group="male"]').click();
+  await expect(page.locator('#percentiles')).toContainText('Män, n=54');
+  await expect(page.locator('#scatter')).toContainText('Ingen publicerad numerisk placering');
+  await page.locator('#year').selectOption('gax100-2025');
+  await expect(page.locator('#scatter svg')).toHaveAttribute('aria-label', /Sluttid på X-axeln/);
+  await page.locator('#year').selectOption('gax100-2024');
+  await expect(page.locator('#finish-group-selector [data-finish-group="female"]')).toBeDisabled();
+  await expect(page.locator('#finish-group-selector [data-finish-group="all"]')).toHaveAttribute('aria-pressed','true');
+  await expect(page.locator('#percentiles')).toContainText('Hela fältet');
+});
+
+
+test('individuell tidslucka använder fast verifierad referenskohort och klickbar segmentmarkering', async ({ page }) => {
+  await page.goto('/');
+  const data = await loadData(page);
+  const chosen = data.results.find((r)=>r.edition_id==='gax100-2023'&&r.status==='FINISHED'&&r.observations.length===3);
+  expect(chosen).toBeTruthy();
+  await page.locator('#year').selectOption('gax100-2023');
+  await page.locator('#search').fill(chosen.name);
+  await page.locator('#finder-preview [data-id]').first().click();
+  await expect(page.locator('#runner .gap-chart')).toBeVisible();
+  await expect(page.locator('#runner')).toContainText('Fast referensgrupp');
+  await expect(page.locator('#runner .gap-dot')).toHaveCount(5);
+  await page.locator('#runner .gap-dot[data-segment-index="2"]').click();
+  await expect(page.locator('#runner .selected-segment')).toHaveCount(1);
+  await page.locator('#year').selectOption('gax100-2025');
+  await page.locator('#search').fill('');
+  await page.locator('#rows [data-id]').first().click();
+  await expect(page.locator('#runner')).toContainText('Tidslucka mot fältet visas inte');
+  await expect(page.locator('#runner .gap-chart')).toHaveCount(0);
+});
+
+
+test('Delsträckelabbet: två riktiga kontroller, år, könsgrupper och återställning', async ({page}) => {
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/');
+  await page.locator('#year').selectOption('gax100-2023');
+  await expect(page.locator('#lab-from')).toHaveValue('0');
+  await expect(page.locator('#lab-to')).toHaveValue('4');
+  await expect(page.locator('#segment-lab-content')).toContainText('n=70');
+  await page.locator('#lab-from').selectOption('1');
+  await page.locator('#lab-to').selectOption('2');
+  await expect(page.locator('#segment-lab-content')).toContainText('36 km');
+  await page.locator('#lab-group').selectOption('female');
+  await expect(page.locator('#segment-lab-content')).toContainText('n=16');
+  await expect(page.locator('#segment-lab-content')).not.toContainText('Snabbast');
+  await page.locator('#lab-last').click();
+  await expect(page.locator('#lab-from')).toHaveValue('3');
+  await expect(page.locator('#lab-to')).toHaveValue('4');
+  await expect(page.locator('#segment-lab-content')).toContainText('Distans saknas');
+  await page.locator('#lab-reset').click();
+  await expect(page.locator('#lab-from')).toHaveValue('0');
+  await expect(page.locator('#lab-to')).toHaveValue('4');
+  await page.locator('#year').selectOption('gax100-2024');
+  await expect(page.locator('#segment-lab-content')).toContainText('n=53');
+  await expect(page.locator('#lab-group option[value="female"]')).toHaveAttribute('disabled', '');
+  await page.locator('#year').selectOption('gax100-2025');
+  await expect(page.locator('#segment-lab-content')).toContainText('Delsträckelabbet är därför avstängt');
+  await expect(page.locator('#lab-from')).toHaveCount(0);
+  await assertNoHorizontalOverflow(page);
+});
+
+
+test('resultatdatabas: paginering 10, 25, 50 och reset samt stabilt antal', async ({page}) => {
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/');
+  await page.locator('#year').selectOption('gax100-2023');
+  await expect(page.locator('#rows tr')).toHaveCount(10);
+  await expect(page.locator('#results-page-count')).toContainText('Visar 1–10 av 90 träffar');
+  await page.locator('#page-size').selectOption('25');
+  await expect(page.locator('#rows tr')).toHaveCount(25);
+  await expect(page.locator('#results-page-count')).toContainText('Visar 1–25 av 90 träffar');
+  await page.locator('#page-size').selectOption('50');
+  await expect(page.locator('#rows tr')).toHaveCount(50);
+  await page.locator('#result-pagination [data-page]').last().click();
+  await expect(page.locator('#rows tr')).toHaveCount(40);
+  await expect(page.locator('#results-page-count')).toContainText('Visar 51–90 av 90 träffar');
+  await page.locator('#sort').selectOption('name');
+  await expect(page.locator('#rows tr')).toHaveCount(50);
+  await page.locator('#reset-result-filters').click();
+  await expect(page.locator('#page-size')).toHaveValue('10');
+  await expect(page.locator('#sort')).toHaveValue('time');
+  await expect(page.locator('#rows tr')).toHaveCount(10);
+  await assertNoHorizontalOverflow(page);
+});
+
+
+test('faktakort: könsmedian och medelvärde presenteras separat utan hoptryckt text', async ({page}) => {
+  for (const width of [390,1440]) {
+    await page.setViewportSize({width,height:900});
+    await page.goto('/');
+    await page.locator('#year').selectOption('gax100-2026');
+    await expect(page.locator('#facts .fact')).toHaveCount(5);
+    await expect(page.locator('#facts .gender-group')).toHaveCount(2);
+    await expect(page.locator('#facts .gender-group.f .group-header')).toContainText('n=14');
+    await expect(page.locator('#facts .gender-group.m .group-header')).toContainText('n=52');
+    await expect(page.locator('#facts .gender-group.f .group-row')).toHaveCount(2);
+    await expect(page.locator('#facts .gender-group.m .group-row')).toHaveCount(2);
+    await assertNoHorizontalOverflow(page);
+  }
+});
+
+
+test('historisk jämförelse på mobil visar alla sex fält utan avklippta kolumner', async ({page}) => {
+  for(const width of [360,390]) {
+    await page.setViewportSize({width,height:800});
+    await page.goto('/');
+    const first=page.locator('#history tr').first();
+    await expect(first.locator('td')).toHaveCount(6);
+    await expect(first.locator('[data-label="Mellantider"]')).toBeVisible();
+    await expect(first.locator('[data-label="Snabbaste"]')).toBeVisible();
+    for(const cell of await first.locator('td').all()) {
+      const rect=await cell.boundingBox();
+      expect(rect).not.toBeNull();
+      expect(rect.x).toBeGreaterThanOrEqual(0);
+      expect(rect.x+rect.width).toBeLessThanOrEqual(width+1);
+    }
+    await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth)).toBeLessThanOrEqual(1);
+  }
 });
