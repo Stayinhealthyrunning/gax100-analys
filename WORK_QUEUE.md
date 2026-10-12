@@ -10,7 +10,7 @@
 | REL-004 | Mobil/resultat- och sökinteraktion | DONE | 10-raders paginerade kort, köns-/klubbfilter, namn/startnummer/klubbsökning, favorit och delningslänk |
 | REL-005 | Privacy/security QA | DONE | `tests/test_public_privacy.js` skannar publik export efter råarkiv, SQLite, dynamisk kod och oskyddade externa skript |
 | REL-006 | Full browser-QA på åtta viewportbredder | DONE | GitHub Actions-artifakt `38212386732` är grön och visuellt granskad för 1536, 1440, 1200, 1024, 900, 768, 390 och 360 px |
-| REL-007 | Release readiness och Pages-status | DONE | `RELEASE_READINESS.md` innehåller exakt commit, teststatus, kvarvarande luckor, rättigheter och Pages-körning `38212470869` |
+| REL-007 | Release readiness och Pages-status | DONE | `RELEASE_READINESS.md` innehåller aktuell application head `3a04b49`, exact-head QA `38214751968`, kvarvarande luckor, rättigheter och Pages-körning `38214840161` |
 
 ## Färdigställandekörning
 

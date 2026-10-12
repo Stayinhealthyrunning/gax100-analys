@@ -40,9 +40,9 @@ Status: release candidate under review. Branch `codex/gax100-etapp2`, Draft PR #
 
 The final verification is complete for the commit named below. It includes Node contract tests, source/data/semantic tests, GPX tests, privacy scan, Chromium tests and screenshot artifact review at 1536, 1440, 1200, 1024, 900, 768, 390 and 360 px.
 
-- Final commit: **`a45cd90`**
-- QA workflow: **`38212386732` – success**
-- Pages workflow: **`38212470869` – success**, triggered by the successful QA workflow; published URL verified at [loppanalys.se/gax100-analys](http://www.loppanalys.se/gax100-analys/)
+- Verified application head: **`3a04b49`**
+- QA workflow: **`38214751968` – success** on exact application head
+- Pages workflow: **`38214840161` – success**, triggered by the successful QA workflow; published URL verified at [loppanalys.se/gax100-analys](https://www.loppanalys.se/gax100-analys/)
 - Visual screenshot review: **complete** for all eight requested widths; no real viewport overflow, clipped result cards or broken primary interaction was observed. The quality matrix remains intentionally scrollbarable on narrow screens.
 
 ## 6. Rekommendation om PR #2
