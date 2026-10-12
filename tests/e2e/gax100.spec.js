@@ -348,3 +348,27 @@ test('Delsträckelabbet: två riktiga kontroller, år, könsgrupper och återst�
   await expect(page.locator('#lab-from')).toHaveCount(0);
   await assertNoHorizontalOverflow(page);
 });
+
+
+test('resultatdatabas: paginering 10, 25, 50 och reset samt stabilt antal', async ({page}) => {
+  await page.setViewportSize({width:390,height:844});
+  await page.goto('/');
+  await page.locator('#year').selectOption('gax100-2023');
+  await expect(page.locator('#rows tr')).toHaveCount(10);
+  await expect(page.locator('#results-page-count')).toContainText('Visar 1–10 av 90 träffar');
+  await page.locator('#page-size').selectOption('25');
+  await expect(page.locator('#rows tr')).toHaveCount(25);
+  await expect(page.locator('#results-page-count')).toContainText('Visar 1–25 av 90 träffar');
+  await page.locator('#page-size').selectOption('50');
+  await expect(page.locator('#rows tr')).toHaveCount(50);
+  await page.locator('#result-pagination [data-page]').last().click();
+  await expect(page.locator('#rows tr')).toHaveCount(40);
+  await expect(page.locator('#results-page-count')).toContainText('Visar 51–90 av 90 träffar');
+  await page.locator('#sort').selectOption('name');
+  await expect(page.locator('#rows tr')).toHaveCount(50);
+  await page.locator('#reset-result-filters').click();
+  await expect(page.locator('#page-size')).toHaveValue('10');
+  await expect(page.locator('#sort')).toHaveValue('time');
+  await expect(page.locator('#rows tr')).toHaveCount(10);
+  await assertNoHorizontalOverflow(page);
+});
