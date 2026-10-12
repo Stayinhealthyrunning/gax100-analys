@@ -195,7 +195,7 @@ function speedChart(segments, result, selectedIndex = null) {
       '<line class="gridline" x1="' + left + '" x2="' + right + '" y1="' + y + '" y2="' + y + '"/>';
   }).join('');
   return '<p class="muted">Fart per delsträcka relativt snittet för enbart de verifierade avståndsintervallen. Detta är inte hela loppets snittfart. Streckad linje = 100 %.</p>' +
-    '<svg class="speed-chart" viewBox="0 0 900 215" role="img" aria-label="Relativ fart per verifierad delsträcka">' +
+    '<svg class="speed-chart" viewBox="0 0 900 215" role="group" aria-label="Relativ fart per verifierad delsträcka">' +
     axis + '<line class="speed-reference" x1="' + left + '" x2="' + right + '" y1="' + refY + '" y2="' + refY + '"/>' +
     bars + '<text class="speed-label" x="' + left + '" y="209">Start → kontroller i ordning</text></svg>';
 }
@@ -217,7 +217,7 @@ function durationChart(segments, selectedIndex = null) {
       '" width="' + Math.max(5, step - 16) + '" height="' + h + '"><title>' +
       esc(segment.from + ' – ' + segment.name) + ': ' + time(segment.seconds) + '</title></rect>';
   }).join('');
-  return '<svg class="duration-chart" viewBox="0 0 900 225" role="img" aria-label="Tidsåtgång per verifierad delsträcka, från Start till sista observation">' +
+  return '<svg class="duration-chart" viewBox="0 0 900 225" role="group" aria-label="Tidsåtgång per verifierad delsträcka, från Start till sista observation">' +
     grid + bars + '<text class="speed-label" x="' + left + '" y="215">Start → kontrollpunkter → Mål (om officiell sluttid finns)</text></svg>';
 }
 function runnerMedianGapChart(result) {
@@ -249,7 +249,7 @@ function runnerMedianGapChart(result) {
       time(point.medianElapsedSeconds)+'</td><td>'+signed(point.gapSeconds)+'</td></tr>').join('')+'</tbody></table></div>';
   return '<p class="muted">Fast referensgrupp med <strong>'+model.n+
     ' fullföljare</strong> som har samma verifierade kontrollserie. Positiv skillnad betyder senare än medianen; negativ betyder tidigare. Inga placeringar eller GPS-positioner härleds.</p>'+
-    '<svg class="gap-chart" role="img" viewBox="0 0 940 272" aria-label="Tidslucka i sekunder mot en fast komplett referenskohort">'+
+    '<svg class="gap-chart" role="group" viewBox="0 0 940 272" aria-label="Tidslucka i sekunder mot en fast komplett referenskohort">'+
     ticks+'<line class="gap-zero" x1="'+left+'" x2="'+right+'" y1="'+middle+'" y2="'+middle+'"/>'+
     '<polyline class="gap-line" points="'+path+'" fill="none"/>'+points+labels+'</svg>'+table;
 }
@@ -399,7 +399,7 @@ function comparisonTimeChart(model) {
     '<div class="comparison-legend"><span class="role-a" style="color:' + comparisonColor(model.a, 'A') + '">A · heldragen – ' +
     esc(runnerChip(model.a)) + '</span><span class="role-b" style="color:' + comparisonColor(model.b, 'B') +
     '">B · streckad – ' + esc(runnerChip(model.b)) + '</span></div>' +
-    '<svg viewBox="0 0 900 260" role="img" aria-label="Två officiella tidsserier. A heldragen och B streckad, könsfärg bara när källan anger kön">' +
+    '<svg viewBox="0 0 900 260" role="group" aria-label="Två officiella tidsserier. A heldragen och B streckad, könsfärg bara när källan anger kön">' +
     grid + '<line class="axis" x1="' + chartLeft + '" x2="' + chartRight + '" y1="' + chartBottom + '" y2="' + chartBottom +
     '"/>' + paths + marks + '</svg><p class="muted">X: gemensamma kontrollpunkter i ordning. Y: tid från start. Kurvorna är inte GPS-positioner.</p></figure>';
 }
@@ -527,7 +527,7 @@ function chart() {
       (100*count/finished.length).toLocaleString('sv-SE',{maximumFractionDigits:1}) +
       ' %)</title></rect>';
   }).join('');
-  histogram.innerHTML = '<svg viewBox="0 0 430 182" role="img" aria-label="Histogram över verkliga officiella sluttider för ' +
+  histogram.innerHTML = '<svg viewBox="0 0 430 182" role="group" aria-label="Histogram över verkliga officiella sluttider för ' +
     finishGroupLabel() + '"><line class="axis" x1="46" y1="142" x2="394" y2="142"/>' +
     yTicks + xTicks + markers + bars +
     '<text x="2" y="17">antal</text><text x="160" y="180">sluttid (H:MM)</text></svg>' +
@@ -566,7 +566,7 @@ function chart() {
   const timeTicks = [0,.25,.5,.75,1].map((v) =>
     '<text text-anchor="middle" x="' + x(v) + '" y="162">' +
     time(minimum + span*v).slice(0,6) + '</text>').join('');
-  scatter.innerHTML = '<svg viewBox="0 0 430 182" role="img" aria-label="Sluttid på X-axeln och källa publicerad placering på Y-axeln, plats 1 överst">' +
+  scatter.innerHTML = '<svg viewBox="0 0 430 182" role="group" aria-label="Sluttid på X-axeln och källa publicerad placering på Y-axeln, plats 1 överst">' +
     rankGrid + timeTicks + '<line class="axis" x1="46" y1="142" x2="394" y2="142"/>' +
     points.map((runner) => '<circle class="dot dot-' +
       (GaxField.groupGender(runner.gender)==='Kvinnor' ? 'female' :
