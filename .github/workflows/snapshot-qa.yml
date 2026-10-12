@@ -1,8 +1,6 @@
 name: GAX100 Snapshot UX QA (not a release gate)
 
 on:
-  push:
-    branches: [audit/gax100-plan-precision-2026-10-12]
   pull_request:
     branches: [codex/gax100-etapp2]
   workflow_dispatch:
