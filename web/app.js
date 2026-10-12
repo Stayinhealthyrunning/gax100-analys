@@ -65,10 +65,12 @@ function renderEditionCapabilities() {
     '<div class="capability-heading"><h2>Vad går att analysera för '+esc(editionName)+'?</h2>'+
     '<p>Visar vad källdatan faktiskt stöder. Inga saknade passager, placeringar eller GPS-positioner rekonstrueras.</p></div>'+
     '<div class="capability-options">'+cells.map(cell =>
-      '<a class="capability-item '+(cell.available?'available':'unavailable')+'" href="'+cell.href+'" '+
-      'aria-label="'+esc(cell.label)+': '+esc(cell.note)+'">'+
+      (cell.available ? '<a class="capability-item available" href="'+cell.href+'"' :
+        '<div class="capability-item unavailable" aria-disabled="true"')+
+      ' aria-label="'+esc(cell.label)+': '+esc(cell.note)+'">'+
       '<span aria-hidden="true">'+(cell.available?'✓':'–')+'</span>'+
-      '<strong>'+esc(cell.label)+'</strong><small>'+esc(cell.note)+'</small></a>').join('')+'</div>'+
+      '<strong>'+esc(cell.label)+'</strong><small>'+esc(cell.note)+'</small>'+
+      (cell.available?'</a>':'</div>')).join('')+'</div>'+
     (!complete?'<p class="capability-hint">Vill du se den historiska delsträckeanalysen? '+
       '<button type="button" id="find-split-year">Visa senaste upplagan med kompletta mellantider</button></p>':'');
   const button=$('#find-split-year');
