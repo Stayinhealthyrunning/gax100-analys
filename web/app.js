@@ -80,7 +80,11 @@ function renderRows() {
   const duelChips = state.duel.map((id) => state.data.results.find((result) => result.result_id === id)).filter(Boolean);
   const chips = (values, type) => values.map((result) => '<button type="button" data-remove-' + type + '="' + esc(result.result_id) + '">' + esc(runnerChip(result)) + ' ×</button>').join('');
   $('#selection-bar').innerHTML = '<div class="selection-line"><strong>Direktjämförelse (' + comparisonChips.length + '/2)</strong><div class="selection-chips">' + (chips(comparisonChips, 'compare') || '<span>Välj två löpare</span>') + '</div></div>' +
-    '<div class="selection-line"><strong>Kartduell (' + duelChips.length + '/5)</strong><div class="selection-chips">' + (chips(duelChips, 'duel') || '<span>Välj upp till fem</span>') + '</div></div>';
+    '<div class="selection-line"><strong>Kartduell (' + duelChips.length + '/5)</strong><div class="selection-chips">' + (chips(duelChips, 'duel') || '<span>Välj upp till fem</span>') + '</div></div>' +
+    (state.favorites.size ? '<details class="saved"><summary>Sparade resultat (' + state.favorites.size + ')</summary><div class="selection-chips">' +
+      [...state.favorites].map((id) => state.data.results.find((result) => result.result_id === id)).filter(Boolean).map((result) =>
+        '<button type="button" data-id="' + esc(result.result_id) + '">' + esc(runnerChip(result)) + '</button>').join('') +
+      '</div></details>' : '');
   document.querySelectorAll('[data-remove-compare]').forEach((button) => { button.onclick = () => {
     state.compare = state.compare.filter((id) => id !== button.dataset.removeCompare);
     renderRows(); renderComparison(); syncUrl(true);
