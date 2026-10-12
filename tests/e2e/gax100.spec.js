@@ -220,9 +220,8 @@ test('verifierad 2024-delsträcka: tid utan uppfunnet avstånd', async ({ page }
 test('tid mot placering öppnar vald individ med korrekt URL', async ({ page }) => {
   await page.goto('/');
   await page.locator('#year').selectOption('gax100-2024');
-  const point = page.locator('#scatter [data-chart-runner]').first();
-  await expect(point).toBeVisible();
-  await point.click();
+  await expect(page.locator('#scatter [data-chart-runner]').first()).toBeVisible();
+  await page.locator('#scatter-runner-select').selectOption({ index: 1 });
   await expect(page.locator('#runner')).not.toHaveClass(/empty/);
   await expect(page).toHaveURL(/result=/);
 });
