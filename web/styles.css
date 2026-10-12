@@ -510,7 +510,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-v
 .club-typeahead { display:grid; gap:4px; font-size:13px; font-weight:650; color:#52636e; min-width:180px; }
 .club-typeahead input { min-width:0; width:100%; }
 @media(max-width:600px) {
-  .analysis-navigation { flex-wrap:nowrap; overflow-x:auto; overscroll-behavior-inline:contain; scrollbar-width:thin; padding:9px; }
+  .analysis-navigation { flex-wrap:wrap; overflow-x:visible; padding:9px; gap:6px; }
   .analysis-navigation a { flex:0 0 auto; }
   .club-typeahead { min-width:0; flex:1 1 180px; }
 }
