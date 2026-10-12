@@ -43,7 +43,7 @@
   <section id="direct-comparison">
     <div class="section-heading"><h2>Direktjämförelse 2.0</h2><details class="help"><summary aria-label="Om Direktjämförelse 2.0">ⓘ</summary><p>Exakt två resultatrader jämförs. Gemensamma passager används bara när upplaga, kontrollpunkt och källavstånd är verifierat likvärdiga. Saknade ändpunkter ger inget segmentvärde.</p></details></div>
     <p class="muted">Välj två löpare – också från olika år i sökläget Alla år. Gemensamma kontrollpunkter jämförs bara när samma banunderlag är verifierat; saknade uppgifter förblir tomma.</p>
-    <div id="comparison" class="runner empty">Inga två resultat valda.</div>
+    <div id="comparison" class="runner empty">Inga två resultat valda.</div><details class="help"><summary aria-label="Om tidsluckan och jämförbarhet">ⓘ</summary><p>Gapanalysen visar tiden från start vid gemensamma, verkliga checkpoints inom samma upplaga. B minus A är positivt när A passerade först. Olika banversioner jämförs inte som likvärdiga lopp och ingen GPS-position påstås vara observerad.</p></details>
     <div class="comparison-actions"><button id="swap-comparison" type="button">Byt A/B</button><button id="share-comparison" type="button">Dela jämförelsen</button><button id="clear-comparison" type="button">Rensa valda</button><span id="comparison-feedback" class="muted" role="status"></span></div>
   </section>
 
@@ -61,10 +61,10 @@
   <section id="field-overview">
     <div class="section-heading"><h2>Loppets dynamik och fältets trösklar</h2><details class="help"><summary aria-label="Om fältstatistiken">ⓘ</summary><p>Histogrammet använder FINISHED med positiv sluttid. Percentilerna P10, P25, P50, P75 och P90 använder linjär interpolation med h=(n−1)×p.</p></details></div>
     <div class="stats-grid">
-      <div><h3>Sluttidsfördelning</h3><div id="histogram" class="chart" role="img" aria-label="Sluttidsfördelning"></div></div>
-      <div><h3>Tid mot placering</h3><div id="scatter" class="chart" role="img" aria-label="Tid mot placering"></div></div>
+      <div><h3>Sluttidsfördelning</h3><details class="help"><summary aria-label="Om sluttidsfördelningen">ⓘ</summary><p>Staplarna visar antal fullföljare i tidsintervall. Streck markerar percentiler av verifierade sluttider, inte prognoser. Ett tomt intervall betyder inga målgångar i just intervallet.</p></details><div id="histogram" class="chart" role="img" aria-label="Sluttidsfördelning"></div></div>
+      <div><h3>Tid mot placering</h3><details class="help"><summary aria-label="Om tid mot placering">ⓘ</summary><p>Varje punkt avser ett resultat med officiell numerisk placering och giltig sluttid. Klicka på en punkt för att öppna den individuella analysen. Upplagor utan publicerade placeringar får inte beräknade punkter.</p></details><div id="scatter" class="chart" role="img" aria-label="Tid mot placering"></div></div>
     </div>
-    <h3>Percentiler</h3>
+    <h3>Percentiler</h3><details class="help"><summary aria-label="Om sluttidens percentiler">ⓘ</summary><p>P10, P25, P50, P75 och P90 beräknas med linjär interpolation av samtliga giltiga officiella sluttider för upplagan. P50 är medianen, inte medeltiden.</p></details>
     <div id="percentiles" class="runner empty">Ingen verifierad sluttidsdata.</div>
     <p id="stats-note" class="muted"></p>
   </section>
