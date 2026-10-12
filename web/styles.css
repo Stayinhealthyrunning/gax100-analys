@@ -237,3 +237,11 @@ button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-v
 @media(max-width:379px) {
   .fact.gender { grid-column:auto; }
 }
+
+/* Ensure SVG's 420 px intrinsic size and selector controls never widen mobile charts. */
+.stats-grid > div { min-width:0; max-width:100%; }
+#histogram, #scatter { min-width:0; max-width:100%; width:100%; }
+#histogram svg, #scatter svg { min-width:0; width:100%; max-width:100%; }
+.scatter-selector { min-width:0; max-width:100%; }
+.scatter-selector select { width:100%; min-width:0; max-width:100%; }
+@media(max-width:899px) { .stats-grid { grid-template-columns:minmax(0,1fr); } }
