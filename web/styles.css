@@ -514,3 +514,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-v
   .analysis-navigation a { flex:0 0 auto; }
   .club-typeahead { min-width:0; flex:1 1 180px; }
 }
+
+/* WCAG 2.2 AA – improve small pink text contrast against near-white KPI card. */
+#race-facts .fact.gender .f { color:#be185d; }
+.quality-table-wrap:focus-visible { outline:3px solid #f59e0b; outline-offset:2px; }
