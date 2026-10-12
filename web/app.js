@@ -1,5 +1,13 @@
 const state = { data: null, year: null, query: '', club: '', gender: '', status: '', searchScope: 'year', sort: 'time', page: 1, pageSize: 10, selected: null, compare: [], duel: [], favorites: new Set(), planTarget: null, targetSeconds: null, fieldSegmentIndex: null, finishGroup: 'all', labFrom: null, labTo: null, labGroup: 'all', segmentIndex: null };
 const $ = (selector) => document.querySelector(selector);
+function labelMobileTable(table, columnLabels) {
+  if (!table) return;
+  table.classList.add('mobile-card-table');
+  table.querySelectorAll('tbody tr').forEach((row) => {
+    [...row.cells].forEach((cell, index) => { cell.dataset.label = columnLabels[index] || ''; });
+  });
+}
+
 const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
 const time = (seconds) => GaxTime.formatClock(seconds);
 const edition = () => state.data.editions.find((item) => item.edition_id === state.year);
@@ -281,6 +289,9 @@ function renderRunner() {
     '<h4>Tidsåtgång per delsträcka</h4>' + durationChart(segments, state.segmentIndex) +
     '<h4>Tidslucka mot fältets median</h4>' + runnerMedianGapChart(result) +
     '<p class="muted">Start är tid 0. Mål används bara när en positiv officiell sluttid finns. Saknade observationer eller okänt avstånd ger ingen fabricerad fart eller GPS-replay.</p>';
+  const runnerTables = $('#runner').querySelectorAll('.segment-table');
+  labelMobileTable(runnerTables[0], ['Kontrollpunkt', 'Distans', 'Ackumulerad tid', 'Delsträckstid']);
+  labelMobileTable(runnerTables[1], ['Kontrollpunkt', 'Denna löpare', 'Fältets median', 'Skillnad']);
   const select = (index) => { state.segmentIndex = index; renderRunner(); };
   document.querySelectorAll('[data-segment-index]').forEach((button) => {
     button.onclick = () => select(Number(button.dataset.segmentIndex));
@@ -319,6 +330,7 @@ function renderPlan() {
   }).join('');
   $('#plan').className = 'runner';
   $('#plan').innerHTML = `<h3>Simulera ditt lopp baserat på faktiska tidigare tider per delsträcka</h3><p>Historiskt vägd fördelning från ${plan.candidates} fullföljare med kompletta, gemensamma passager i ${esc(edition()?.edition_label || 'vald upplaga')}. Start→första kontrollen och sista kontrollen→Mål ingår; inga tider eller positioner hittas på. Medianiserade andelar normaliseras till 100 % före sekundavrundning. Detta är en matematisk simulering, inte en prognos.</p><div class="plan-controls"><label for="plan-target">Måltid (H:MM:SS)<input id="plan-target" type="text" inputmode="numeric" placeholder="t.ex. 24:00:00" value="${time(simulatedSeconds.reduce((a, b) => a + b, 0))}"></label><button type="button" id="apply-plan-target">Bygg loppplan</button><button type="button" data-plan-adjust="-900">−15 min</button><button type="button" data-plan-adjust="-300">−5 min</button><button type="button" data-plan-adjust="300">+5 min</button><button type="button" data-plan-adjust="900">+15 min</button><button type="button" id="reset-plan-target">Återställ mediantid</button><span id="plan-target-message" class="muted" role="status">Standard: upplagans mediantid ${time(plan.target)}.</span></div><div class="table-wrap"><table class="segment-table"><thead><tr><th>Från</th><th>Till</th><th>Distans</th><th>Andel av loppet</th><th>Beräknad segmenttid</th><th>Ackumulerad passagetid</th><th>Underlag</th></tr></thead><tbody>${rows}</tbody></table></div><p class="muted">Sista passagetiden är exakt måltiden. Distans och pace visas endast när motsvarande geografiska underlag är verifierat. En annan vald löpares enskilda tider används inte som sammanblandat referensfält.</p>`;
+  labelMobileTable($('#plan .segment-table'), ['Från', 'Till', 'Distans', 'Andel av loppet', 'Segmenttid', 'Ackumulerad tid', 'Underlag']);
   $('#apply-plan-target').onclick = () => {
     const value = $('#plan-target').value.trim();
     const match = value.match(/^(\d+):([0-5]\d):([0-5]\d)$/);
@@ -408,6 +420,7 @@ function renderComparison() {
     delta + '<p class="evidence-note">' + esc(model.reason) + '</p>' +
     comparisonTimeChart(model) + table +
     '<p class="muted">Placeringsresa, höjdprofil och kartreplay kräver verifierade källdata och är därför inte konstruerade från kontrollpassagerna.</p>';
+  labelMobileTable($('#comparison .segment-table'), ['Kontrollpunkt', 'Löpare A', 'Löpare B', 'Tidslucka']);
 }
 
 function renderMapDuel() {
