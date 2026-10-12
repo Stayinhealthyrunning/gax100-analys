@@ -14,16 +14,20 @@ const percentile = (values, probability) => GaxStatistics.percentile(values, pro
 const mean = (values) => { const valid = values.filter(Number.isFinite); return valid.length ? Math.round(valid.reduce((sum, value) => sum + value, 0) / valid.length) : null; };
 
 function rows() {
+  const query = state.query.trim().toLocaleLowerCase('sv-SE');
   const filtered = (state.searchScope === 'all' ? state.data.results : editionResults(state.year)).filter((result) => {
-    const matchesQuery = !state.query || `${result.name} ${result.bib || result.start_number || ''} ${result.club || ''}`.toLowerCase().includes(state.query.toLowerCase());
+    const matchesQuery = !query || `${result.name} ${result.bib || result.start_number || ''} ${result.club || ''}`.toLocaleLowerCase('sv-SE').includes(query);
     const matchesGender = !state.gender || result.gender === state.gender;
     return matchesQuery && (!state.club || result.club === state.club) && matchesGender && (!state.status || result.status === state.status);
   });
-  return filtered.sort((left, right) => state.sort === 'name'
-    ? left.name.localeCompare(right.name, 'sv')
-    : state.sort === 'status'
-      ? left.status.localeCompare(right.status)
-      : (left.finish_seconds ?? 1e12) - (right.finish_seconds ?? 1e12));
+  return filtered.sort((left, right) => {
+    const compare = state.sort === 'name'
+      ? left.name.localeCompare(right.name, 'sv')
+      : state.sort === 'status'
+        ? left.status.localeCompare(right.status, 'sv')
+        : (left.finish_seconds ?? Number.MAX_SAFE_INTEGER) - (right.finish_seconds ?? Number.MAX_SAFE_INTEGER);
+    return compare || left.result_id.localeCompare(right.result_id);
+  });
 }
 
 function syncUrl(push = false) {
@@ -67,6 +71,10 @@ function renderRows() {
   const totalPages = Math.max(1, Math.ceil(visibleRows.length / state.pageSize));
   state.page = Math.min(state.page, totalPages);
   const pageRows = visibleRows.slice((state.page - 1) * state.pageSize, state.page * state.pageSize);
+  $('#page-size').value = String(state.pageSize);
+  const firstIndex = visibleRows.length ? (state.page - 1) * state.pageSize + 1 : 0;
+  const lastIndex = Math.min(state.page * state.pageSize, visibleRows.length);
+  $('#results-page-count').textContent = 'Visar ' + firstIndex + '–' + lastIndex + ' av ' + visibleRows.length + ' träffar.';
   $('#result-count').textContent = `${visibleRows.length} träffar i ${state.searchScope === 'all' ? 'alla år' : esc(edition()?.edition_label || 'vald upplaga')}`;
   $('#rows').innerHTML = pageRows.length ? pageRows.map((result) => `<tr><td data-label="Namn"><strong>${esc(result.name) || '—'}</strong></td><td data-label="År">${esc(runnerYear(result))}</td><td data-label="Kön">${esc(result.gender) || '—'}</td><td data-label="Klubb">${esc(result.club) || '—'}</td><td data-label="Status" class="status-${esc(result.status.toLowerCase())}">${esc(result.status)}</td><td data-label="Sluttid">${time(result.finish_seconds)}</td><td data-label="Val" class="result-actions"><button type="button" data-id="${esc(result.result_id)}" aria-label="Öppna resultat för ${esc(result.name)}">Öppna</button><button type="button" data-compare="${esc(result.result_id)}" aria-label="Jämför ${esc(result.name)}">${state.compare.includes(result.result_id) ? 'Ta bort' : 'Jämför'}</button><button type="button" data-duel="${esc(result.result_id)}" aria-label="Välj ${esc(result.name)} för Kartduell">${state.duel.includes(result.result_id) ? 'Ta bort duell' : 'Kartduell'}</button><button type="button" data-favorite="${esc(result.result_id)}" aria-label="${state.favorites.has(result.result_id) ? 'Ta bort favorit för' : 'Favoritmarkera'} ${esc(result.name)}">${state.favorites.has(result.result_id) ? '★ Favorit' : '☆ Favorit'}</button><button type="button" data-share="${esc(result.result_id)}" aria-label="Kopiera länk till ${esc(result.name)}">Dela</button></td></tr>`).join('') : '<tr><td colspan="7" class="empty-cell">Ingen verifierad resultatpost matchar urvalet.</td></tr>';
   $('#result-pagination').innerHTML = totalPages > 1
@@ -109,7 +117,7 @@ function renderRows() {
   document.querySelectorAll('[data-compare]').forEach((button) => { button.onclick = () => { const id = button.dataset.compare; state.compare = state.compare.includes(id) ? state.compare.filter((item) => item !== id) : state.compare.length < 2 ? [...state.compare, id] : state.compare; renderRows(); renderComparison(); syncUrl(true); }; });
   document.querySelectorAll('[data-duel]').forEach((button) => { button.onclick = () => { const id = button.dataset.duel; state.duel = state.duel.includes(id) ? state.duel.filter((item) => item !== id) : state.duel.length < 5 ? [...state.duel, id] : state.duel; renderRows(); renderMapDuel(); syncUrl(true); }; });
   document.querySelectorAll('[data-favorite]').forEach((button) => { button.onclick = () => { const id = button.dataset.favorite; if (state.favorites.has(id)) state.favorites.delete(id); else state.favorites.add(id); try { localStorage.setItem('gax100-favorites', JSON.stringify([...state.favorites])); } catch (error) { /* privat webbläsarlagring är valfri */ } renderRows(); }; });
-  document.querySelectorAll('[data-share]').forEach((button) => { button.onclick = async () => { const url = new URL(window.location.href); url.search = ''; url.searchParams.set('edition', state.year); url.searchParams.set('result', button.dataset.share); try { await navigator.clipboard.writeText(url.toString()); button.textContent = 'Kopierad'; } catch (error) { window.history.replaceState({}, '', url); button.textContent = 'Länk klar'; } }; });
+  document.querySelectorAll('[data-share]').forEach((button) => { button.onclick = async () => { const url = new URL(window.location.href); url.search = ''; const sharedResult = state.data.results.find((result) => result.result_id === button.dataset.share); url.searchParams.set('edition', sharedResult?.edition_id || state.year); url.searchParams.set('result', button.dataset.share); try { await navigator.clipboard.writeText(url.toString()); button.textContent = 'Kopierad'; } catch (error) { window.history.replaceState({}, '', url); button.textContent = 'Länk klar'; } }; });
   document.querySelectorAll('[data-page]').forEach((button) => { button.onclick = () => { state.page = Number(button.dataset.page); renderRows(); }; });
 }
 
@@ -835,6 +843,12 @@ $('#search').oninput = (event) => { state.query = event.target.value; state.page
 $('#club').onchange = (event) => { state.club = event.target.value; state.page = 1; renderRows(); };
 $('#gender').onchange = (event) => { state.gender = event.target.value; state.page = 1; renderRows(); };
 $('#sort').onchange = (event) => { state.sort = event.target.value; state.page = 1; renderRows(); };
+$('#page-size').onchange = (event) => { const chosen = Number(event.target.value); if (![10,25,50].includes(chosen)) return; state.pageSize = chosen; state.page = 1; renderRows(); };
+$('#reset-result-filters').onclick = () => {
+  state.query = ''; state.club = ''; state.gender = ''; state.status = ''; state.sort = 'time'; state.pageSize = 10; state.page = 1;
+  $('#search').value = ''; $('#sort').value = 'time'; $('#page-size').value = '10';
+  renderFilters(); renderRows();
+};
 window.addEventListener('popstate', () => {
   if (!state.data) return;
   const params = new URLSearchParams(window.location.search);
