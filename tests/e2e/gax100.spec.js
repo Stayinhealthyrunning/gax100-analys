@@ -225,3 +225,47 @@ test('tid mot placering öppnar vald individ med korrekt URL', async ({ page }) 
   await expect(page.locator('#runner')).not.toHaveClass(/empty/);
   await expect(page).toHaveURL(/result=/);
 });
+
+
+test('fördjupad källstödd fältanalys 2023: kvartiler, kön och verklig spurt', async ({ page }) => {
+  await page.setViewportSize({width: 1200, height:900});
+  await page.goto('/');
+  await page.locator('#year').selectOption('gax100-2023');
+  await expect(page.locator('#field-insights')).toContainText('70 kompletta fullföljare');
+  await expect(page.locator('#field-insights .field-segment-button')).toHaveCount(4);
+  await expect(page.locator('#field-segment-detail')).toContainText('Q25–Q75');
+  await expect(page.locator('#field-segment-detail')).toContainText('P10–P90');
+  await page.locator('[data-field-segment="3"]').click();
+  await expect(page.locator('#field-segment-detail')).toContainText('Mål');
+  await expect(page.locator('#field-insights .sprint-groups')).toContainText('Kvinnor');
+  await expect(page.locator('#field-insights .sprint-groups')).toContainText('Män');
+  await expect(page.locator('#field-insights')).toContainText('19');
+  await expect(page.locator('#field-insights')).toContainText('Senaste passage');
+  await assertNoHorizontalOverflow(page);
+});
+test('källgating 2024/2025: tidsserie utan distans samt inga syntetiska passager', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('#year').selectOption('gax100-2024');
+  await expect(page.locator('#field-insights .field-segment-button')).toHaveCount(4);
+  await expect(page.locator('#field-segment-detail')).toContainText('Fysisk delsträckedistans saknas');
+  await expect(page.locator('#field-insights')).toContainText('Ingen verifierad observerad DNF-passage');
+  await page.locator('#year').selectOption('gax100-2025');
+  await expect(page.locator('#field-insights')).toContainText('Det finns inte fem fullständiga');
+  await expect(page.locator('#field-insights .field-segment-button')).toHaveCount(0);
+  await expect(page.locator('#field-insights')).toContainText('40');
+});
+test('måltid mot placering: medianstandard, scenariotid och verifierad gruppstorlek', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('#year').selectOption('gax100-2025');
+  await expect(page.locator('#target-placement')).toContainText('69');
+  const initial = await page.locator('#target-time-input').inputValue();
+  await page.locator('#target-time-input').fill('30:00:00');
+  await page.locator('#target-run').click();
+  await expect(page.locator('#target-time-input')).toHaveValue('30:00:00');
+  await expect(page.locator('#target-placement')).toContainText('Retrospektiv jämförelse');
+  await page.locator('#target-reset').click();
+  await expect(page.locator('#target-time-input')).toHaveValue(initial);
+  await page.locator('#target-time-input').fill('xx:00');
+  await page.locator('#target-run').click();
+  await expect(page.locator('#target-error')).toContainText('H:MM:SS');
+});
