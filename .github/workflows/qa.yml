@@ -35,6 +35,9 @@ jobs:
           ./scripts/fetch_sources.ps1
           ./scripts/audit_sources.ps1
 
+      - name: Fail closed on blocked upstream result pages
+        run: node scripts/verify_source_integrity.js
+
       - name: Build SQLite and web export
         shell: bash
         run: |
@@ -48,6 +51,7 @@ jobs:
       - name: Run Node contract tests
         run: |
           npm run test:statistics
+          node tests/test_source_integrity.js
           npm run test:plan
           node tests/test_comparison.js
           npm run test:field
