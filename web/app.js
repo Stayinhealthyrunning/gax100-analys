@@ -204,18 +204,70 @@ function renderPlan() {
   $('#reset-plan-target').onclick = () => { state.planTarget = null; renderPlan(); };
 }
 
+function comparisonTimeChart(model) {
+  const stops = model.checkpoints;
+  if (model.crossEdition || stops.length < 2) return '<p class="muted">En sammanhängande tvålinjegraf kräver minst två jämförbara, officiella mellantider i samma upplaga.</p>';
+  const series = [{ name: model.a.name, key: 'a', color: '#2563eb' }, { name: model.b.name, key: 'b', color: '#c026d3' }];
+  const maximum = Math.max(1, ...stops.map((stop) => Math.max(stop.a, stop.b)));
+  const chartLeft = 82, chartRight = 850, chartBottom = 225, chartTop = 30;
+  const x = (index) => chartLeft + index * (chartRight - chartLeft) / (stops.length - 1);
+  const y = (value) => chartBottom - value / maximum * (chartBottom - chartTop);
+  const grid = [0, .25, .5, .75, 1].map((fraction) => '<line class="gridline" x1="' + chartLeft + '" x2="' + chartRight + '" y1="' + y(maximum * fraction) + '" y2="' + y(maximum * fraction) + '"/>' +
+    '<text x="4" y="' + (y(maximum * fraction) + 4) + '">' + time(maximum * fraction) + '</text>').join('');
+  const marks = stops.map((stop, index) =>
+    '<text class="compare-x-label" x="' + x(index) + '" y="247" text-anchor="middle">' +
+    esc(stop.name.replace(/(\d+)\s*km.*$/i, '$1 km').slice(0, 18)) + '</text>').join('');
+  const paths = series.map((seriesInfo) => {
+    const coords = stops.map((stop, index) => x(index) + ',' + y(stop[seriesInfo.key])).join(' ');
+    const dots = stops.map((stop, index) => '<circle cx="' + x(index) + '" cy="' + y(stop[seriesInfo.key]) +
+      '" r="5" fill="' + seriesInfo.color + '"><title>' + esc(seriesInfo.name) + ' · ' + esc(stop.name) +
+      ': ' + time(stop[seriesInfo.key]) + '</title></circle>').join('');
+    return '<polyline fill="none" stroke="' + seriesInfo.color + '" stroke-width="3" points="' + coords + '"/>' + dots;
+  }).join('');
+  return '<figure class="compare-figure"><figcaption>Ackumulerad officiell tid vid gemensamma kontroller</figcaption>' +
+    '<div class="comparison-legend"><span class="role-a">' + esc(runnerChip(model.a)) + '</span><span class="role-b">' + esc(runnerChip(model.b)) + '</span></div>' +
+    '<svg viewBox="0 0 900 260" role="img" aria-label="Två officiella ackumulerade tidsserier, A blå och B magenta">' +
+    grid + '<line class="axis" x1="' + chartLeft + '" x2="' + chartRight + '" y1="' + chartBottom + '" y2="' + chartBottom +
+    '"/>' + paths + marks + '</svg><p class="muted">X: gemensamma kontrollpunkter i ordning. Y: tid från start. Kurvorna är inte GPS-positioner.</p></figure>';
+}
 function renderComparison() {
   const selected = state.compare.map((id) => state.data.results.find((result) => result.result_id === id)).filter(Boolean);
-  if (selected.length !== 2) { $('#comparison').className = 'runner empty'; $('#comparison').textContent = `${selected.length}/2 resultat valda.`; return; }
-  const maps = selected.map((result) => new Map((result.observations || []).map((observation) => [observation.checkpoint_id, observation])));
-  const common = [...maps[0].keys()].filter((key) => maps[1].has(key) && Number.isFinite(maps[0].get(key).elapsed_seconds) && Number.isFinite(maps[1].get(key).elapsed_seconds) && (maps[0].get(key).distance_km == null || maps[1].get(key).distance_km == null || maps[0].get(key).distance_km === maps[1].get(key).distance_km));
-  const lines = common.map((key) => {
-    const first = maps[0].get(key); const second = maps[1].get(key); const gap = first.elapsed_seconds - second.elapsed_seconds;
-    return `<tr><td>${esc(first.name)}</td><td>${time(first.elapsed_seconds)}</td><td>${time(second.elapsed_seconds)}</td><td>${gap >= 0 ? '+' : '-'}${time(Math.abs(gap))}</td></tr>`;
-  }).join('');
+  if (selected.length !== 2) {
+    $('#comparison').className = 'runner empty';
+    $('#comparison').textContent = selected.length + '/2 resultat valda. Välj exakt två löpare via söklistan eller resultatdatabasen.';
+    $('#swap-comparison').disabled = true;
+    $('#share-comparison').disabled = true;
+    return;
+  }
+  $('#swap-comparison').disabled = false;
+  $('#share-comparison').disabled = false;
+  const model = GaxComparison.compare(selected[0], selected[1]);
+  if (!model) { $('#comparison').textContent = 'Samma resultat kan inte jämföras med sig självt.'; return; }
+  const person = (runner, letter, role) => {
+    const finish = runner.status === 'FINISHED' ? time(runner.finish_seconds) : esc(runner.status);
+    const rank = runner.rank != null && String(runner.rank).trim() ? ' · officiell placering ' + esc(runner.rank) : '';
+    return '<div class="compare-person ' + role + '"><h3>' + letter + ' · ' + esc(runnerChip(runner)) + '</h3><p>' +
+      finish + rank + '</p><small>' + esc(runner.club || 'Klubb ej publicerad') + ' · ' +
+      (runner.observations || []).length + ' verifierade passager</small></div>';
+  };
+  const delta = model.finishComparable ?
+    '<p class="compare-summary">Måltidsgap: <strong>' +
+    (model.finishGap === 0 ? 'Samma sluttid' : model.finishGap > 0 ? 'A före B med ' + time(model.finishGap) : 'B före A med ' + time(-model.finishGap)) +
+    '</strong> · samma upplaga</p>' : '<p class="compare-summary">Sluttider visas som separata tävlingsresultat, inte ett jämförbart helbanelopp.</p>';
+  const signedGap = (seconds) => seconds === 0 ? 'Samma tid' :
+    seconds > 0 ? 'A före med ' + time(seconds) : 'B före med ' + time(-seconds);
+  const table = model.checkpoints.length ?
+    '<div class="table-wrap"><table class="segment-table"><thead><tr><th>Kontrollpunkt</th><th>' + esc(runnerChip(model.a)) +
+    '</th><th>' + esc(runnerChip(model.b)) + '</th><th>Tidslucka</th></tr></thead><tbody>' +
+    model.checkpoints.map((stop) => '<tr><td>' + esc(stop.name) + '</td><td>' + time(stop.a) + '</td><td>' +
+    time(stop.b) + '</td><td>' + signedGap(stop.gap) + '</td></tr>').join('') + '</tbody></table></div>' :
+    '<p class="muted">Gemensamma jämförbara mellantider saknas. Det går fortfarande att se de två resultaten ovan.</p>';
   $('#comparison').className = 'runner';
-  const crossEditionNote = selected[0].edition_id !== selected[1].edition_id ? '<p class="muted">Olika upplagor: endast exakt gemensamma kontrollpunkter med likvärdigt källavstånd visas. Sluttider över år jämförs inte som prestationsmått.</p>' : '';
-  $('#comparison').innerHTML = `<h3>${esc(selected[0].name)} vs ${esc(selected[1].name)}</h3>${crossEditionNote}${lines ? `<table class="segment-table"><tr><th>Kontrollpunkt</th><th>${esc(selected[0].name)}</th><th>${esc(selected[1].name)}</th><th>Gap</th></tr>${lines}</table>` : '<p>Ingen gemensam verifierad mellantid med likvärdigt källavstånd.</p>'}`;
+  $('#comparison').innerHTML =
+    '<div class="compare-cards">' + person(model.a, 'A', 'role-a') + person(model.b, 'B', 'role-b') + '</div>' +
+    delta + '<p class="evidence-note">' + esc(model.reason) + '</p>' +
+    comparisonTimeChart(model) + table +
+    '<p class="muted">Placeringsresa, höjdprofil och kartreplay kräver verifierade källdata och är därför inte konstruerade från kontrollpassagerna.</p>';
 }
 
 function renderMapDuel() {
@@ -300,3 +352,13 @@ $('#club').onchange = (event) => { state.club = event.target.value; state.page =
 $('#gender').onchange = (event) => { state.gender = event.target.value; state.page = 1; renderRows(); };
 $('#sort').onchange = (event) => { state.sort = event.target.value; state.page = 1; renderRows(); };
 $('#clear-comparison').onclick = () => { state.compare = []; renderRows(); renderComparison(); syncUrl(true); };
+$('#swap-comparison').onclick = () => { if (state.compare.length === 2) { state.compare.reverse(); renderRows(); renderComparison(); syncUrl(true); } };
+$('#share-comparison').onclick = async () => {
+  if (state.compare.length !== 2) return;
+  const url = new URL(window.location.href);
+  url.searchParams.set('edition', state.year);
+  url.searchParams.set('compare', state.compare.join(','));
+  if (state.searchScope === 'all') url.searchParams.set('scope', 'all');
+  try { await navigator.clipboard.writeText(url.toString()); $('#comparison-feedback').textContent = 'Jämförelselänken kopierad.'; }
+  catch (error) { history.replaceState(null, '', url); $('#comparison-feedback').textContent = 'Kopiera jämförelselänken från adressfältet.'; }
+};
