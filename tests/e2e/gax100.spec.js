@@ -174,3 +174,55 @@ test('historisk loppplan fördelar hela måltiden och markerar tillförlitlig t�
   await page.locator('#rows [data-id]').first().click();
   await expect(page.locator('#plan')).toContainText('Ingen historiskt vägd loppplan');
 });
+
+test('alla år: sök direkt, behåll jämförelseval och återställ via Back', async ({ page }) => {
+  await page.goto('/');
+  const data = await loadData(page);
+  const a = data.results.find((r) => r.edition_id === 'gax100-2023' && r.status === 'FINISHED' && r.observations.length >= 3);
+  const b = data.results.find((r) => r.edition_id === 'gax100-2022' && r.status === 'FINISHED' && r.observations.length >= 3);
+  expect(a && b).toBeTruthy();
+  await page.locator('#year').selectOption('gax100-2023');
+  await page.locator('#search-scope').selectOption('all');
+  await page.locator('#search').fill(a.name);
+  await expect(page.locator('#finder-preview [data-compare]').first()).toBeVisible();
+  const aRow = page.locator('#finder-preview tr').filter({ hasText:'2023' }).first();
+  await aRow.locator('[data-compare]').click();
+  await expect(page.locator('#selection-bar')).toContainText('2023');
+  await page.locator('#year').selectOption('gax100-2026');
+  await expect(page.locator('#selection-bar')).toContainText('2023');
+  await page.locator('#search').fill(b.name);
+  const bRow = page.locator('#finder-preview tr').filter({ hasText:'2022' }).first();
+  await bRow.locator('[data-compare]').click();
+  await expect(page.locator('#comparison .compare-person')).toHaveCount(2);
+  await expect(page.locator('#comparison')).toContainText('Olika års banor');
+  await expect(page.locator('#comparison .compare-figure')).toHaveCount(0);
+  await expect(page.locator('#selection-bar')).toContainText('2022');
+  await page.goBack();
+  await expect(page.locator('#selection-bar')).not.toContainText('2022');
+  await expect(page.locator('#selection-bar')).toContainText('2023');
+});
+test('verifierad 2024-delsträcka: tid utan uppfunnet avstånd', async ({ page }) => {
+  await page.goto('/');
+  const data = await loadData(page);
+  const result = data.results.find((r) => r.edition_id === 'gax100-2024' &&
+    r.status === 'FINISHED' && r.observations?.length >= 3);
+  expect(result).toBeTruthy();
+  await page.locator('#year').selectOption('gax100-2024');
+  await page.locator('#search').fill(result.name);
+  await page.locator('#finder-preview [data-id]').first().click();
+  await expect(page.locator('#runner .duration-chart')).toBeVisible();
+  await expect(page.locator('#runner .segment-table')).toContainText('Start');
+  await expect(page.locator('#runner .segment-table')).toContainText('Mål');
+  await expect(page.locator('#runner')).toContainText('Fysisk fart kan inte beräknas');
+  await page.locator('#runner .segment-select').first().click();
+  await expect(page.locator('#runner .selected-segment')).toHaveCount(1);
+});
+test('tid mot placering öppnar vald individ med korrekt URL', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('#year').selectOption('gax100-2023');
+  const point = page.locator('#scatter [data-chart-runner]').first();
+  await expect(point).toBeVisible();
+  await point.click();
+  await expect(page.locator('#runner')).not.toHaveClass(/empty/);
+  await expect(page).toHaveURL(/result=/);
+});
