@@ -23,13 +23,14 @@
 
 SQLite-importen är implementerad i `scripts/build_database.js`. Den är idempotent och skiljer editions, resultat och tidsobservationer. Äldre tidsformat med rangsuffix är parserade utan att rangvärdet påverkar klocktiden; tidskronologin valideras per resultat. Frontendens mobilresultat, kvalitetstabell, individuell segmentfart, jämförbara kontrollpunkter och historisk referens/simulering är underlagsstyrda. Kartduellens valkontrakt är aktivt, medan deltagarreplay och officiell återpublicerad årsgeometri är separata gated capabilities.
 
-## ETAPP 3 – verifierad analysprodukt
+## ETAPP 2B – verifierad analysprodukt och releasekandidat
 
-1. Kör full Chromium-QA vid 1440, 900, 768 och 390 px och granska artefakterna visuellt.
-2. Färdigställ only-if-verified standardblock: resultatöversikt, individuell analys, jämförbara mellantider och percentiler.
+1. Kör full Chromium-QA vid 1536, 1440, 1200, 1024, 900, 768, 390 och 360 px och granska artefakterna visuellt.
+2. Upprätthåll standardparitet där verifierat underlag finns: resultatöversikt, individuell segmentinteraktion, jämförbara mellantider, percentiler och historisk kohortplan.
 3. Hämta/arkivera 2023/2024/2026-GPX först efter årsanknytning och rättighet; håll lokal forskningspreview skild från publicerat webblager.
 4. Aktivera höjdprofil, banjämförelse, mellantidsankrad position och GPS-replay var för sig utifrån respektive datakrav.
-5. Publicera inte nya GAX100-geometrier eller lägg till loppet i huvudkatalogen utan separat godkännande.
+5. Kör privacy/security-scan, kontrollera Pages-status och dokumentera release readiness på exakt commit.
+6. Publicera inte nya GAX100-geometrier eller lägg till loppet i huvudkatalogen utan separat godkännande.
 
 ## Definition of done för ETAPP 1
 

@@ -18,7 +18,7 @@
 | GAX-INFO | https://gax100.se/information/ | Arrangörens deltagarinformation och GPX-hänvisning | Identifierad |
 | GAX-TRACKERS | https://gax100.se/information/trackers/ | Arrangörens tracker-länk och Legends Tracking-hänvisning | Verifierad länk; historisk data ej verifierad |
 | GAX-GPX-AUDIT | `data/gpx-audit.json` | Reproducerbar lokal audit av fem GPX-råfiler; hash, distans, höjd och tidsproveniens | Verifierad lokalt; råfiler ej publicerade |
-| GAX-GPX-REPORT | `GPX_COVERAGE.md` | Årsvis GPX-inventering, kandidatbanor, rättigheter och capability-status | Uppdaterad 2026-10-09 |
+| GAX-GPX-REPORT | `GPX_COVERAGE.md` | Årsvis GPX-inventering, kandidatbanor, rättigheter och capability-status | Uppdaterad 2026-10-12 |
 
 ## Sekundär kontrollkälla
 
@@ -48,7 +48,7 @@ Detaljer, hashvärden och spatial jämförelse finns i `GPX_COVERAGE.md` och `da
 
 ## Standard
 
-Den normerande standarden är `Stayinhealthyrunning/Stayinhealthyrunning.github.io/standards/LOPPANALYS_STANDARD_V1_0.md`. Den lästes fullständigt via en tillfällig shallow Git-klon av GitHub-repot; den innehåller 1.0.0-kravbaslinjen och no-fabrication/evidensspärrar. Webbcachefelet kring katalog-URL:n kringgicks med GitHub-åtkomst.
+Den normerande standarden är `Stayinhealthyrunning/Stayinhealthyrunning.github.io/standards/LOPPANALYS_STANDARD_V1_0.md`. Den lästes fullständigt via en tillfällig shallow Git-klon av GitHub-repot; den innehåller 1.0.0-kravbaslinjen och no-fabrication/evidensspärrar. Webbcachefelet kring katalog-URL:n kringgicks med GitHub-åtkomst. Standardparitet och avvikelser är sammanställda i `COMPONENT_MATRIX.md`; referensmönster kontrollerades i Ultravasan, Gotaleden, ÖST och Sätila.
 
 ## Källhantering
 
