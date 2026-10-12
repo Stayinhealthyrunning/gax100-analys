@@ -20,7 +20,7 @@ if (!/noindex/i.test(contents.find((item) => item.file === 'web/karta.html').tex
 
 
 // Independent fixture protects the public export against future identity leaks.
-const { fingerprint, loadRules, isSuppressed, sanitizePublicRecord } = require('../scripts/public_privacy');
+const { fingerprint, loadRules, isSuppressed, confirmedMinor, sanitizePublicRecord } = require('../scripts/public_privacy');
 const sharedRules = loadRules();
 const fixtureRules = {
   ...sharedRules,
@@ -33,6 +33,18 @@ const fixture = {
   gender: 'Kvinnor', rank: '8', finish_seconds: 74000,
   observations: [{ result_id: 'source-result-123', checkpoint_id: 'checkpoint1', elapsed_seconds: 10000 }]
 };
+const youth = {...fixture, result_id: 'source-youth-124', name:'Ung, Exempel', age:17};
+const maskedYouth = sanitizePublicRecord(youth, sharedRules);
+if (!confirmedMinor(youth) || maskedYouth.name !== 'Anonym löpare' ||
+    maskedYouth.age !== null || maskedYouth.club !== null ||
+    !maskedYouth.result_id.startsWith('anon-')) {
+  throw new Error('A verified minor was exposed by GAX100 public-export policy');
+}
+if (confirmedMinor({...youth, age:18}) || confirmedMinor({...youth, age:null}) ||
+    !confirmedMinor({edition_id:'gax100-2026', birth_year:2009}) ||
+    confirmedMinor({edition_id:'gax100-2026', birth_year:2008})) {
+  throw new Error('GAX100 age classification is not conservative at age-18 boundary');
+}
 const masked = sanitizePublicRecord(fixture, fixtureRules);
 if (masked.name !== 'Anonym löpare' || masked.club !== null || !masked.result_id.startsWith('anon-')) {
   throw new Error('Suppressed athlete exposes identifying fields');
