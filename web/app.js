@@ -4,7 +4,7 @@ function labelMobileTable(table, columnLabels) {
   if (!table) return;
   table.classList.add('mobile-card-table');
   table.querySelectorAll('tbody tr').forEach((row) => {
-    [...row.cells].forEach((cell, index) => { cell.dataset.label = columnLabels[index] || ''; });
+    [...row.cells].forEach((cell, index) => { cell.dataset.label = columnLabels[index] || ''; if (cell.dataset.label) cell.setAttribute('aria-label', cell.dataset.label + ': ' + cell.textContent.trim()); });
   });
 }
 
@@ -603,6 +603,7 @@ function renderHistory() {
     const results = editionResults(item.edition_id); const finished = results.filter((result) => result.status === 'FINISHED'); const times = finished.map((result) => result.finish_seconds); const observations = results.reduce((sum, result) => sum + (result.observations || []).length, 0); const fastest = times.filter(Number.isFinite).sort((a, b) => a - b)[0];
     return `<tr><td data-label="Upplaga">${esc(item.edition_label)}</td><td data-label="Fullföljde">${finished.length}</td><td data-label="DNF">${results.filter((result) => result.status === 'DNF').length}</td><td data-label="Median">${time(median(times))}</td><td data-label="Snabbaste">${time(fastest)}</td><td data-label="Mellantider">${observations}</td></tr>`;
   }).join('');
+  $('#history').querySelectorAll('td[data-label]').forEach((cell) => cell.setAttribute('aria-label', cell.dataset.label + ': ' + cell.textContent.trim()));
 }
 
 function renderQuality() {
