@@ -391,14 +391,24 @@ function chart() {
   }).join('');
   const scatterTicks = [0, .25, .5, .75, 1].map((fraction) => `<line class="gridline" x1="32" y1="${135 - fraction * 120}" x2="400" y2="${135 - fraction * 120}"/><text x="2" y="${139 - fraction * 120}">${time(maxTime * fraction).slice(0, 5)}</text>`).join('');
   $('#scatter').innerHTML = `<svg viewBox="0 0 420 160" aria-label="Tid mot placering"><line class="axis" x1="32" y1="140" x2="400" y2="140"/><line class="axis" x1="32" y1="10" x2="32" y2="140"/>${scatterTicks}${rankTicks}${points.map((result) => `<circle class="dot" data-chart-runner="${esc(result.result_id)}" role="button" tabindex="0" aria-label="Visa individuell analys för ${esc(result.name)}" cx="${38 + Number(result.rank) / maxRank * 350}" cy="${135 - result.finish_seconds / maxTime * 120}" r="2.5"><title>${esc(result.name)}: placering ${esc(result.rank)}, ${time(result.finish_seconds)}</title></circle>`).join('')}<text x="160" y="155">placering →</text><text x="4" y="20">sluttid</text></svg>`;
+  // Overlapping official placements must remain selectable without guessing which dot was tapped.
+  $('#scatter').insertAdjacentHTML('beforeend', '<div class="scatter-selector"><label>Öppna resultat från diagrammet ' +
+    '<select id="scatter-runner-select" aria-label="Välj en löpare i placeringsdiagrammet"><option value="">Välj löpare och placering</option>' +
+    points.map((result) => '<option value="' + esc(result.result_id) + '">' +
+      esc(result.name) + ' · placering ' + esc(result.rank) + ' · ' + time(result.finish_seconds) + '</option>').join('') +
+    '</select></label></div>');
+  const openScatterResult = (id) => {
+    const result = state.data.results.find((item) => item.result_id === id);
+    if (!result) return;
+    state.selected = result; state.segmentIndex = null; state.planTarget = null;
+    renderRunner(); renderPlan(); syncUrl(true);
+    $('#runner').focus({ preventScroll:true });
+    $('#runner-analysis').scrollIntoView({ block:'start' });
+  };
+  $('#scatter-runner-select').onchange = (event) => openScatterResult(event.target.value);
   $('#scatter').querySelectorAll('[data-chart-runner]').forEach((point) => {
     const open = () => {
-      const result = state.data.results.find((item) => item.result_id === point.dataset.chartRunner);
-      if (!result) return;
-      state.selected = result; state.segmentIndex = null; state.planTarget = null;
-      renderRunner(); renderPlan(); syncUrl(true);
-      $('#runner').focus({ preventScroll:true });
-      $('#runner-analysis').scrollIntoView({ block:'start' });
+      openScatterResult(point.dataset.chartRunner);
     };
     point.onclick = open;
     point.onkeydown = (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); open(); } };
