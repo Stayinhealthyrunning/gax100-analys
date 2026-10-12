@@ -50,14 +50,15 @@ function isSuppressed(name, rules) {
 // must remain unknown rather than being inferred from a name.
 function confirmedMinor(record) {
   if (Number.isInteger(record.age) && record.age >= 0 && record.age < 18) return true;
-  const year = Number(record.edition_year ?? record.year ?? String(record.edition_id || "").match(/20\\d{2}/)?.[0]);
+  const matchedYear = String(record.edition_id || "").match(/20\d{2}/)?.[0];
+  const year = Number(record.edition_year ?? record.year ?? matchedYear);
   const birthYear = Number(record.birth_year);
   if (Number.isInteger(year) && year >= 1900 &&
       Number.isInteger(birthYear) && birthYear >= 1900 &&
       birthYear <= year && year - birthYear < 18) return true;
   for (const key of ["age_category", "class_name"]) {
     const label = String(record[key] || "").trim();
-    const range = label.match(/^(?:\\([A-Za-z]\\)\\s*)?(\\d{1,2})\\s*[-–]\\s*(\\d{1,2})(?:\\s+(?:män|kvinnor))?$/i);
+    const range = label.match(/^(?:\([A-Za-z]\)\s*)?(\d{1,2})\s*[-–]\s*(\d{1,2})(?:\s+(?:män|kvinnor))?$/i);
     if (range && +range[1] <= +range[2] && +range[2] < 18) return true;
   }
   return false;
