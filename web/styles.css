@@ -435,3 +435,16 @@ button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-v
   .history-table td:first-child { grid-column:1/-1; border-bottom:1px solid #e1e9ed; margin-bottom:4px; padding-bottom:8px; font-weight:700; white-space:normal; overflow-wrap:anywhere; }
   .history-table td:first-child::before { content:none; }
 }
+
+/* Audited on actual 390px screenshots: do NOT squeeze 4–7 columns into 300px. */
+@media(max-width:600px) {
+  .mobile-card-table, .mobile-card-table tbody { width:100%; display:block; max-width:100%; }
+  .mobile-card-table thead { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+  .mobile-card-table tr { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:4px 12px; margin:0 0 10px; padding:10px; border:1px solid #d6e4e9; border-radius:9px; background:#fafcfd; }
+  .mobile-card-table td { display:flex!important; flex-direction:column; align-items:start; justify-content:start; gap:4px!important; padding:6px 0!important; border:0!important; overflow-wrap:normal!important; word-break:normal!important; white-space:normal!important; font-size:14px!important; font-variant-numeric:tabular-nums; min-width:0; }
+  .mobile-card-table td::before { content:attr(data-label); display:block; font-size:11px; line-height:1.25; font-weight:700; color:#52636e; letter-spacing:.015em; text-transform:uppercase; }
+  .mobile-card-table td:first-child { grid-column:1/-1; padding-bottom:8px!important; margin-bottom:2px; border-bottom:1px solid #dfe8ec!important; font-weight:650; }
+  .mobile-card-table td .segment-select { min-height:36px; margin:3px 0 0; }
+  .mobile-card-table td[data-label="Ackumulerad tid"], .mobile-card-table td[data-label="Segmenttid"], .mobile-card-table td[data-label="Löpare A"], .mobile-card-table td[data-label="Löpare B"] { white-space:nowrap!important; }
+  .mobile-card-table tr.selected-segment { outline:2px solid #2563eb; background:#eef5ff; }
+}
