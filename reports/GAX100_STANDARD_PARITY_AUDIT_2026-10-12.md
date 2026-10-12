@@ -25,6 +25,14 @@ Källbas: 14 editioner, 945 resultat och 1 838 importerade mellantidsobservation
 | §14 Gemensamt mallpaket | Ej uppfyllt | Webben är fortfarande eventspecifik (`web/app.js`), inte en fullt utbytbar `event.json`-driven blockmotor. Nästa lopp kräver fortfarande handarbete. |
 | §15–17 Tillgänglighet och release | Delvis | Responsiva Chromium-test, flera tangentbordsåtgärder, deep links, Back/Forward, privat/förvalt noindex. Kräver full 200 %-zoom, skärmläsar-/tangentbords-QA och korrekt delningsmedia innan paritet kan påstås. |
 
+### Genomförd förbättring i senaste arbetsomgången
+
+**Delsträckelabbet:** Fältstatistiken kompletteras nu med två valbara, verkliga ankare (Start, officiella passager, Mål), referensval Alla/Kvinnor/Män med lägsta n=5, mediantid och källstödda kvartil-/percentilintervall. År 2023 har verifierat 44→80 km-intervall om 36 km, men 2024 har inte verifierade kontrollavstånd och visar inte km-tempo. Endast aggregerade resultat visas; inga nya personliga segmenttopplistor förrän GDPR-granskningen är färdig.
+
+**Resultatdatabasen:** 10/25/50 resultat per sida, intervallräknare, en-knappsfilteråterställning och stabil svensk sortering. Delningslänkar för sökträffar mellan år använder rätt upplaga.
+
+**Test:** Utökade kontrakttester i `tests/test_field.js` och Chromium-scenarier i `tests/e2e/gax100.spec.js`. Aktuell exact-head-QA måste fortfarande verifieras vid releasebedömning. Ingen merge eller katalogpublicering.
+
 ## Högprioriterad kvarlista
 
 1. **Separat integritetsreleasegrind:** samordna med pågående GDPR-arbete. Kontrollera privata suppressions i export, personer under 18 med okänd ålder, historiska publika artefakter och Actions-hemligheter innan någon merge av datagren.
