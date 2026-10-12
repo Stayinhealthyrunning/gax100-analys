@@ -4,6 +4,11 @@ const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&':
 const time = (seconds) => GaxTime.formatClock(seconds);
 const edition = () => state.data.editions.find((item) => item.edition_id === state.year);
 const editionResults = (editionId) => state.data.results.filter((result) => result.edition_id === editionId);
+const runnerYear = (result) => {
+  const ed = state.data.editions.find((item) => item.edition_id === result.edition_id);
+  return ed ? (ed.year === 2021 ? (result.edition_id.endsWith('-a') ? '2021 A' : '2021 B') : String(ed.year)) : '–';
+};
+const runnerChip = (result) => result.name + ' (' + runnerYear(result) + ')';
 const median = (values) => GaxStatistics.median(values);
 const percentile = (values, probability) => GaxStatistics.percentile(values, probability);
 const mean = (values) => { const valid = values.filter(Number.isFinite); return valid.length ? Math.round(valid.reduce((sum, value) => sum + value, 0) / valid.length) : null; };
@@ -21,6 +26,16 @@ function rows() {
       : (left.finish_seconds ?? 1e12) - (right.finish_seconds ?? 1e12));
 }
 
+function syncUrl(push = false) {
+  if (!state.data || !state.year) return;
+  const url = new URL(window.location.href);
+  url.searchParams.set('edition', state.year);
+  if (state.searchScope === 'all') url.searchParams.set('scope', 'all'); else url.searchParams.delete('scope');
+  if (state.selected) url.searchParams.set('result', state.selected.result_id); else url.searchParams.delete('result');
+  if (state.compare.length) url.searchParams.set('compare', state.compare.join(',')); else url.searchParams.delete('compare');
+  if (state.duel.length) url.searchParams.set('duel', state.duel.join(',')); else url.searchParams.delete('duel');
+  if (push) history.pushState(null, '', url); else history.replaceState(null, '', url);
+}
 function renderFacts() {
   const all = editionResults(state.year);
   const finished = all.filter((result) => result.status === 'FINISHED' && Number.isFinite(result.finish_seconds) && result.finish_seconds > 0);
@@ -53,13 +68,42 @@ function renderRows() {
   state.page = Math.min(state.page, totalPages);
   const pageRows = visibleRows.slice((state.page - 1) * state.pageSize, state.page * state.pageSize);
   $('#result-count').textContent = `${visibleRows.length} träffar i ${state.searchScope === 'all' ? 'alla år' : esc(edition()?.edition_label || 'vald upplaga')}`;
-  $('#rows').innerHTML = pageRows.length ? pageRows.map((result) => `<tr><td data-label="Namn"><strong>${esc(result.name) || '—'}</strong></td><td data-label="Kön">${esc(result.gender) || '—'}</td><td data-label="Klubb">${esc(result.club) || '—'}</td><td data-label="Status" class="status-${esc(result.status.toLowerCase())}">${esc(result.status)}</td><td data-label="Sluttid">${time(result.finish_seconds)}</td><td data-label="Val" class="result-actions"><button type="button" data-id="${esc(result.result_id)}" aria-label="Öppna resultat för ${esc(result.name)}">Öppna</button><button type="button" data-compare="${esc(result.result_id)}" aria-label="Jämför ${esc(result.name)}">${state.compare.includes(result.result_id) ? 'Ta bort' : 'Jämför'}</button><button type="button" data-duel="${esc(result.result_id)}" aria-label="Välj ${esc(result.name)} för Kartduell">${state.duel.includes(result.result_id) ? 'Ta bort duell' : 'Kartduell'}</button><button type="button" data-favorite="${esc(result.result_id)}" aria-label="${state.favorites.has(result.result_id) ? 'Ta bort favorit för' : 'Favoritmarkera'} ${esc(result.name)}">${state.favorites.has(result.result_id) ? '★ Favorit' : '☆ Favorit'}</button><button type="button" data-share="${esc(result.result_id)}" aria-label="Kopiera länk till ${esc(result.name)}">Dela</button></td></tr>`).join('') : '<tr><td colspan="6" class="empty-cell">Ingen verifierad resultatpost matchar urvalet.</td></tr>';
+  $('#rows').innerHTML = pageRows.length ? pageRows.map((result) => `<tr><td data-label="Namn"><strong>${esc(result.name) || '—'}</strong></td><td data-label="År">${esc(runnerYear(result))}</td><td data-label="Kön">${esc(result.gender) || '—'}</td><td data-label="Klubb">${esc(result.club) || '—'}</td><td data-label="Status" class="status-${esc(result.status.toLowerCase())}">${esc(result.status)}</td><td data-label="Sluttid">${time(result.finish_seconds)}</td><td data-label="Val" class="result-actions"><button type="button" data-id="${esc(result.result_id)}" aria-label="Öppna resultat för ${esc(result.name)}">Öppna</button><button type="button" data-compare="${esc(result.result_id)}" aria-label="Jämför ${esc(result.name)}">${state.compare.includes(result.result_id) ? 'Ta bort' : 'Jämför'}</button><button type="button" data-duel="${esc(result.result_id)}" aria-label="Välj ${esc(result.name)} för Kartduell">${state.duel.includes(result.result_id) ? 'Ta bort duell' : 'Kartduell'}</button><button type="button" data-favorite="${esc(result.result_id)}" aria-label="${state.favorites.has(result.result_id) ? 'Ta bort favorit för' : 'Favoritmarkera'} ${esc(result.name)}">${state.favorites.has(result.result_id) ? '★ Favorit' : '☆ Favorit'}</button><button type="button" data-share="${esc(result.result_id)}" aria-label="Kopiera länk till ${esc(result.name)}">Dela</button></td></tr>`).join('') : '<tr><td colspan="7" class="empty-cell">Ingen verifierad resultatpost matchar urvalet.</td></tr>';
   $('#result-pagination').innerHTML = totalPages > 1
     ? `<button type="button" data-page="${state.page - 1}" ${state.page === 1 ? 'disabled' : ''}>Föregående</button><span>Sida ${state.page} av ${totalPages}</span><button type="button" data-page="${state.page + 1}" ${state.page === totalPages ? 'disabled' : ''}>Nästa</button>`
     : `<span>${visibleRows.length ? `Sida 1 av 1 · ${visibleRows.length} resultat` : 'Ingen resultatsida'}</span>`;
-  document.querySelectorAll('[data-id]').forEach((button) => { button.onclick = () => { state.selected = state.data.results.find((result) => result.result_id === button.dataset.id); state.planTarget = null; renderRunner(); renderPlan(); }; });
-  document.querySelectorAll('[data-compare]').forEach((button) => { button.onclick = () => { const id = button.dataset.compare; state.compare = state.compare.includes(id) ? state.compare.filter((item) => item !== id) : state.compare.length < 2 ? [...state.compare, id] : state.compare; renderRows(); renderComparison(); }; });
-  document.querySelectorAll('[data-duel]').forEach((button) => { button.onclick = () => { const id = button.dataset.duel; state.duel = state.duel.includes(id) ? state.duel.filter((item) => item !== id) : state.duel.length < 5 ? [...state.duel, id] : state.duel; renderRows(); renderMapDuel(); }; });
+  // Search results are actionable directly below the finder, while the full database stays near the footer.
+  const preview = $('#finder-preview');
+  preview.innerHTML = state.query.trim() ? '<div class="table-wrap finder-table-wrap"><table class="result-table"><thead><tr><th>Namn</th><th>År</th><th>Kön</th><th>Klubb</th><th>Status</th><th>Sluttid</th><th>Val</th></tr></thead><tbody>' + $('#rows').innerHTML + '</tbody></table></div>' :
+    '<p class="muted">Skriv ett namn, startnummer eller en klubb för att visa och välja löpare här.</p>';
+  const comparisonChips = state.compare.map((id) => state.data.results.find((result) => result.result_id === id)).filter(Boolean);
+  const duelChips = state.duel.map((id) => state.data.results.find((result) => result.result_id === id)).filter(Boolean);
+  const chips = (values, type) => values.map((result) => '<button type="button" data-remove-' + type + '="' + esc(result.result_id) + '">' + esc(runnerChip(result)) + ' ×</button>').join('');
+  $('#selection-bar').innerHTML = '<div class="selection-line"><strong>Direktjämförelse (' + comparisonChips.length + '/2)</strong><div class="selection-chips">' + (chips(comparisonChips, 'compare') || '<span>Välj två löpare</span>') + '</div></div>' +
+    '<div class="selection-line"><strong>Kartduell (' + duelChips.length + '/5)</strong><div class="selection-chips">' + (chips(duelChips, 'duel') || '<span>Välj upp till fem</span>') + '</div></div>';
+  document.querySelectorAll('[data-remove-compare]').forEach((button) => { button.onclick = () => {
+    state.compare = state.compare.filter((id) => id !== button.dataset.removeCompare);
+    renderRows(); renderComparison(); syncUrl(true);
+  }; });
+  document.querySelectorAll('[data-remove-duel]').forEach((button) => { button.onclick = () => {
+    state.duel = state.duel.filter((id) => id !== button.dataset.removeDuel);
+    renderRows(); renderMapDuel(); syncUrl(true);
+  }; });
+  document.querySelectorAll('[data-id]').forEach((button) => { button.onclick = () => {
+    state.selected = state.data.results.find((result) => result.result_id === button.dataset.id);
+    if (!state.selected) return;
+    state.planTarget = null; state.segmentIndex = null;
+    if (state.year !== state.selected.edition_id) {
+      state.year = state.selected.edition_id;
+      $('#year').value = state.year;
+      render();
+    } else { renderRunner(); renderPlan(); }
+    syncUrl(true);
+    $('#runner').focus({preventScroll:true});
+    $('#runner-analysis').scrollIntoView({block:'start'});
+  }; });
+  document.querySelectorAll('[data-compare]').forEach((button) => { button.onclick = () => { const id = button.dataset.compare; state.compare = state.compare.includes(id) ? state.compare.filter((item) => item !== id) : state.compare.length < 2 ? [...state.compare, id] : state.compare; renderRows(); renderComparison(); syncUrl(true); }; });
+  document.querySelectorAll('[data-duel]').forEach((button) => { button.onclick = () => { const id = button.dataset.duel; state.duel = state.duel.includes(id) ? state.duel.filter((item) => item !== id) : state.duel.length < 5 ? [...state.duel, id] : state.duel; renderRows(); renderMapDuel(); syncUrl(true); }; });
   document.querySelectorAll('[data-favorite]').forEach((button) => { button.onclick = () => { const id = button.dataset.favorite; if (state.favorites.has(id)) state.favorites.delete(id); else state.favorites.add(id); try { localStorage.setItem('gax100-favorites', JSON.stringify([...state.favorites])); } catch (error) { /* privat webbläsarlagring är valfri */ } renderRows(); }; });
   document.querySelectorAll('[data-share]').forEach((button) => { button.onclick = async () => { const url = new URL(window.location.href); url.search = ''; url.searchParams.set('edition', state.year); url.searchParams.set('result', button.dataset.share); try { await navigator.clipboard.writeText(url.toString()); button.textContent = 'Kopierad'; } catch (error) { window.history.replaceState({}, '', url); button.textContent = 'Länk klar'; } }; });
   document.querySelectorAll('[data-page]').forEach((button) => { button.onclick = () => { state.page = Number(button.dataset.page); renderRows(); }; });
@@ -243,12 +287,16 @@ function render() { renderFacts(); renderFilters(); renderRows(); renderRunner()
 
 setupHelpDialog();
 try { state.favorites = new Set(JSON.parse(localStorage.getItem('gax100-favorites') || '[]')); } catch (error) { state.favorites = new Set(); }
-fetch('data.json').then((response) => response.json()).then((data) => { state.data = data; const params = new URLSearchParams(window.location.search); state.year = data.editions.some((item) => item.edition_id === params.get('edition')) ? params.get('edition') : data.editions.slice().sort((a, b) => b.year - a.year || b.edition_id.localeCompare(a.edition_id))[0].edition_id; $('#year').innerHTML = data.editions.map((item) => `<option value="${esc(item.edition_id)}">${esc(item.edition_label)}</option>`).join(''); $('#year').value = state.year; const requested = data.results.find((result) => result.result_id === params.get('result')); if (requested) state.selected = requested; render(); });
-$('#year').onchange = (event) => { state.year = event.target.value; state.page = 1; state.selected = null; state.club = ''; state.gender = ''; if (state.searchScope !== 'all') { state.compare = []; state.duel = []; } state.planTarget = null; state.segmentIndex = null; render(); };
-$('#search-scope').onchange = (event) => { state.searchScope = event.target.value; state.page = 1; state.club = ''; state.gender = ''; renderFilters(); renderRows(); };
+fetch('data.json').then((response) => response.json()).then((data) => { state.data = data; const params = new URLSearchParams(window.location.search); state.searchScope = params.get('scope') === 'all' ? 'all' : 'year'; state.year = data.editions.some((item) => item.edition_id === params.get('edition')) ? params.get('edition') : data.editions.slice().sort((a, b) => b.year - a.year || b.edition_id.localeCompare(a.edition_id))[0].edition_id; $('#year').innerHTML = data.editions.map((item) => `<option value="${esc(item.edition_id)}">${esc(item.edition_label)}</option>`).join(''); $('#year').value = state.year; const requested = data.results.find((result) => result.result_id === params.get('result')); if (requested) { state.selected = requested; state.year = requested.edition_id; $('#year').value = state.year; }
+  const validIds = new Set(data.results.map((result) => result.result_id));
+  state.compare = (params.get('compare') || '').split(',').filter((id) => validIds.has(id)).slice(0, 2);
+  state.duel = (params.get('duel') || '').split(',').filter((id) => validIds.has(id)).slice(0, 5);
+  render(); });
+$('#year').onchange = (event) => { state.year = event.target.value; state.page = 1; state.selected = null; state.club = ''; state.gender = ''; if (state.searchScope !== 'all') { state.compare = []; state.duel = []; } state.planTarget = null; state.segmentIndex = null; render(); syncUrl(true); };
+$('#search-scope').onchange = (event) => { state.searchScope = event.target.value; state.page = 1; state.club = ''; state.gender = ''; renderFilters(); renderRows(); syncUrl(true); };
 $('#status-filter').onchange = (event) => { state.status = event.target.value; state.page = 1; renderRows(); };
 $('#search').oninput = (event) => { state.query = event.target.value; state.page = 1; renderRows(); };
 $('#club').onchange = (event) => { state.club = event.target.value; state.page = 1; renderRows(); };
 $('#gender').onchange = (event) => { state.gender = event.target.value; state.page = 1; renderRows(); };
 $('#sort').onchange = (event) => { state.sort = event.target.value; state.page = 1; renderRows(); };
-$('#clear-comparison').onclick = () => { state.compare = []; renderRows(); renderComparison(); };
+$('#clear-comparison').onclick = () => { state.compare = []; renderRows(); renderComparison(); syncUrl(true); };
