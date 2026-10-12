@@ -37,7 +37,7 @@
         const fractions = largest.map(({runner, segments}) => 100 * segments[index].seconds / runner.finish_seconds);
         return {
           from: segment.from, to: segment.to, checkpointId: segment.checkpointId,
-          distanceKm: segment.distanceKm,
+          distanceKm: segment.distanceKm, checkpointKm: segment.checkpointKm,
           n: largest.length, medianSeconds: median(durations),
           p25Seconds: largest.length >= 10 ? quantile(durations, 0.25) : null,
           p75Seconds: largest.length >= 10 ? quantile(durations, 0.75) : null,
