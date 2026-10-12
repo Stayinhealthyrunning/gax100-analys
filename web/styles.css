@@ -448,3 +448,8 @@ button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-v
   .mobile-card-table td[data-label="Ackumulerad tid"], .mobile-card-table td[data-label="Segmenttid"], .mobile-card-table td[data-label="Löpare A"], .mobile-card-table td[data-label="Löpare B"] { white-space:nowrap!important; }
   .mobile-card-table tr.selected-segment { outline:2px solid #2563eb; background:#eef5ff; }
 }
+
+/* Per-cell accessible names replace visually compressed table headers on narrow cards. */
+@media(max-width:600px) {
+  .history-table thead, .mobile-card-table thead { display:none!important; }
+}
