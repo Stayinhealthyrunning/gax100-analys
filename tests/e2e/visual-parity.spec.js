@@ -26,6 +26,8 @@ for (const width of [390,1440]) {
     await expect(page.locator('#runner')).toContainText(first.name);
     await expect(page.locator('#runner .duration-chart')).toBeVisible();
     await expect(page.locator('#runner .gap-chart')).toBeVisible();
+    await expect(page.locator('#runner .mobile-card-table')).toHaveCount(2);
+    await expect(page.locator('#runner .mobile-card-table').first().locator('tbody tr').first().locator('td').first()).toHaveAttribute('data-label','Kontrollpunkt');
     await page.locator('#runner-analysis').screenshot({path:testInfo.outputPath('02-runner-'+width+'.png')});
     // Exactly two real observations in the same edition: no GPS or invented gaps.
     await page.locator('#search').fill(first.name);
@@ -34,6 +36,7 @@ for (const width of [390,1440]) {
     await page.locator('#finder-preview [data-compare="'+second.result_id+'"]').first().click();
     await expect(page.locator('#comparison .compare-person')).toHaveCount(2);
     await expect(page.locator('#comparison .compare-figure')).toHaveCount(1);
+    await expect(page.locator('#comparison .mobile-card-table tbody tr').first().locator('td')).toHaveCount(4);
     await page.locator('#direct-comparison').screenshot({path:testInfo.outputPath('03-comparison-'+width+'.png')});
     await page.locator('#swap-comparison').click();
     await expect(page.locator('#comparison .compare-person').first()).toContainText(second.name);
@@ -43,6 +46,8 @@ for (const width of [390,1440]) {
     await page.locator('#plan-target').fill('24:00:00');
     await page.locator('#apply-plan-target').click();
     await expect(page.locator('#plan .segment-table tbody tr').last().locator('td').nth(5)).toHaveText('24:00:00');
+    await expect(page.locator('#plan .mobile-card-table tbody tr').first().locator('td')).toHaveCount(7);
+    await expect(page.locator('#plan .mobile-card-table tbody tr').last().locator('td').nth(5)).toHaveText('24:00:00');
     await page.locator('#personal-plan').screenshot({path:testInfo.outputPath('05-plan-'+width+'.png')});
     await page.locator('#finish-group-selector [data-finish-group="female"]').click();
     await expect(page.locator('#percentiles')).toContainText('Kvinnor, n=16');
