@@ -134,6 +134,48 @@
       return {n:complete.n,editionId:runner.edition_id,rows};
     }
 
+
+    // Two REAL cohort anchors (START, verified checkpoints or official FINISH).
+    // This deliberately exposes only cohort aggregates: participant-level ranks
+    // are withheld until the publication/privacy gate for historical minors
+    // and opt-outs has been independently established.
+    function segmentLab(results, fromIndex, toIndex, group = 'all') {
+      if (!Array.isArray(results)) return null;
+      const distinct = new Set(results.map(r => r.edition_id));
+      if (distinct.size !== 1) return null;
+      const complete = cohort(results);
+      if (!complete) return null;
+      const anchors = [{name:'Start',id:'START',km:0}, ...complete.segments.map((segment, i) => ({
+        name:segment.to, id:segment.checkpointId,
+        km:segment.checkpointKm == null ? null : segment.checkpointKm
+      }))];
+      if (!Number.isInteger(fromIndex) || !Number.isInteger(toIndex) ||
+          fromIndex < 0 || toIndex <= fromIndex || toIndex >= anchors.length ||
+          !['all','female','male'].includes(group)) return null;
+      const neededGender = group === 'female' ? 'Kvinnor' : group === 'male' ? 'Män' : null;
+      const cohortRows = complete.runners.filter(({runner}) =>
+        !neededGender || groupGender(runner.gender) === neededGender);
+      if (cohortRows.length < 5) return null;
+      const durations = cohortRows.map(({segments}) => segments
+        .slice(fromIndex,toIndex).reduce((acc,segment)=>acc+segment.seconds,0));
+      if (durations.some(n=>!Number.isFinite(n)||n<=0)) return null;
+      const distance = Number.isFinite(anchors[fromIndex].km) && Number.isFinite(anchors[toIndex].km) &&
+        anchors[toIndex].km>anchors[fromIndex].km ?
+          anchors[toIndex].km-anchors[fromIndex].km : null;
+      return {
+        anchors, fromIndex, toIndex, group, n:cohortRows.length,
+        from:anchors[fromIndex].name, to:anchors[toIndex].name,
+        distanceKm:distance, medianSeconds:median(durations),
+        fastestSeconds:Math.min(...durations),
+        slowestSeconds:Math.max(...durations),
+        q25Seconds:cohortRows.length >= 10 ? quantile(durations,.25) : null,
+        q75Seconds:cohortRows.length >= 10 ? quantile(durations,.75) : null,
+        p10Seconds:cohortRows.length >= 20 ? quantile(durations,.10) : null,
+        p90Seconds:cohortRows.length >= 20 ? quantile(durations,.90) : null,
+        // Cohort rows stay internal; return only aggregated public statistics.
+      };
+    }
+
     function analyze(results) {
       if (!Array.isArray(results)) throw new TypeError('Edition results expected');
       const editions = new Set(results.map((r) => r.edition_id));
@@ -142,7 +184,7 @@
       return {complete:full ? {n:full.n,segments:full.segments} : null, sprint:finishSprint(full),
         dnf:dnfObserved(results), genders:genders(results), clubs:clubs(results)};
     }
-    return {quantile, groupGender, cohort, dnfObserved, targetPosition, runnerGap, analyze};
+    return {quantile, groupGender, cohort, dnfObserved, targetPosition, runnerGap, segmentLab, analyze};
   })();
   root.GaxField = api;
   if (typeof module === 'object' && module.exports) module.exports = api;
