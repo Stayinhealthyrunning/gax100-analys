@@ -99,7 +99,7 @@
 
   <section id="results-database">
     <div class="section-heading"><h2>Resultatdatabas</h2><details class="help"><summary aria-label="Om resultatdatabasen">ⓘ</summary><p>Resultatraderna är importerade från officiella källor med bevarad källproveniens. Saknat kön, klubb, status eller tid visas som saknat och fylls inte i med antaganden.</p></details></div>
-    <label>Sortera <select id="sort" aria-label="Sortera resultat"><option value="time">Sluttid</option><option value="name">Namn</option><option value="status">Status</option></select></label>
+    <div class="result-database-controls"><label>Sortera <select id="sort" aria-label="Sortera resultat"><option value="time">Sluttid</option><option value="name">Namn</option><option value="status">Status</option></select></label><label>Visa per sida <select id="page-size" aria-label="Antal resultat per sida"><option value="10">10</option><option value="25">25</option><option value="50">50</option></select></label><button id="reset-result-filters" type="button">Återställ filter och sortering</button><span id="results-page-count" class="muted" aria-live="polite"></span></div>
     <div class="table-wrap result-table-wrap"><table class="result-table"><thead><tr><th>Namn</th><th>År</th><th>Kön</th><th>Klubb</th><th>Status</th><th>Sluttid</th><th>Val</th></tr></thead><tbody id="rows"></tbody></table></div>
     <div id="result-pagination" class="pagination" aria-label="Resultatpaginering"></div>
   </section>
