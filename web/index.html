@@ -4,13 +4,17 @@
 <meta name="robots" content="noindex, nofollow">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>GAX100 Analys</title>
+  <title>GAX100 Analys – Loppanalys.se</title>
+  <meta name="description" content="Utforska GAX100:s verifierade resultat, mellantider, individuell analys, direktjämförelse och historiska loppplaner.">
+  <meta name="theme-color" content="#082235">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+<a class="skip-link" href="#runner-finder">Hoppa till löparsökningen</a>
 <main>
   <header class="hero" id="race-header">
-    <p class="eyebrow">THE GAX 100 MILES</p>
+    <p class="eyebrow">THE GAX 100 MILES · LOPPANALYS.SE</p>
+    <a class="back-link" href="https://www.loppanalys.se/" rel="home">← Alla lopp på Loppanalys.se</a>
     <h1>GAX100 Analys</h1>
     <p>Verifierade resultat, mellantider och källspårning per tävlingsupplaga.</p>
     <label>Upplaga <select id="year" aria-label="Välj tävlingsupplaga"></select></label>
@@ -24,16 +28,23 @@
 
   <section id="runner-finder">
     <div class="section-heading"><h2>Hitta din löpare</h2><details class="help"><summary aria-label="Om sökningen">ⓘ</summary><p>Sökningen använder publicerade namn och klubbvärden för vald upplaga. Samma namn över år är inte en verifierad personidentitet.</p></details></div>
-    <div class="filters"><input id="search" type="search" placeholder="Sök namn, startnummer eller klubb" aria-label="Sök namn, startnummer eller klubb"><select id="club" aria-label="Filtrera klubb"><option value="">Alla klubbar</option></select><select id="gender" aria-label="Filtrera kön"><option value="">Alla kön</option></select></div>
+    <div class="filters"><input id="search" type="search" placeholder="Sök namn, startnummer eller klubb" aria-label="Sök namn, startnummer eller klubb" autocomplete="off"><label class="filter-label">Sökår <select id="search-scope" aria-label="Sök i vald upplaga eller alla år"><option value="year">Vald upplaga</option><option value="all">Alla år</option></select></label><select id="club" aria-label="Filtrera klubb"><option value="">Alla klubbar</option></select><select id="gender" aria-label="Filtrera kön"><option value="">Alla kön</option></select><select id="status-filter" aria-label="Filtrera status"><option value="">Alla statusar</option><option value="FINISHED">Fullföljde</option><option value="DNF">DNF</option><option value="DNS">DNS</option><option value="UNKNOWN">Okänd</option></select></div>
     <p id="result-count" class="muted" aria-live="polite"></p>
-    <div id="runner" class="runner empty">Välj en rad i resultatdatabasen för individuell visning.</div>
+    <div id="finder-preview" class="finder-preview" aria-label="Sökträffar och löparval" aria-live="polite"></div>
+    <div class="selection-bar" id="selection-bar" aria-live="polite"></div>
+    <p class="muted">Fler resultat och sortering finns i resultatdatabasen längre ned på sidan. Samma namn i olika upplagor kopplas inte automatiskt till samma person.</p>
+  </section>
+
+  <section id="runner-analysis">
+    <div class="section-heading"><h2>Individuell löparanalys</h2><details class="help"><summary aria-label="Om individuell löparanalys">ⓘ</summary><p>Den valda löparens verifierade resultat och passager. Endast källstödda segmenttider visas; en verklig GPS-position eller banrekonstruktion finns ännu inte för GAX100.</p></details></div>
+    <div id="runner" class="runner empty" tabindex="-1">Välj en löpare i sökresultaten ovan för individuell visning.</div>
   </section>
 
   <section id="direct-comparison">
     <div class="section-heading"><h2>Direktjämförelse 2.0</h2><details class="help"><summary aria-label="Om Direktjämförelse 2.0">ⓘ</summary><p>Exakt två resultatrader jämförs. Gemensamma passager används bara när upplaga, kontrollpunkt och källavstånd är verifierat likvärdiga. Saknade ändpunkter ger inget segmentvärde.</p></details></div>
-    <p class="muted">Välj exakt två resultat. Endast gemensamma verkliga mellantider jämförs.</p>
+    <p class="muted">Välj två löpare – också från olika år i sökläget Alla år. Gemensamma kontrollpunkter jämförs bara när samma banunderlag är verifierat; saknade uppgifter förblir tomma.</p>
     <div id="comparison" class="runner empty">Inga två resultat valda.</div>
-    <button id="clear-comparison" type="button">Rensa valda</button>
+    <div class="comparison-actions"><button id="swap-comparison" type="button">Byt A/B</button><button id="share-comparison" type="button">Dela jämförelsen</button><button id="clear-comparison" type="button">Rensa valda</button><span id="comparison-feedback" class="muted" role="status"></span></div>
   </section>
 
   <section id="map-duel">
@@ -98,6 +109,7 @@
 <script src="statistics.js"></script>
 <script src="time.js"></script>
 <script src="plan.js"></script>
+<script src="comparison.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
