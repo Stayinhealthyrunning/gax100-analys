@@ -47,6 +47,23 @@ assert(withGender>=3);
 assert.equal(F.analyze(data.results.filter(r=>r.edition_id==='gax100-2023')).complete.n,70);
 assert.equal(F.analyze(data.results.filter(r=>r.edition_id==='gax100-2024')).complete.n,53);
 assert.equal(F.analyze(data.results.filter(r=>r.edition_id==='gax100-2025')).dnf.total,40);
+for(const year of ['gax100-2023','gax100-2024']) {
+  const rows = data.results.filter(r => r.edition_id === year);
+  const reference = F.cohort(rows);
+  const athlete = reference.runners[0].runner;
+  const gap = F.runnerGap(athlete,rows);
+  assert.equal(gap.n,reference.n);
+  assert.equal(gap.rows.length,reference.segments.length+1);
+  assert.equal(gap.rows[0].gapSeconds,0);
+  assert.equal(gap.rows.at(-1).elapsedSeconds,athlete.finish_seconds);
+  const medianFinish = F.quantile(reference.runners.map(r => r.runner.finish_seconds),.5);
+  assert.equal(gap.rows.at(-1).gapSeconds,athlete.finish_seconds-medianFinish);
+  const anyDNF = rows.find(r => r.status === 'DNF');
+  if (anyDNF) assert.equal(F.runnerGap(anyDNF,rows),null);
+}
+assert.equal(F.runnerGap(data.results.find(r => r.edition_id === 'gax100-2025'),
+  data.results.filter(r => r.edition_id === 'gax100-2025')),null);
+
 assert.throws(()=>F.analyze(data.results),/Never combine editions/);
 const fixture=Array.from({length:6},(_,i)=>({
  status:'FINISHED',edition_id:'fixture',result_id:String(i),name:'Runner '+i,finish_seconds:1000+i*20,
