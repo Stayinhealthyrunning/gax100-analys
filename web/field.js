@@ -109,6 +109,31 @@
       return {n:finishers.length, faster, atOrBefore, fraction:atOrBefore / finishers.length,
         approximatePlace:faster+1, medianSeconds:median(finishers.map((r)=>r.finish_seconds)) };
     }
+
+    function runnerGap(runner, results) {
+      if (!runner || !Array.isArray(results) || results.some((r) => r.edition_id !== runner.edition_id)) return null;
+      const complete = cohort(results);
+      if (!complete) return null;
+      const selected = complete.runners.find((entry) => entry.runner.result_id === runner.result_id);
+      if (!selected) return null;
+      const rows = [{name:'Start',checkpointId:'START', elapsedSeconds:0, medianElapsedSeconds:0, gapSeconds:0}];
+      let cumulative = 0;
+      for (let i = 0; i < selected.segments.length; i++) {
+        cumulative += selected.segments[i].seconds;
+        const cohortCumulative = complete.runners.map(({segments}) =>
+          segments.slice(0,i+1).reduce((sum,seg) => sum + seg.seconds,0));
+        const reference = median(cohortCumulative);
+        rows.push({
+          name: selected.segments[i].to,
+          checkpointId: selected.segments[i].checkpointId,
+          elapsedSeconds:cumulative,
+          medianElapsedSeconds:reference,
+          gapSeconds:cumulative-reference
+        });
+      }
+      return {n:complete.n,editionId:runner.edition_id,rows};
+    }
+
     function analyze(results) {
       if (!Array.isArray(results)) throw new TypeError('Edition results expected');
       const editions = new Set(results.map((r) => r.edition_id));
@@ -117,7 +142,7 @@
       return {complete:full ? {n:full.n,segments:full.segments} : null, sprint:finishSprint(full),
         dnf:dnfObserved(results), genders:genders(results), clubs:clubs(results)};
     }
-    return {quantile, groupGender, cohort, dnfObserved, targetPosition, analyze};
+    return {quantile, groupGender, cohort, dnfObserved, targetPosition, runnerGap, analyze};
   })();
   root.GaxField = api;
   if (typeof module === 'object' && module.exports) module.exports = api;
