@@ -166,8 +166,6 @@
         anchors, fromIndex, toIndex, group, n:cohortRows.length,
         from:anchors[fromIndex].name, to:anchors[toIndex].name,
         distanceKm:distance, medianSeconds:median(durations),
-        fastestSeconds:Math.min(...durations),
-        slowestSeconds:Math.max(...durations),
         q25Seconds:cohortRows.length >= 10 ? quantile(durations,.25) : null,
         q75Seconds:cohortRows.length >= 10 ? quantile(durations,.75) : null,
         p10Seconds:cohortRows.length >= 20 ? quantile(durations,.10) : null,
