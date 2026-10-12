@@ -1,5 +1,14 @@
 # Projektstatus: GAX100 Analys
 
+## Visuell komponent-QA (tillägg 2026-10-12)
+
+- Föregående granskning av standardlayout bedömdes otillräcklig för visuell slutacceptans: aktiverade mobilvyer hade inte granskats analysdel för analysdel.
+- `tests/e2e/visual-parity.spec.js` har nu skärmbilder och funktionella scenarier för nio **aktiva** lägen på 390/1440 px (18 bilder), utöver ursprungliga responsivvyer 360–1536 px.
+- Konkret upptäckta fel: sönderbrutna 4–7-kolumnstabeller i mobil individanalys, direktjämförelse och loppplan; otillräckligt läsbar historiktabell; A/B-rollfärg som felaktigt gav magenta även till män. Dessa har kodrättats, med automatiska regressionstester.
+- Kvarstående: små SVG-axeltexter på mobil, bildhero, avancerat replay/kartduell, full WCAG/skärmläsarrevision och manuell jämförelse av varje aktivt läge med fyra referenssystem. Ingen release eller merge ska ske enbart på grön Playwright.
+- Full dokumentation: `reports/GAX100_VISUAL_COMPONENT_AUDIT_2026-10-12.md`. Exakt Actions-head för slutliga ändringar verifieras separat.
+
+
 ## Komplettering: oberoende paritetsarbete i Draft PR #3 (2026-10-12)
 
 Detta avsnitt beskriver **en separat granskningsbranch**, `audit/gax100-plan-precision-2026-10-12`, baserad på `codex/gax100-etapp2`. Det historiska ETAPP 2-läget nedan avser PR #2 före dessa förbättringar. PR #2 och PR #3 är fortsatt Draft och får inte mergas eller publiceras automatiskt.
