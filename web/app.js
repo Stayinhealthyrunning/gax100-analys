@@ -292,6 +292,7 @@ function renderRunner() {
   const runnerTables = $('#runner').querySelectorAll('.segment-table');
   labelMobileTable(runnerTables[0], ['Kontrollpunkt', 'Distans', 'Ackumulerad tid', 'Delsträckstid']);
   labelMobileTable(runnerTables[1], ['Kontrollpunkt', 'Denna löpare', 'Fältets median', 'Skillnad']);
+  enhanceChartViewports();
   const select = (index) => { state.segmentIndex = index; renderRunner(); };
   document.querySelectorAll('[data-segment-index]').forEach((button) => {
     button.onclick = () => select(Number(button.dataset.segmentIndex));
@@ -435,6 +436,7 @@ function renderComparison() {
     comparisonTimeChart(model) + table +
     '<p class="muted">Placeringsresa, höjdprofil och kartreplay kräver verifierade källdata och är därför inte konstruerade från kontrollpassagerna.</p>';
   labelMobileTable($('#comparison .segment-table'), ['Kontrollpunkt', 'Löpare A', 'Löpare B', 'Tidslucka']);
+  enhanceChartViewports();
 }
 
 function renderMapDuel() {
@@ -539,6 +541,7 @@ function chart() {
   const points = finished.filter((r) => /^\d+$/.test(String(r.rank || '')));
   if (!points.length) {
     scatter.textContent = 'Ingen publicerad numerisk placering finns i denna upplaga och grupp. Inga placeringar har räknats fram.';
+    enhanceChartViewports();
     $('#stats-note').textContent = finished.length + ' FINISHED-resultat med giltig sluttid i ' + finishGroupLabel() +
       '; placeringsgrafen kräver publicerade placeringar.';
     return;
@@ -586,6 +589,7 @@ function chart() {
     dot.onclick = () => openResult(dot.dataset.chartRunner);
     dot.onkeydown = (event) => { if (event.key==='Enter'||event.key===' ') {event.preventDefault();openResult(dot.dataset.chartRunner);} };
   });
+  enhanceChartViewports();
   $('#stats-note').textContent = finished.length + ' verifierade FINISHED-resultat i ' +
     finishGroupLabel() + '. Placeringar visas enbart om källan publicerat ett numeriskt värde.';
 }
@@ -854,6 +858,50 @@ function renderFieldInsights() {
   });
 }
 
+// The SVG viewBox remains a stable data coordinate system. On narrow screens
+// its text would shrink to illegible 4–7 px without a contained viewport.
+// Preserve full fidelity with a horizontally scrollable canvas and a zoom modal.
+let chartZoomOpener = null;
+function enhanceChartViewports() {
+  const dialog = $('#chart-zoom-dialog');
+  if (!dialog) return;
+  document.querySelectorAll('#runner svg, #comparison svg, #histogram svg, #scatter svg').forEach((svg) => {
+    if (svg.closest('.chart-viewport')) return;
+    const wrapper = document.createElement('div');
+    wrapper.className = 'chart-viewport';
+    wrapper.tabIndex = 0;
+    wrapper.setAttribute('role', 'region');
+    wrapper.setAttribute('aria-label', (svg.getAttribute('aria-label') || 'Diagram') + '. Sidledes rullning på små skärmar.');
+    const parent = svg.parentNode;
+    parent.insertBefore(wrapper, svg);
+    wrapper.appendChild(svg);
+    // Scrolling is retained on the original diagram, zoom has its own dialog.
+    const actions = document.createElement('div');
+    actions.className = 'chart-viewport-actions';
+    const zoom = document.createElement('button');
+    zoom.type = 'button';
+    zoom.className = 'chart-enlarge';
+    zoom.textContent = 'Förstora diagram';
+    zoom.setAttribute('aria-label', 'Förstora ' + (svg.getAttribute('aria-label') || 'diagram'));
+    zoom.onclick = () => {
+      chartZoomOpener = zoom;
+      $('#chart-zoom-title').textContent = svg.getAttribute('aria-label') || 'Förstorat diagram';
+      const content = $('#chart-zoom-content');
+      content.replaceChildren(svg.cloneNode(true));
+      // Explicitly disable controls in the copied image. The original chart
+      // remains operable and retains its data-action handlers.
+      content.querySelectorAll('[role="button"]').forEach((element) => {
+        element.removeAttribute('role');
+        element.removeAttribute('tabindex');
+      });
+      dialog.showModal();
+      $('#chart-zoom-close').focus();
+    };
+    actions.appendChild(zoom);
+    wrapper.insertAdjacentElement('beforebegin',actions);
+  });
+}
+
 function setupHelpDialog() {
   const dialog = $('#help-dialog'); const title = $('#help-dialog-title'); const body = $('#help-dialog-body');
   if (!dialog) return;
@@ -861,8 +909,13 @@ function setupHelpDialog() {
   $('#help-dialog-close').onclick = () => dialog.close();
 }
 
-function render() { renderFacts(); renderFilters(); renderRows(); renderRunner(); renderPlan(); renderComparison(); renderMapDuel(); renderFinishGroupSelector(); chart(); renderPercentiles(); renderTargetPlacement(); renderHistory(); renderQuality(); renderExtended(); renderFieldInsights(); renderSegmentLab(); }
+function render() { renderFacts(); renderFilters(); renderRows(); renderRunner(); renderPlan(); renderComparison(); renderMapDuel(); renderFinishGroupSelector(); chart(); renderPercentiles(); renderTargetPlacement(); renderHistory(); renderQuality(); renderExtended(); renderFieldInsights(); renderSegmentLab(); enhanceChartViewports(); }
 
+$('#chart-zoom-dialog').addEventListener('close', () => {
+  $('#chart-zoom-content').replaceChildren();
+  if (chartZoomOpener?.isConnected) chartZoomOpener.focus({preventScroll:true});
+  chartZoomOpener = null;
+});
 setupHelpDialog();
 try { state.favorites = new Set(JSON.parse(localStorage.getItem('gax100-favorites') || '[]')); } catch (error) { state.favorites = new Set(); }
 fetch('data.json').then((response) => response.json()).then((data) => { state.data = data; const params = new URLSearchParams(window.location.search); state.searchScope = params.get('scope') === 'all' ? 'all' : 'year'; state.year = data.editions.some((item) => item.edition_id === params.get('edition')) ? params.get('edition') : data.editions.slice().sort((a, b) => b.year - a.year || b.edition_id.localeCompare(a.edition_id))[0].edition_id; $('#year').innerHTML = data.editions.map((item) => `<option value="${esc(item.edition_id)}">${esc(item.edition_label)}</option>`).join(''); $('#year').value = state.year; const requested = data.results.find((result) => result.result_id === params.get('result')); if (requested) { state.selected = requested; state.year = requested.edition_id; $('#year').value = state.year; }
