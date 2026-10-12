@@ -930,7 +930,7 @@ fetch('data.json').then((response) => response.json()).then((data) => { state.da
   state.compare = (params.get('compare') || '').split(',').filter((id) => validIds.has(id)).slice(0, 2);
   state.duel = (params.get('duel') || '').split(',').filter((id) => validIds.has(id)).slice(0, 5);
   render(); });
-$('#year').onchange = (event) => { state.year = event.target.value; state.page = 1; state.selected = null; state.club = ''; state.clubQuery = ''; $('#club-autocomplete').value = ''; state.gender = ''; if (state.searchScope !== 'all') { state.compare = []; state.duel = []; } state.planTarget = null; state.targetSeconds = null; state.fieldSegmentIndex = null; state.finishGroup = 'all'; state.labFrom = null; state.labTo = null; state.labGroup = 'all'; state.segmentIndex = null; render(); syncUrl(true); };
+$('#year').onchange = (event) => { state.year = event.target.value; state.page = 1; state.selected = null; state.club = ''; state.clubQuery = ''; $('#club-autocomplete').value = ''; state.gender = ''; /* Preserve comparison and duel choices across edition changes. */ state.planTarget = null; state.targetSeconds = null; state.fieldSegmentIndex = null; state.finishGroup = 'all'; state.labFrom = null; state.labTo = null; state.labGroup = 'all'; state.segmentIndex = null; render(); syncUrl(true); };
 $('#search-scope').onchange = (event) => { state.searchScope = event.target.value; state.page = 1; state.club = ''; state.clubQuery = ''; $('#club-autocomplete').value = ''; state.gender = ''; renderFilters(); renderRows(); syncUrl(true); };
 $('#status-filter').onchange = (event) => { state.status = event.target.value; state.page = 1; renderRows(); };
 $('#search').oninput = (event) => { state.query = event.target.value; state.page = 1; renderRows(); };
