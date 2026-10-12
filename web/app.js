@@ -273,6 +273,9 @@ function renderRunner() {
   const officialRank = result.rank != null && String(result.rank).trim() ? esc(result.rank) : 'Ej publicerad';
   const finish = result.status === 'FINISHED' ? time(result.finish_seconds) : esc(result.status);
   $('#runner').className = 'runner';
+  const runnerGender = GaxField.groupGender(result.gender);
+  $('#runner').style.setProperty('--runner-gender-color',
+    runnerGender === 'Män' ? '#2563eb' : runnerGender === 'Kvinnor' ? '#db2777' : '#1689a7');
   $('#runner').innerHTML = '<h3>' + esc(runnerChip(result)) + '</h3>' +
     '<p>' + esc(result.status) + ' · ' + esc(result.club || 'Klubb ej publicerad') + '</p>' +
     '<div class="runner-facts"><div><small>Sluttid / status</small><strong>' + finish + '</strong></div>' +
