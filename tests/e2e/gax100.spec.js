@@ -269,3 +269,29 @@ test('måltid mot placering: medianstandard, scenariotid och verifierad gruppsto
   await page.locator('#target-run').click();
   await expect(page.locator('#target-error')).toContainText('H:MM:SS');
 });
+
+
+test('sluttidsurval kvinnor och män är källaanknutna och kan användas som måltid', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('#year').selectOption('gax100-2023');
+  await expect(page.locator('#finish-group-selector [data-finish-group="female"]')).toBeEnabled();
+  await expect(page.locator('#finish-group-selector [data-finish-group="male"]')).toBeEnabled();
+  await expect(page.locator('#percentiles')).toContainText('Hela fältet, n=70');
+  await page.locator('#finish-group-selector [data-finish-group="female"]').click();
+  await expect(page.locator('#percentiles')).toContainText('Kvinnor, n=16');
+  await expect(page.locator('#stats-note')).toContainText('16');
+  await expect(page.locator('#histogram svg .bar.gender-female')).not.toHaveCount(0);
+  await page.locator('#percentiles [data-use-percentile="0.5"]').click();
+  await expect(page.locator('#target-time-input')).toBeVisible();
+  const target = await page.locator('#target-time-input').inputValue();
+  expect(target).toMatch(/^\d+:\d\d:\d\d$/);
+  // A target-time estimate always describes the complete edition.
+  await expect(page.locator('#target-placement')).toContainText('70');
+  await page.locator('#finish-group-selector [data-finish-group="male"]').click();
+  await expect(page.locator('#percentiles')).toContainText('Män, n=54');
+  await expect(page.locator('#scatter svg')).toHaveAttribute('aria-label', /Sluttid på X-axeln/);
+  await page.locator('#year').selectOption('gax100-2024');
+  await expect(page.locator('#finish-group-selector [data-finish-group="female"]')).toBeDisabled();
+  await expect(page.locator('#finish-group-selector [data-finish-group="all"]')).toHaveAttribute('aria-pressed','true');
+  await expect(page.locator('#percentiles')).toContainText('Hela fältet');
+});
