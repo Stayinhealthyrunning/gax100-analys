@@ -7,5 +7,5 @@ if(data.editions.length!==14||data.results.length!==945) throw new Error(`Fel ex
 if(!data.editions.some(e=>e.edition_id==='gax100-2021-a')||!data.editions.some(e=>e.edition_id==='gax100-2021-b')) throw new Error('2021-editions saknas');
 if(data.editions.find(e=>e.edition_id==='gax100-2015').starters!==53||data.editions.find(e=>e.edition_id==='gax100-2026').starters!==null) throw new Error('Startantalens verifieringsstatus saknas');
 if(!data.editions.some(e=>e.edition_id==='gax100-2025')||data.results.filter(r=>r.edition_id==='gax100-2025'&&r.status==='FINISHED').length!==69) throw new Error('2025 officiell PDF-import saknas');
-if(!js.includes('allocateLargestRemainder')||!js.includes('candidates.length < 5')||!js.includes('data-segment-index')) throw new Error('Historisk kohortplan eller segmentinteraktion saknas');
+if(!fs.readFileSync('web/plan.js','utf8').includes('allocateLargestRemainder')||!js.includes('GaxPlan.historicalPlan')||!js.includes('data-segment-index')) throw new Error('Historisk kohortplan eller segmentinteraktion saknas');
 console.log(JSON.stringify({pass:true,dom_sections:['facts','runner','histogram','scatter','comparison','rows'],editions:data.editions.length,results:data.results.length},null,2));
