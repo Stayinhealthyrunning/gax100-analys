@@ -459,6 +459,26 @@ $('#search').oninput = (event) => { state.query = event.target.value; state.page
 $('#club').onchange = (event) => { state.club = event.target.value; state.page = 1; renderRows(); };
 $('#gender').onchange = (event) => { state.gender = event.target.value; state.page = 1; renderRows(); };
 $('#sort').onchange = (event) => { state.sort = event.target.value; state.page = 1; renderRows(); };
+window.addEventListener('popstate', () => {
+  if (!state.data) return;
+  const params = new URLSearchParams(window.location.search);
+  const editionParam = params.get('edition');
+  const candidate = state.data.results.find((result) => result.result_id === params.get('result')) || null;
+  state.searchScope = params.get('scope') === 'all' ? 'all' : 'year';
+  state.year = candidate ? candidate.edition_id :
+    state.data.editions.some((ed) => ed.edition_id === editionParam) ? editionParam : state.year;
+  state.selected = candidate;
+  const known = new Set(state.data.results.map((item) => item.result_id));
+  const ids = (key, max) => [...new Set((params.get(key) || '').split(',').filter((id) => known.has(id)))].slice(0, max);
+  state.compare = ids('compare', 2);
+  state.duel = ids('duel', 5);
+  state.page = 1; state.planTarget = null; state.segmentIndex = null;
+  state.query = ''; state.club = ''; state.gender = ''; state.status = '';
+  $('#search').value = '';
+  $('#year').value = state.year;
+  render();
+});
+
 $('#clear-comparison').onclick = () => { state.compare = []; renderRows(); renderComparison(); syncUrl(true); };
 $('#swap-comparison').onclick = () => { if (state.compare.length === 2) { state.compare.reverse(); renderRows(); renderComparison(); syncUrl(true); } };
 $('#share-comparison').onclick = async () => {
