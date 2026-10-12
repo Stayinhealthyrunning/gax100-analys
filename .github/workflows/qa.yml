@@ -50,6 +50,7 @@ jobs:
           npm run test:statistics
           npm run test:plan
           node tests/test_comparison.js
+          npm run test:field
           npm run test:time-parser
           npm run test:time-format
           npm run test:database
