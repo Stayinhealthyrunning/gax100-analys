@@ -482,7 +482,10 @@ function chart() {
     time(minimum + span*v).slice(0,6) + '</text>').join('');
   scatter.innerHTML = '<svg viewBox="0 0 430 182" role="img" aria-label="Sluttid på X-axeln och källa publicerad placering på Y-axeln, plats 1 överst">' +
     rankGrid + timeTicks + '<line class="axis" x1="46" y1="142" x2="394" y2="142"/>' +
-    points.map((runner) => '<circle class="dot" data-chart-runner="' + esc(runner.result_id) +
+    points.map((runner) => '<circle class="dot dot-' +
+      (GaxField.groupGender(runner.gender)==='Kvinnor' ? 'female' :
+        GaxField.groupGender(runner.gender)==='Män' ? 'male' : 'unknown') +
+      '" data-chart-runner="' + esc(runner.result_id) +
     '" role="button" tabindex="0" aria-label="Öppna individuell analys för ' + esc(runner.name) +
     '" cx="' + px(runner.finish_seconds) + '" cy="' + py(Number(runner.rank)) +
     '" r="3"><title>' + esc(runner.name) + ': ' + time(runner.finish_seconds) +
@@ -746,7 +749,7 @@ window.addEventListener('popstate', () => {
   const ids = (key, max) => [...new Set((params.get(key) || '').split(',').filter((id) => known.has(id)))].slice(0, max);
   state.compare = ids('compare', 2);
   state.duel = ids('duel', 5);
-  state.page = 1; state.planTarget = null; state.targetSeconds = null; state.fieldSegmentIndex = null; state.segmentIndex = null;
+  state.page = 1; state.planTarget = null; state.targetSeconds = null; state.fieldSegmentIndex = null; state.finishGroup = 'all'; state.segmentIndex = null;
   state.query = ''; state.club = ''; state.gender = ''; state.status = '';
   $('#search').value = '';
   $('#year').value = state.year;
