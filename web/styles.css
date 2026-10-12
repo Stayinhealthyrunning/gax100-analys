@@ -389,3 +389,15 @@ button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-v
   .lab-values { grid-template-columns:minmax(0,1fr); }
   .lab-values>div:first-child { grid-column:auto; }
 }
+
+/* Standard pagination: readable controls without horizontal overflow. */
+.result-database-controls { display:flex; flex-wrap:wrap; align-items:end; gap:10px; margin:10px 0 14px; }
+.result-database-controls label { display:grid; gap:4px; font-size:13px; font-weight:650; color:var(--muted); }
+.result-database-controls #page-size { min-width:90px; }
+.result-database-controls #reset-result-filters { margin:0; }
+.result-database-controls #results-page-count { margin-left:auto; padding-bottom:10px; }
+@media(max-width:600px) {
+  .result-database-controls label { flex:1 1 120px; }
+  .result-database-controls #reset-result-filters { flex:1 1 100%; }
+  .result-database-controls #results-page-count { flex:1 1 100%; padding-bottom:0; }
+}
