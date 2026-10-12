@@ -109,48 +109,53 @@ function renderRunner() {
   document.querySelectorAll('[data-segment-index]').forEach((button) => { button.onclick = () => { state.segmentIndex = Number(button.dataset.segmentIndex); renderRunner(); }; });
 }
 
-function historicalPlan(result) {
-  const candidates = editionResults(result?.edition_id).filter((item) => item.status === 'FINISHED' && Number.isFinite(item.finish_seconds) && buildSegments(item).length >= 2);
-  const selectedSegments = buildSegments(result);
-  if (candidates.length < 5 || selectedSegments.length < 2) return null;
-  const byKey = new Map();
-  candidates.forEach((candidate) => {
-    const total = candidate.finish_seconds;
-    buildSegments(candidate).forEach((segment) => {
-      const key = `${segment.checkpointId || segment.name}@${segment.checkpointKm}`;
-      if (!byKey.has(key)) byKey.set(key, []);
-      byKey.get(key).push({ seconds: segment.seconds, fraction: segment.seconds / total });
-    });
-  });
-  const segments = selectedSegments.map((segment) => {
-    const key = `${segment.checkpointId || segment.name}@${segment.checkpointKm}`;
-    const observations = byKey.get(key) || [];
-    return { ...segment, key, cohort: observations.length, fraction: observations.length >= 5 ? median(observations.map((item) => item.fraction)) : null };
-  });
-  if (segments.some((segment) => !Number.isFinite(segment.fraction))) return null;
-  const cohortTimes = candidates.map((candidate) => candidate.finish_seconds).filter(Number.isFinite);
-  return { candidates, segments, target: median(cohortTimes) };
-}
-
-function allocateLargestRemainder(total, fractions) {
-  const raw = fractions.map((fraction) => total * fraction);
-  const values = raw.map(Math.floor);
-  let remaining = total - values.reduce((sum, value) => sum + value, 0);
-  raw.map((value, index) => ({ index, remainder: value - Math.floor(value) })).sort((a, b) => b.remainder - a.remainder).forEach(({ index }) => { if (remaining > 0) { values[index] += 1; remaining -= 1; } });
-  return values;
-}
-
 function renderPlan() {
   const result = state.selected;
-  const personal = buildSegments(result);
-  const plan = historicalPlan(result);
-  if (!plan) { $('#plan').className = 'runner empty'; $('#plan').textContent = 'Personlig loppplan är gated: samma upplaga behöver minst fem FINISHED-resultat med en gemensam verifierad segmentserie. Den valda löparens historiska referens kan fortfarande visas i individuell analys.'; return; }
-  const target = Number.isFinite(state.planTarget) ? state.planTarget : plan.target;
-  const simulatedSeconds = allocateLargestRemainder(Math.round(target), plan.segments.map((segment) => segment.fraction));
-  const rows = plan.segments.map((segment, index) => `<tr><td>${esc(segment.name)}</td><td>${segment.checkpointKm.toFixed(1)}</td><td>${Math.round(segment.fraction * 100)} % · n=${segment.cohort}</td><td>${time(simulatedSeconds[index])}</td></tr>`).join('');
+  const plan = result ? GaxPlan.historicalPlan(result, editionResults(result.edition_id)) : null;
+  if (!plan) {
+    $('#plan').className = 'runner empty';
+    $('#plan').textContent = 'Ingen historiskt vägd loppplan för detta resultat: minst fem fullföljare i samma upplaga måste ha samma kompletta, kronologiska checkpointserie från Start till Mål. Utan passager visas ingen påhittad delsträckeplan.';
+    return;
+  }
+  const target = Number.isSafeInteger(state.planTarget) ? state.planTarget : Math.round(plan.target);
+  let simulatedSeconds;
+  try {
+    simulatedSeconds = GaxPlan.allocateLargestRemainder(target, plan.segments.map((segment) => segment.fraction));
+  } catch (error) {
+    state.planTarget = null;
+    simulatedSeconds = GaxPlan.allocateLargestRemainder(Math.round(plan.target), plan.segments.map((segment) => segment.fraction));
+  }
+  let cumulative = 0;
+  const rows = plan.segments.map((segment, index) => {
+    cumulative += simulatedSeconds[index];
+    const distance = Number.isFinite(segment.distanceKm) ? segment.distanceKm.toLocaleString('sv-SE', { maximumFractionDigits: 1 }) + ' km' : 'Ej verifierad';
+    return `<tr><td>${esc(segment.from)}</td><td>${esc(segment.to)}</td><td>${distance}</td><td>${(segment.fraction * 100).toLocaleString('sv-SE', { maximumFractionDigits: 1 })} %</td><td>${time(simulatedSeconds[index])}</td><td>${time(cumulative)}</td><td>n=${segment.cohort}</td></tr>`;
+  }).join('');
   $('#plan').className = 'runner';
-  $('#plan').innerHTML = `<h3>Historisk referensprofil och måltidssimulering</h3><p>Den valda löparens faktiska mellantider används som referens i individuell analys. Den här separata planen använder ${plan.candidates.length} verifierade FINISHED-resultat från samma upplaga, medianiserade segmentproportioner och största restmetoden så att delsträckorna summerar exakt till måltiden. Den är en matematisk scenariofördelning, inte en prognos.</p><div class="plan-controls"><label for="plan-target">Valbar simulerad måltid (TT:MM:SS)<input id="plan-target" type="text" inputmode="numeric" placeholder="t.ex. 24:00:00" value="${target ? esc(time(target)) : ''}"></label><button type="button" id="apply-plan-target">Simulera</button><span id="plan-target-message" class="muted">Standardvärde: medianen av kohortens sluttider (${time(plan.target)}).</span></div><table class="segment-table"><tr><th>Kontrollpunkt</th><th>km</th><th>Kohortandel</th><th>Simulerad delsträcka</th></tr>${rows}</table><p class="muted">Personlig historisk referens: ${personal.length} verifierade delsträckor från ${esc(result.name)}. Planunderlag: ${plan.candidates.length} FINISHED.</p>`;
-  $('#apply-plan-target').onclick = () => { const value = $('#plan-target').value.trim(); const match = value.match(/^(\d+):([0-5]\d):([0-5]\d)$/); if (!match) { $('#plan-target-message').textContent = 'Ange TT:MM:SS.'; return; } state.planTarget = Number(match[1]) * 3600 + Number(match[2]) * 60 + Number(match[3]); renderPlan(); };
+  $('#plan').innerHTML = `<h3>Simulera ditt lopp baserat på faktiska tidigare tider per delsträcka</h3><p>Historiskt vägd fördelning från ${plan.candidates} fullföljare med kompletta, gemensamma passager i ${esc(edition()?.edition_label || 'vald upplaga')}. Start→första kontrollen och sista kontrollen→Mål ingår; inga tider eller positioner hittas på. Medianiserade andelar normaliseras till 100 % före sekundavrundning. Detta är en matematisk simulering, inte en prognos.</p><div class="plan-controls"><label for="plan-target">Måltid (H:MM:SS)<input id="plan-target" type="text" inputmode="numeric" placeholder="t.ex. 24:00:00" value="${time(simulatedSeconds.reduce((a, b) => a + b, 0))}"></label><button type="button" id="apply-plan-target">Bygg loppplan</button><button type="button" data-plan-adjust="-900">−15 min</button><button type="button" data-plan-adjust="-300">−5 min</button><button type="button" data-plan-adjust="300">+5 min</button><button type="button" data-plan-adjust="900">+15 min</button><button type="button" id="reset-plan-target">Återställ mediantid</button><span id="plan-target-message" class="muted" role="status">Standard: upplagans mediantid ${time(plan.target)}.</span></div><div class="table-wrap"><table class="segment-table"><thead><tr><th>Från</th><th>Till</th><th>Distans</th><th>Andel av loppet</th><th>Beräknad segmenttid</th><th>Ackumulerad passagetid</th><th>Underlag</th></tr></thead><tbody>${rows}</tbody></table></div><p class="muted">Sista passagetiden är exakt måltiden. Distans och pace visas endast när motsvarande geografiska underlag är verifierat. En annan vald löpares enskilda tider används inte som sammanblandat referensfält.</p>`;
+  $('#apply-plan-target').onclick = () => {
+    const value = $('#plan-target').value.trim();
+    const match = value.match(/^(\\d+):([0-5]\\d):([0-5]\\d)$/);
+    if (!match) { $('#plan-target-message').textContent = 'Ange måltiden som H:MM:SS.'; return; }
+    const seconds = Number(match[1]) * 3600 + Number(match[2]) * 60 + Number(match[3]);
+    if (!Number.isSafeInteger(seconds) || seconds < plan.segments.length ||
+        !Number.isFinite(seconds)) {
+      $('#plan-target-message').textContent = 'Ange en positiv och rimlig måltid.';
+      return;
+    }
+    try {
+      GaxPlan.allocateLargestRemainder(seconds, plan.segments.map((segment) => segment.fraction));
+      state.planTarget = seconds;
+      renderPlan();
+    } catch (error) {
+      $('#plan-target-message').textContent = 'Måltiden ger ogiltiga delsträckor. Ange en längre måltid.';
+    }
+  };
+  document.querySelectorAll('[data-plan-adjust]').forEach((button) => { button.onclick = () => {
+    const seconds = simulatedSeconds.reduce((a, b) => a + b, 0) + Number(button.dataset.planAdjust);
+    if (seconds > plan.segments.length) { state.planTarget = seconds; renderPlan(); }
+  }; });
+  $('#reset-plan-target').onclick = () => { state.planTarget = null; renderPlan(); };
 }
 
 function renderComparison() {

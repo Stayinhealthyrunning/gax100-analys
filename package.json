@@ -2,7 +2,9 @@
   "name": "gax100-analys",
   "private": true,
   "version": "0.1.0",
-  "engines": { "node": ">=24" },
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "test:statistics": "node tests/test_statistics.js",
     "test:time-parser": "node tests/test_time_parser.js",
@@ -17,7 +19,8 @@
     "test:privacy": "node tests/test_public_privacy.js",
     "test:web": "node tests/test_web.js",
     "test:browser": "playwright test",
-    "test": "npm run test:statistics && npm run test:time-parser && npm run test:time-format && npm run test:database && npm run test:gender-2026 && npm run test:gpx-parser && npm run test:gpx-geometry && npm run test:gpx-preview && npm run test:semantics && npm run test:privacy && npm run test:web && npm run test:browser"
+    "test": "npm run test:statistics && npm run test:plan && npm run test:time-parser && npm run test:time-format && npm run test:database && npm run test:gender-2026 && npm run test:gpx-parser && npm run test:gpx-geometry && npm run test:gpx-preview && npm run test:semantics && npm run test:privacy && npm run test:web && npm run test:browser",
+    "test:plan": "node tests/test_plan.js"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0"
