@@ -144,3 +144,33 @@ test('kartarkiv i webbläsare: publika källkartor och filväljare', async ({ pa
   await assertNoHorizontalOverflow(page);
   await page.screenshot({ path: testInfo.outputPath('kartarkiv-mobile.png'), fullPage: true });
 });
+
+test('historisk loppplan fördelar hela måltiden och markerar tillförlitlig täckning', async ({ page }) => {
+  await page.goto('/');
+  const data = await loadData(page);
+  const selected = data.results.find((result) => result.edition_id === 'gax100-2023' &&
+    result.status === 'FINISHED' && result.observations?.length === 3);
+  expect(selected).toBeTruthy();
+  await page.locator('#year').selectOption('gax100-2023');
+  await page.locator('#search').fill(selected.name);
+  await page.locator('#rows [data-id]').first().click();
+  await expect(page.locator('#plan .segment-table tbody tr')).toHaveCount(4);
+  await expect(page.locator('#plan')).toContainText('Start');
+  await expect(page.locator('#plan')).toContainText('Mål');
+  await page.locator('#plan-target').fill('24:00:00');
+  await page.locator('#apply-plan-target').click();
+  await expect(page.locator('#plan .segment-table tbody tr').last().locator('td').nth(5)).toHaveText('24:00:00');
+  const spans = await page.locator('#plan .segment-table tbody tr td:nth-child(5)').allTextContents();
+  const total = spans.reduce((sum, value) => {
+    const parts = value.split(':').map(Number);
+    return sum + parts[0] * 3600 + parts[1] * 60 + parts[2];
+  }, 0);
+  expect(total).toBe(86400);
+  await page.locator('#reset-plan-target').click();
+  await expect(page.locator('#plan-target')).not.toHaveValue('24:00:00');
+
+  await page.locator('#year').selectOption('gax100-2025');
+  await page.locator('#search').fill('');
+  await page.locator('#rows [data-id]').first().click();
+  await expect(page.locator('#plan')).toContainText('Ingen historiskt vägd loppplan');
+});
