@@ -289,6 +289,8 @@ test('sluttidsurval kvinnor och m채n 채r k채llaanknutna och kan anv채ndas som m�
   await expect(page.locator('#target-placement')).toContainText('70');
   await page.locator('#finish-group-selector [data-finish-group="male"]').click();
   await expect(page.locator('#percentiles')).toContainText('M채n, n=54');
+  await expect(page.locator('#scatter')).toContainText('Ingen publicerad numerisk placering');
+  await page.locator('#year').selectOption('gax100-2025');
   await expect(page.locator('#scatter svg')).toHaveAttribute('aria-label', /Sluttid p책 X-axeln/);
   await page.locator('#year').selectOption('gax100-2024');
   await expect(page.locator('#finish-group-selector [data-finish-group="female"]')).toBeDisabled();
