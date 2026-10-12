@@ -487,3 +487,16 @@ button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-v
   .chart-viewport svg { max-width:100%; width:100%; }
   .chart-viewport svg text { font-size:13px; }
 }
+
+
+/* Consistent sex colors only when reported by the official source. Amber
+   denotes selection, not female sex; grey dashed = 100% reference. */
+#runner .speed-chart .speed-bar, #runner .duration-chart .duration-bar { fill:var(--runner-gender-color,#1689a7); }
+#runner .speed-chart .speed-bar.selected, #runner .duration-chart .duration-bar.selected {
+  fill:var(--runner-gender-color,#1689a7); stroke:#f59e0b; stroke-width:4; opacity:1;
+}
+#runner .speed-chart .speed-reference { stroke:#475569; stroke-dasharray:6 5; stroke-width:2; }
+#runner .gap-chart .gap-line { stroke:var(--runner-gender-color,#1689a7); }
+#runner .gap-chart .gap-dot { stroke:var(--runner-gender-color,#1689a7); }
+#runner .gap-chart .gap-dot.selected { stroke:#f59e0b; fill:var(--runner-gender-color,#1689a7); }
+#runner .segment-callout { border-left-color:var(--runner-gender-color,#1689a7); background:#f6fafc; }
