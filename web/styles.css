@@ -453,3 +453,9 @@ button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-v
 @media(max-width:600px) {
   .history-table thead, .mobile-card-table thead { display:none!important; }
 }
+
+/* Race-standard gender semantics in comparisons: blue men, pink women.
+   Same-sex runners share the verified color, differentiated by solid/dashed
+   trajectories and filled/hollow markers. Unknown gender uses neutral hues. */
+.compare-person, .compare-person.role-b { color:#082235; border-left-color:var(--comparison-color,#0f766e); }
+.compare-person h3 { color:var(--comparison-color,#0f766e); }
