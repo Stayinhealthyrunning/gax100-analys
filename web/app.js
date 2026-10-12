@@ -1,4 +1,4 @@
-const state = { data: null, year: null, query: '', club: '', gender: '', status: '', searchScope: 'year', sort: 'time', page: 1, pageSize: 10, selected: null, compare: [], duel: [], favorites: new Set(), planTarget: null, targetSeconds: null, fieldSegmentIndex: null, segmentIndex: null };
+const state = { data: null, year: null, query: '', club: '', gender: '', status: '', searchScope: 'year', sort: 'time', page: 1, pageSize: 10, selected: null, compare: [], duel: [], favorites: new Set(), planTarget: null, targetSeconds: null, fieldSegmentIndex: null, finishGroup: 'all', segmentIndex: null };
 const $ = (selector) => document.querySelector(selector);
 const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
 const time = (seconds) => GaxTime.formatClock(seconds);
@@ -368,59 +368,168 @@ function renderMapDuel() {
   $('#map-duel-panel').innerHTML = `<h3>Förberedda kartduellresultat (${selected.length}/5)</h3><ol>${selected.map((result) => `<li>${esc(result.name)} · ${esc(result.status)} · ${time(result.finish_seconds)}</li>`).join('')}</ol><p>Kartduell/replay är fortfarande gated: lokala kandidatspår finns, men autentisk årsanknytning, publiceringsrätt, checkpoint-geometri och verifierad tidskoppling saknas.</p>`;
 }
 
-function chart() {
-  const finished = editionResults(state.year).filter((result) => result.status === 'FINISHED' && Number.isFinite(result.finish_seconds));
-  if (!finished.length) { $('#histogram').textContent = 'Ingen verifierad sluttidsdata.'; $('#scatter').textContent = 'Ingen verifierad placeringsdata.'; $('#stats-note').textContent = 'Diagrammen visas inte när vald upplaga saknar verifierad sluttidsdata.'; return; }
-  const width = 420; const height = 160; const min = Math.min(...finished.map((result) => result.finish_seconds)); const max = Math.max(...finished.map((result) => result.finish_seconds)); const bins = Math.max(8, Math.min(35, Math.ceil((max - min) / 900) || 1)); const step = Math.max(1, (max - min) / bins); const counts = Array(bins).fill(0);
-  finished.forEach((result) => { counts[Math.min(bins - 1, Math.floor((result.finish_seconds - min) / step))] += 1; });
-  const barWidth = 350 / bins; const maxCount = Math.max(...counts);
-  const histogramTicks = [0, .25, .5, .75, 1].map((fraction) => `<line class="gridline" x1="32" y1="${140 - fraction * 105}" x2="400" y2="${140 - fraction * 105}"/><text x="2" y="${144 - fraction * 105}">${Math.round(maxCount * fraction)}</text>`).join('');
-  const histogramXAxis = [0, .25, .5, .75, 1].map((fraction) => {
-    const x = 38 + 350 * fraction;
-    return '<text x="' + x + '" y="155" text-anchor="middle">' + time(min + (max - min) * fraction).slice(0, 6) + '</text>';
-  }).join('');
-  const percentileMarkers = [.1, .5, .9].map((probability) => { const value = percentile(finished.map((result) => result.finish_seconds), probability); const x = 38 + ((value - min) / Math.max(max - min, 1)) * 350; return `<line class="percentile-marker" x1="${x.toFixed(1)}" y1="18" x2="${x.toFixed(1)}" y2="140"/><text x="${Math.min(380, Math.max(34, x - 8)).toFixed(1)}" y="14">P${probability * 100}</text>`; }).join('');
-  $('#histogram').innerHTML = `<svg viewBox="0 0 ${width} ${height}" aria-label="Sluttid i ${bins} intervall"><line class="axis" x1="32" y1="140" x2="400" y2="140"/>${histogramTicks}${percentileMarkers}${histogramXAxis}${counts.map((count, index) => `<rect class="bar" x="${38 + index * barWidth}" y="${140 - count / maxCount * 105}" width="${Math.max(2, barWidth - 5)}" height="${count / maxCount * 105}"/>`).join('')}<text x="4" y="20">antal</text><text x="142" y="158">sluttid (TT:MM) →</text></svg>`;
-  const points = finished.filter((result) => /^\d+$/.test(String(result.rank || ''))).slice(0, 120);
-  if (!points.length) { $('#scatter').textContent = 'Ingen verifierad placeringsdata i vald upplaga.'; $('#stats-note').textContent = `${finished.length} FINISHED-resultat med sluttid används; placeringsdiagrammet saknar verifierade placeringar.`; return; }
-  const maxRank = Math.max(...points.map((result) => Number(result.rank)), 1); const maxTime = max;
-  const rankTicks = [0, .25, .5, .75, 1].map((fraction) => {
-    const x = 38 + 350 * fraction;
-    return '<line class="gridline" x1="' + x + '" x2="' + x + '" y1="20" y2="140"/>' +
-      '<text x="' + x + '" y="155" text-anchor="middle">' + Math.round(maxRank * fraction) + '</text>';
-  }).join('');
-  const scatterTicks = [0, .25, .5, .75, 1].map((fraction) => `<line class="gridline" x1="32" y1="${135 - fraction * 120}" x2="400" y2="${135 - fraction * 120}"/><text x="2" y="${139 - fraction * 120}">${time(maxTime * fraction).slice(0, 5)}</text>`).join('');
-  $('#scatter').innerHTML = `<svg viewBox="0 0 420 160" aria-label="Tid mot placering"><line class="axis" x1="32" y1="140" x2="400" y2="140"/><line class="axis" x1="32" y1="10" x2="32" y2="140"/>${scatterTicks}${rankTicks}${points.map((result) => `<circle class="dot" data-chart-runner="${esc(result.result_id)}" role="button" tabindex="0" aria-label="Visa individuell analys för ${esc(result.name)}" cx="${38 + Number(result.rank) / maxRank * 350}" cy="${135 - result.finish_seconds / maxTime * 120}" r="2.5"><title>${esc(result.name)}: placering ${esc(result.rank)}, ${time(result.finish_seconds)}</title></circle>`).join('')}<text x="160" y="155">placering →</text><text x="4" y="20">sluttid</text></svg>`;
-  // Overlapping official placements must remain selectable without guessing which dot was tapped.
-  $('#scatter').insertAdjacentHTML('beforeend', '<div class="scatter-selector"><label>Öppna resultat från diagrammet ' +
-    '<select id="scatter-runner-select" aria-label="Välj en löpare i placeringsdiagrammet"><option value="">Välj löpare och placering</option>' +
-    points.map((result) => '<option value="' + esc(result.result_id) + '">' +
-      esc(result.name) + ' · placering ' + esc(result.rank) + ' · ' + time(result.finish_seconds) + '</option>').join('') +
-    '</select></label></div>');
-  const openScatterResult = (id) => {
-    const result = state.data.results.find((item) => item.result_id === id);
-    if (!result) return;
-    state.selected = result; state.segmentIndex = null; state.planTarget = null;
-    renderRunner(); renderPlan(); syncUrl(true);
-    $('#runner').focus({ preventScroll:true });
-    $('#runner-analysis').scrollIntoView({ block:'start' });
-  };
-  $('#scatter-runner-select').onchange = (event) => openScatterResult(event.target.value);
-  $('#scatter').querySelectorAll('[data-chart-runner]').forEach((point) => {
-    const open = () => {
-      openScatterResult(point.dataset.chartRunner);
-    };
-    point.onclick = open;
-    point.onkeydown = (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); open(); } };
-  });
-  $('#stats-note').textContent = `${finished.length} FINISHED-resultat med sluttid används. Diagrammen är beskrivande och bygger inte på saknade observationer.`;
+function finishChartRows() {
+  const list = editionResults(state.year).filter((r) => r.status === 'FINISHED' &&
+    Number.isFinite(r.finish_seconds) && r.finish_seconds > 0);
+  if (state.finishGroup === 'all') return list;
+  const gender = state.finishGroup === 'female' ? 'Kvinnor' : 'Män';
+  return list.filter((r) => GaxField.groupGender(r.gender) === gender);
 }
-
+function finishGroupLabel() {
+  return state.finishGroup === 'all' ? 'Hela fältet' : state.finishGroup === 'female' ? 'Kvinnor' : 'Män';
+}
+function renderFinishGroupSelector() {
+  const source = GaxField.analyze(editionResults(state.year)).genders;
+  const available = {all:true, female:!!source.Kvinnor, male:!!source.Män};
+  if (!available[state.finishGroup]) state.finishGroup = 'all';
+  $('#finish-group-selector').innerHTML = [
+    ['all', 'Alla', source.total],
+    ['female', 'Kvinnor', source.Kvinnor ? source.Kvinnor.n : null],
+    ['male', 'Män', source.Män ? source.Män.n : null]
+  ].map(([id,label,n]) => '<button type="button" class="finish-group-button ' +
+    (id===state.finishGroup?' selected':'') + '" data-finish-group="' + id +
+    '" aria-pressed="' + (id===state.finishGroup) + '"' +
+    (n == null ? ' disabled title="Minst fem verifierade sluttider med rapporterat kön krävs"' : '') +
+    '>' + label + (n == null ? ' (saknar underlag)' : ' (n=' + n + ')') + '</button>').join('');
+  $('#finish-group-selector').querySelectorAll('[data-finish-group]').forEach((button) => {
+    button.onclick = () => {
+      if (button.disabled) return;
+      state.finishGroup = button.dataset.finishGroup;
+      renderFinishGroupSelector();
+      chart();
+      renderPercentiles();
+    };
+  });
+}
+function chart() {
+  const finished = finishChartRows();
+  const histogram = $('#histogram'), scatter = $('#scatter');
+  if (!finished.length) {
+    histogram.textContent = 'Ingen verifierad sluttidsdata.';
+    scatter.textContent = 'Ingen verifierad placeringsdata.';
+    $('#stats-note').textContent = 'Inga källverifierade sluttider finns för valt urval.';
+    return;
+  }
+  const values = finished.map((r) => r.finish_seconds);
+  const minimum = Math.min(...values), maximum = Math.max(...values);
+  const span = Math.max(1, maximum - minimum);
+  const bins = Math.max(8, Math.min(35, Math.ceil(span/900)));
+  const counts = Array(bins).fill(0);
+  const binWidth = span / bins;
+  for (const runner of finished) counts[Math.min(bins - 1, Math.floor((runner.finish_seconds - minimum) / binWidth))] += 1;
+  const barMax = Math.max(1, ...counts);
+  const x = (fraction) => 46 + fraction * 348, y = (fraction) => 142 - fraction * 114;
+  const yTicks = [0,.25,.5,.75,1].map((v) =>
+    '<line class="gridline" x1="46" x2="394" y1="' + y(v) + '" y2="' + y(v) +
+    '"/><text x="2" y="' + (y(v)+4) + '">' + Math.round(barMax*v) + '</text>').join('');
+  const xTicks = [0,.25,.5,.75,1].map((v) =>
+    '<text text-anchor="middle" x="' + x(v) + '" y="163">' +
+    time(minimum + span*v).slice(0,6) + '</text>').join('');
+  const markers = [[.1,'P10'],[.5,'P50'],[.9,'P90']].map(([p,label]) => {
+    const fraction = (percentile(values,p) - minimum)/span;
+    return '<line class="percentile-marker" x1="' + x(fraction) + '" x2="' + x(fraction) +
+      '" y1="27" y2="142"/><title>' + label + ': ' + time(percentile(values,p)) + '</title>';
+  }).join('');
+  const bars = counts.map((count,index) => {
+    const center = x(index/bins);
+    const height = count/barMax * 114;
+    const first = time(minimum + index*binWidth), last = time(minimum + (index+1)*binWidth);
+    return '<rect class="bar gender-' + state.finishGroup + '" data-hist-bin="' + index +
+      '" tabindex="0" role="button" aria-label="' + first + ' till ' + last +
+      ': ' + count + ' fullföljare" x="' + center + '" y="' + (142-height) +
+      '" width="' + Math.max(2,348/bins-2) + '" height="' + height +
+      '"><title>' + first + '–' + last + ': ' + count + ' målgångar (' +
+      (100*count/finished.length).toLocaleString('sv-SE',{maximumFractionDigits:1}) +
+      ' %)</title></rect>';
+  }).join('');
+  histogram.innerHTML = '<svg viewBox="0 0 430 182" role="img" aria-label="Histogram över verkliga officiella sluttider för ' +
+    finishGroupLabel() + '"><line class="axis" x1="46" y1="142" x2="394" y2="142"/>' +
+    yTicks + xTicks + markers + bars +
+    '<text x="2" y="17">antal</text><text x="160" y="180">sluttid (H:MM)</text></svg>' +
+    '<p id="histogram-selection" class="chart-inspect muted" role="status">Tryck på en stapel för att läsa av intervall och antal.</p>';
+  histogram.querySelectorAll('[data-hist-bin]').forEach((bar) => {
+    const describe = () => {
+      const index = Number(bar.dataset.histBin);
+      const count = counts[index];
+      $('#histogram-selection').textContent = time(minimum+index*binWidth) + '–' +
+        time(minimum+(index+1)*binWidth) + ': ' + count + ' fullföljare, ' +
+        (100*count/finished.length).toLocaleString('sv-SE',{maximumFractionDigits:1}) + ' % av ' +
+        finishGroupLabel().toLocaleLowerCase('sv-SE') + '.';
+    };
+    bar.onclick = describe;
+    bar.onkeydown = (event) => { if (event.key==='Enter'||event.key===' ') {event.preventDefault();describe();} };
+  });
+  // Public rank is only used where *officially published*. Never infer rank from elapsed finish time.
+  const points = finished.filter((r) => /^\d+$/.test(String(r.rank || '')));
+  if (!points.length) {
+    scatter.textContent = 'Ingen publicerad numerisk placering finns i denna upplaga och grupp. Inga placeringar har räknats fram.';
+    $('#stats-note').textContent = finished.length + ' FINISHED-resultat med giltig sluttid i ' + finishGroupLabel() +
+      '; placeringsgrafen kräver publicerade placeringar.';
+    return;
+  }
+  const ranks = points.map((r) => Number(r.rank));
+  const maxRank = Math.max(1,...ranks);
+  const plotTop = 28, plotBottom = 142;
+  const px = (seconds) => x((seconds-minimum)/span);
+  const py = (rank) => plotTop + (rank-1)/Math.max(1,maxRank-1)*(plotBottom-plotTop);
+  const rankGrid = [0,.25,.5,.75,1].map((v) => {
+    const rank = 1+(maxRank-1)*v, yPos=py(rank);
+    return '<line class="gridline" x1="46" x2="394" y1="' + yPos +
+      '" y2="' + yPos + '"/><text x="3" y="' + (yPos+4) + '">' + Math.round(rank) + '</text>';
+  }).join('');
+  const timeTicks = [0,.25,.5,.75,1].map((v) =>
+    '<text text-anchor="middle" x="' + x(v) + '" y="162">' +
+    time(minimum + span*v).slice(0,6) + '</text>').join('');
+  scatter.innerHTML = '<svg viewBox="0 0 430 182" role="img" aria-label="Sluttid på X-axeln och källa publicerad placering på Y-axeln, plats 1 överst">' +
+    rankGrid + timeTicks + '<line class="axis" x1="46" y1="142" x2="394" y2="142"/>' +
+    points.map((runner) => '<circle class="dot" data-chart-runner="' + esc(runner.result_id) +
+    '" role="button" tabindex="0" aria-label="Öppna individuell analys för ' + esc(runner.name) +
+    '" cx="' + px(runner.finish_seconds) + '" cy="' + py(Number(runner.rank)) +
+    '" r="3"><title>' + esc(runner.name) + ': ' + time(runner.finish_seconds) +
+    ' · publicerad placering ' + esc(runner.rank) + '</title></circle>').join('') +
+    '<text x="145" y="180">Sluttid (H:MM)</text><text x="3" y="17">plac.</text></svg>';
+  scatter.insertAdjacentHTML('beforeend',
+    '<div class="scatter-selector"><label>Öppna löpare i grafen ' +
+    '<select id="scatter-runner-select" aria-label="Välj löpare i placeringsdiagrammet"><option value="">Välj löpare och officiell placering</option>' +
+    points.map((r) => '<option value="' + esc(r.result_id) + '">' +
+    esc(r.name) + ' · placering ' + esc(r.rank) + ' · ' + time(r.finish_seconds) +
+    '</option>').join('') + '</select></label></div>');
+  const openResult = (id) => {
+    const r = state.data.results.find((row) => row.result_id === id);
+    if (!r) return;
+    state.selected = r; state.segmentIndex = null; state.planTarget = null;
+    renderRunner(); renderPlan(); syncUrl(true);
+    $('#runner').focus({preventScroll:true});
+    $('#runner-analysis').scrollIntoView({block:'start'});
+  };
+  $('#scatter-runner-select').onchange = (event) => openResult(event.target.value);
+  scatter.querySelectorAll('[data-chart-runner]').forEach((dot) => {
+    dot.onclick = () => openResult(dot.dataset.chartRunner);
+    dot.onkeydown = (event) => { if (event.key==='Enter'||event.key===' ') {event.preventDefault();openResult(dot.dataset.chartRunner);} };
+  });
+  $('#stats-note').textContent = finished.length + ' verifierade FINISHED-resultat i ' +
+    finishGroupLabel() + '. Placeringar visas enbart om källan publicerat ett numeriskt värde.';
+}
 function renderPercentiles() {
-  const values = editionResults(state.year).filter((result) => result.status === 'FINISHED' && Number.isFinite(result.finish_seconds)).map((result) => result.finish_seconds).sort((a, b) => a - b);
-  if (!values.length) { $('#percentiles').textContent = 'Ingen verifierad sluttidsdata.'; return; }
+  const values = finishChartRows().map((r) => r.finish_seconds);
+  if (!values.length) { $('#percentiles').textContent='Ingen verifierad sluttidsdata.'; return; }
   $('#percentiles').className = 'runner';
-  $('#percentiles').innerHTML = `<table class="segment-table"><tr><th>P10</th><th>P25</th><th>P50 median</th><th>P75</th><th>P90</th><th>Underlag</th></tr><tr><td>${time(percentile(values, .1))}</td><td>${time(percentile(values, .25))}</td><td>${time(percentile(values, .5))}</td><td>${time(percentile(values, .75))}</td><td>${time(percentile(values, .9))}</td><td>${values.length} FINISHED med sluttid · linjär interpolation</td></tr></table>`;
+  const probs = [[.10,'P10'],[.25,'P25'],[.50,'P50 median'],[.75,'P75'],[.90,'P90']];
+  $('#percentiles').innerHTML = '<p class="muted">Urval: ' + finishGroupLabel() + ', n=' +
+    values.length + ' verifierade FINISHED-tider. Linjär interpolation, h=(n−1)×p.</p>' +
+    '<div class="percentile-values">' + probs.map(([probability,label]) =>
+    '<div class="percentile-item"><strong>' + label + '</strong><span>' +
+    time(percentile(values,probability)) + '</span><button type="button" data-use-percentile="' +
+    probability + '">Pröva som måltid</button></div>').join('') + '</div>';
+  $('#percentiles').querySelectorAll('[data-use-percentile]').forEach((button) => {
+    button.onclick = () => {
+      const value = Math.round(percentile(values, Number(button.dataset.usePercentile)));
+      state.targetSeconds = value;
+      renderTargetPlacement();
+      $('#target-tool').scrollIntoView({block:'start'});
+      $('#target-time-input')?.focus({preventScroll:true});
+    };
+  });
 }
 
 function renderHistory() {
@@ -608,7 +717,7 @@ function setupHelpDialog() {
   $('#help-dialog-close').onclick = () => dialog.close();
 }
 
-function render() { renderFacts(); renderFilters(); renderRows(); renderRunner(); renderPlan(); renderComparison(); renderMapDuel(); chart(); renderPercentiles(); renderTargetPlacement(); renderHistory(); renderQuality(); renderExtended(); renderFieldInsights(); }
+function render() { renderFacts(); renderFilters(); renderRows(); renderRunner(); renderPlan(); renderComparison(); renderMapDuel(); renderFinishGroupSelector(); chart(); renderPercentiles(); renderTargetPlacement(); renderHistory(); renderQuality(); renderExtended(); renderFieldInsights(); }
 
 setupHelpDialog();
 try { state.favorites = new Set(JSON.parse(localStorage.getItem('gax100-favorites') || '[]')); } catch (error) { state.favorites = new Set(); }
@@ -617,7 +726,7 @@ fetch('data.json').then((response) => response.json()).then((data) => { state.da
   state.compare = (params.get('compare') || '').split(',').filter((id) => validIds.has(id)).slice(0, 2);
   state.duel = (params.get('duel') || '').split(',').filter((id) => validIds.has(id)).slice(0, 5);
   render(); });
-$('#year').onchange = (event) => { state.year = event.target.value; state.page = 1; state.selected = null; state.club = ''; state.gender = ''; if (state.searchScope !== 'all') { state.compare = []; state.duel = []; } state.planTarget = null; state.targetSeconds = null; state.fieldSegmentIndex = null; state.segmentIndex = null; render(); syncUrl(true); };
+$('#year').onchange = (event) => { state.year = event.target.value; state.page = 1; state.selected = null; state.club = ''; state.gender = ''; if (state.searchScope !== 'all') { state.compare = []; state.duel = []; } state.planTarget = null; state.targetSeconds = null; state.fieldSegmentIndex = null; state.finishGroup = 'all'; state.segmentIndex = null; render(); syncUrl(true); };
 $('#search-scope').onchange = (event) => { state.searchScope = event.target.value; state.page = 1; state.club = ''; state.gender = ''; renderFilters(); renderRows(); syncUrl(true); };
 $('#status-filter').onchange = (event) => { state.status = event.target.value; state.page = 1; renderRows(); };
 $('#search').oninput = (event) => { state.query = event.target.value; state.page = 1; renderRows(); };
