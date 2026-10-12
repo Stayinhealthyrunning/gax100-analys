@@ -110,49 +110,136 @@ function renderRows() {
 }
 
 function buildSegments(result) {
-  let previous = null;
+  const observations = result?.observations || [];
+  if (!observations.length) return [];
   const segments = [];
-  for (const observation of (result?.observations || [])) {
-    const elapsed = Number(observation.elapsed_seconds);
-    const distanceKm = Number(observation.distance_km);
-    if (!Number.isFinite(elapsed) || !Number.isFinite(distanceKm) || elapsed < 0 || distanceKm <= 0) { previous = null; continue; }
-    if (previous && (elapsed < previous.elapsed || distanceKm <= previous.distanceKm)) { previous = null; continue; }
-    if (previous) segments.push({ checkpointId: observation.checkpoint_id, name: observation.name, distanceKm: distanceKm - previous.distanceKm, checkpointKm: distanceKm, seconds: elapsed - previous.elapsed });
-    previous = { elapsed, distanceKm };
+  let previousTime = 0;
+  let previousDistance = 0;
+  let previousName = 'Start';
+  for (const observation of observations) {
+    const elapsed = observation.elapsed_seconds;
+    const distanceKm = observation.distance_km == null ? null : Number(observation.distance_km);
+    if (!Number.isFinite(elapsed) || elapsed <= previousTime ||
+        (result.status === 'FINISHED' && Number.isFinite(result.finish_seconds) && elapsed >= result.finish_seconds)) break;
+    if (distanceKm !== null && (!Number.isFinite(distanceKm) || distanceKm <= 0 ||
+        (previousDistance !== null && distanceKm <= previousDistance))) break;
+    segments.push({ checkpointId: observation.checkpoint_id, from: previousName,
+      name: observation.name, distanceKm: previousDistance !== null && distanceKm !== null ? distanceKm - previousDistance : null,
+      checkpointKm: distanceKm, seconds: elapsed - previousTime, elapsedSeconds: elapsed });
+    previousTime = elapsed;
+    previousDistance = distanceKm;
+    previousName = observation.name;
   }
-  return segments.filter((segment) => segment.seconds >= 0 && segment.distanceKm > 0);
+  if (result.status === 'FINISHED' && Number.isFinite(result.finish_seconds) &&
+      result.finish_seconds > previousTime && segments.length === observations.length) {
+    segments.push({ checkpointId: 'FINISH', from: previousName, name: 'Mål', distanceKm: null,
+      checkpointKm: null, seconds: result.finish_seconds - previousTime, elapsedSeconds: result.finish_seconds });
+  }
+  return segments;
 }
-
 function speedChart(segments, result, selectedIndex = null) {
-  if (!segments.length) return '<p class="muted">Ingen verifierad hastighetsserie: det krävs kronologiska mellantider med källavstånd.</p>';
-  const totalSeconds = Number.isFinite(result.finish_seconds) ? result.finish_seconds : segments.reduce((sum, segment) => sum + segment.seconds, 0);
-  const totalDistance = segments.reduce((sum, segment) => sum + segment.distanceKm, 0);
-  if (!(totalSeconds > 0) || !(totalDistance > 0)) return '<p class="muted">Ingen verifierad referens för relativ fart.</p>';
-  const baseline = totalDistance / (totalSeconds / 3600);
-  const ratios = segments.map((segment) => (segment.distanceKm / (segment.seconds / 3600)) / baseline * 100);
-  const maxRatio = Math.max(120, ...ratios, 100) * 1.05;
-  const bars = ratios.map((ratio, index) => {
-    const height = Math.max(1, Math.min(140, ratio / maxRatio * 140));
-    const x = 48 + index * (820 / Math.max(segments.length, 1));
-    return `<rect class="speed-bar${selectedIndex === index ? ' selected' : ''}" x="${x.toFixed(1)}" y="${(165 - height).toFixed(1)}" width="${Math.max(3, 760 / Math.max(segments.length, 1) - 4).toFixed(1)}" height="${height.toFixed(1)}"><title>${esc(segments[index].name)}: ${Math.round(ratio)}% av referensfart</title></rect>`;
+  const eligible = segments.map((segment, index) => ({ segment, index }))
+    .filter(({ segment }) => Number.isFinite(segment.distanceKm) && segment.distanceKm > 0 && segment.seconds > 0);
+  if (!eligible.length) return '<p class="muted">Fysisk fart kan inte beräknas: verifierade kontrollavstånd saknas för denna upplaga. De verkliga tidsåtgångarna visas nedan.</p>';
+  const totalSeconds = eligible.reduce((sum, item) => sum + item.segment.seconds, 0);
+  const totalKm = eligible.reduce((sum, item) => sum + item.segment.distanceKm, 0);
+  if (!(totalSeconds > 0) || !(totalKm > 0)) return '<p class="muted">Inget tillförlitligt fartunderlag.</p>';
+  const baseline = totalKm / (totalSeconds / 3600);
+  const ratios = eligible.map(({ segment }) => segment.distanceKm / (segment.seconds / 3600) / baseline * 100);
+  const maxRatio = Math.max(120, ...ratios) * 1.1;
+  const width = 900, left = 58, right = 860, bottom = 183, top = 20;
+  const height = bottom - top;
+  const bars = eligible.map(({ segment, index }, rank) => {
+    const ratio = ratios[rank], barWidth = (right - left) / eligible.length;
+    const h = ratio / maxRatio * height;
+    const x = left + rank * barWidth + 6;
+    return '<rect class="speed-bar' + (selectedIndex === index ? ' selected' : '') +
+      '" data-segment-index="' + index + '" tabindex="0" role="button" aria-label="Välj delsträckan ' + esc(segment.name) +
+      '" x="' + x + '" y="' + (bottom - h) + '" width="' + Math.max(4, barWidth - 12) +
+      '" height="' + h + '"><title>' + esc(segment.name) + ': ' + Math.round(ratio) + ' %</title></rect>';
   }).join('');
-  const referenceY = 165 - 140 * 100 / maxRatio;
-  return `<p class="muted">Relativ segmentfart mot valt loppresultats verifierade referensfart. Streckad linje = 100 %. Saknade segment visas inte.</p><svg class="speed-chart" viewBox="0 0 920 180" role="img" aria-label="Relativ segmentfart"><line class="speed-axis" x1="40" y1="165" x2="900" y2="165"/><line class="speed-reference" x1="40" y1="${referenceY.toFixed(1)}" x2="900" y2="${referenceY.toFixed(1)}"/><text class="speed-label" x="4" y="${(referenceY + 4).toFixed(1)}">100 %</text>${bars}<text class="speed-label" x="800" y="178">kontrollpunkter →</text></svg>`;
+  const refY = bottom - 100 / maxRatio * height;
+  const axis = [0, .25, .5, .75, 1].map((v) => {
+    const y = bottom - maxRatio * v / maxRatio * height;
+    return '<text class="speed-label" x="2" y="' + (y + 4) + '">' + Math.round(maxRatio * v) + ' %</text>' +
+      '<line class="gridline" x1="' + left + '" x2="' + right + '" y1="' + y + '" y2="' + y + '"/>';
+  }).join('');
+  return '<p class="muted">Fart per delsträcka relativt snittet för enbart de verifierade avståndsintervallen. Detta är inte hela loppets snittfart. Streckad linje = 100 %.</p>' +
+    '<svg class="speed-chart" viewBox="0 0 900 215" role="img" aria-label="Relativ fart per verifierad delsträcka">' +
+    axis + '<line class="speed-reference" x1="' + left + '" x2="' + right + '" y1="' + refY + '" y2="' + refY + '"/>' +
+    bars + '<text class="speed-label" x="' + left + '" y="209">Start → kontroller i ordning</text></svg>';
 }
-
+function durationChart(segments, selectedIndex = null) {
+  if (!segments.length) return '<p class="muted">Ingen tidsserie finns för denna löpare.</p>';
+  const maximum = Math.max(...segments.map((segment) => segment.seconds), 1);
+  const left = 75, right = 850, bottom = 185, top = 20;
+  const step = (right - left) / segments.length;
+  const grid = [0, .25, .5, .75, 1].map((v) => {
+    const y = bottom - v * (bottom - top);
+    return '<line class="gridline" x1="' + left + '" x2="' + right + '" y1="' + y + '" y2="' + y +
+      '"/><text class="speed-label" x="2" y="' + (y + 5) + '">' + time(maximum * v) + '</text>';
+  }).join('');
+  const bars = segments.map((segment, index) => {
+    const h = segment.seconds / maximum * (bottom - top);
+    const x = left + index * step + 8;
+    return '<rect data-segment-index="' + index + '" tabindex="0" role="button" aria-label="Välj delsträckan ' + esc(segment.name) +
+      '" class="duration-bar' + (selectedIndex === index ? ' selected' : '') + '" x="' + x + '" y="' + (bottom - h) +
+      '" width="' + Math.max(5, step - 16) + '" height="' + h + '"><title>' +
+      esc(segment.from + ' – ' + segment.name) + ': ' + time(segment.seconds) + '</title></rect>';
+  }).join('');
+  return '<svg class="duration-chart" viewBox="0 0 900 225" role="img" aria-label="Tidsåtgång per verifierad delsträcka, från Start till sista observation">' +
+    grid + bars + '<text class="speed-label" x="' + left + '" y="215">Start → kontrollpunkter → Mål (om officiell sluttid finns)</text></svg>';
+}
 function renderRunner() {
   const result = state.selected;
-  if (!result) { $('#runner').className = 'runner empty'; $('#runner').textContent = 'Välj en rad i resultatdatabasen för individuell visning.'; return; }
+  if (!result) {
+    $('#runner').className = 'runner empty';
+    $('#runner').textContent = 'Sök en löpare ovan och öppna resultatet för individuell analys.';
+    return;
+  }
   const segments = buildSegments(result);
-  const rows = (result.observations || []).map((observation) => {
-    const segmentIndex = segments.findIndex((item) => item.name === observation.name && item.checkpointKm === observation.distance_km);
-    const segment = segmentIndex >= 0 ? segments[segmentIndex] : null;
-    return `<tr class="${state.segmentIndex === segmentIndex ? 'selected-segment' : ''}"><td>${esc(observation.name)}</td><td>${esc(observation.distance_km ?? 'källavstånd saknas')}</td><td>${esc(observation.raw_time)}</td><td>${time(segment?.seconds)}${segment ? ` <button type="button" class="segment-select" data-segment-index="${segmentIndex}">${state.segmentIndex === segmentIndex ? 'Vald' : 'Visa'}</button>` : ''}</td></tr>`;
-  }).join('');
+  const observationRows = segments.map((segment, index) =>
+    '<tr class="' + (state.segmentIndex === index ? 'selected-segment' : '') +
+    '"><td>' + esc(segment.name) + '</td><td>' +
+    (Number.isFinite(segment.checkpointKm) ? segment.checkpointKm.toLocaleString('sv-SE') + ' km' : 'Ej verifierad') +
+    '</td><td>' + time(segment.elapsedSeconds) + '</td><td>' + time(segment.seconds) +
+    ' <button type="button" class="segment-select" data-segment-index="' + index + '">' +
+    (state.segmentIndex === index ? 'Vald' : 'Visa') + '</button></td></tr>').join('');
+  const selected = Number.isInteger(state.segmentIndex) && segments[state.segmentIndex] ?
+    segments[state.segmentIndex] : null;
+  const callout = selected ? '<p class="segment-callout">Vald delsträcka: <strong>' + esc(selected.from) + ' → ' +
+    esc(selected.name) + '</strong> · ' + time(selected.seconds) +
+    (Number.isFinite(selected.distanceKm) ? ' · ' + selected.distanceKm.toLocaleString('sv-SE') + ' km' : ' · distans ej verifierad') + '</p>' : '';
+  const officialRank = result.rank != null && String(result.rank).trim() ? esc(result.rank) : 'Ej publicerad';
+  const finish = result.status === 'FINISHED' ? time(result.finish_seconds) : esc(result.status);
   $('#runner').className = 'runner';
-  const selected = Number.isInteger(state.segmentIndex) && segments[state.segmentIndex] ? `<p class="segment-callout">Vald delsträcka: <strong>${esc(segments[state.segmentIndex].name)}</strong> · ${time(segments[state.segmentIndex].seconds)} över ${segments[state.segmentIndex].distanceKm.toFixed(1)} km.</p>` : '';
-  $('#runner').innerHTML = `<h3>${esc(result.name)}</h3><p>${esc(result.status)} · sluttid ${time(result.finish_seconds)} · ${esc(result.club || 'klubb saknas')}</p><h4>Verkliga mellantider och delsträckor</h4>${rows ? `<table class="segment-table"><tr><th>Kontrollpunkt</th><th>km</th><th>Källtid</th><th>Delsträcka</th></tr>${rows}</table>` : '<p>Inga importerade mellantidsobservationer för detta resultat.</p>'}${selected}<h4>Relativ segmentfart</h4>${speedChart(segments, result, state.segmentIndex)}<p class="muted">Segmentet är endast källans närmast föregående verifierade observation. Saknade eller bakåtriktade observationer bryter serien; ingen tid interpoleras. GPS-position och replay kräver årsverifierad, publicerbar GPX-geometri och tidsankare.</p>`;
-  document.querySelectorAll('[data-segment-index]').forEach((button) => { button.onclick = () => { state.segmentIndex = Number(button.dataset.segmentIndex); renderRunner(); }; });
+  $('#runner').innerHTML = '<h3>' + esc(runnerChip(result)) + '</h3>' +
+    '<p>' + esc(result.status) + ' · ' + esc(result.club || 'Klubb ej publicerad') + '</p>' +
+    '<div class="runner-facts"><div><small>Sluttid / status</small><strong>' + finish + '</strong></div>' +
+    '<div><small>Officiell placering</small><strong>' + officialRank + '</strong></div>' +
+    '<div><small>Publicerade passager</small><strong>' + (result.observations || []).length + '</strong></div></div>' +
+    '<div class="runner-toolbar"><button type="button" id="runner-to-comparison">' +
+    (state.compare.includes(result.result_id) ? 'Ta bort från Direktjämförelse' : 'Lägg till Direktjämförelse') +
+    '</button><button type="button" id="runner-plan-link">Visa personlig loppplan</button></div>' +
+    '<h4>Verkliga mellantider</h4>' +
+    (segments.length ? '<div class="table-wrap"><table class="segment-table"><thead><tr><th>Kontrollpunkt</th><th>Distans</th><th>Ackumulerad tid</th><th>Delsträcka</th></tr></thead><tbody>' +
+      '<tr><td>Start</td><td>0 km</td><td>0:00:00</td><td>–</td></tr>' + observationRows + '</tbody></table></div>' :
+      '<p>Inga importerade, verifierade mellantidsobservationer för detta resultat.</p>') +
+    callout + '<h4>Fart på verifierade delsträckor</h4>' + speedChart(segments, result, state.segmentIndex) +
+    '<h4>Tidsåtgång per delsträcka</h4>' + durationChart(segments, state.segmentIndex) +
+    '<p class="muted">Start är tid 0. Mål används bara när en positiv officiell sluttid finns. Saknade observationer eller okänt avstånd ger ingen fabricerad fart eller GPS-replay.</p>';
+  const select = (index) => { state.segmentIndex = index; renderRunner(); };
+  document.querySelectorAll('[data-segment-index]').forEach((button) => {
+    button.onclick = () => select(Number(button.dataset.segmentIndex));
+    button.onkeydown = (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); select(Number(button.dataset.segmentIndex)); } };
+  });
+  $('#runner-to-comparison').onclick = () => {
+    if (state.compare.includes(result.result_id)) state.compare = state.compare.filter((id) => id !== result.result_id);
+    else if (state.compare.length < 2) state.compare.push(result.result_id);
+    else { $('#runner-to-comparison').textContent = 'Ta först bort ett av de två valda resultaten'; return; }
+    renderRows(); renderComparison(); renderRunner(); syncUrl(true);
+  };
+  $('#runner-plan-link').onclick = () => { $('#personal-plan').scrollIntoView({ block: 'start' }); };
 }
 
 function renderPlan() {
