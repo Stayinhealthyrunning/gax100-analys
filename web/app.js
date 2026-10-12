@@ -1,4 +1,4 @@
-const state = { data: null, year: null, query: '', club: '', gender: '', sort: 'time', page: 1, pageSize: 10, selected: null, compare: [], duel: [], favorites: new Set(), planTarget: null, segmentIndex: null };
+const state = { data: null, year: null, query: '', club: '', gender: '', status: '', searchScope: 'year', sort: 'time', page: 1, pageSize: 10, selected: null, compare: [], duel: [], favorites: new Set(), planTarget: null, segmentIndex: null };
 const $ = (selector) => document.querySelector(selector);
 const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
 const time = (seconds) => GaxTime.formatClock(seconds);
@@ -9,10 +9,10 @@ const percentile = (values, probability) => GaxStatistics.percentile(values, pro
 const mean = (values) => { const valid = values.filter(Number.isFinite); return valid.length ? Math.round(valid.reduce((sum, value) => sum + value, 0) / valid.length) : null; };
 
 function rows() {
-  const filtered = editionResults(state.year).filter((result) => {
+  const filtered = (state.searchScope === 'all' ? state.data.results : editionResults(state.year)).filter((result) => {
     const matchesQuery = !state.query || `${result.name} ${result.bib || result.start_number || ''} ${result.club || ''}`.toLowerCase().includes(state.query.toLowerCase());
     const matchesGender = !state.gender || result.gender === state.gender;
-    return matchesQuery && (!state.club || result.club === state.club) && matchesGender;
+    return matchesQuery && (!state.club || result.club === state.club) && matchesGender && (!state.status || result.status === state.status);
   });
   return filtered.sort((left, right) => state.sort === 'name'
     ? left.name.localeCompare(right.name, 'sv')
@@ -37,12 +37,14 @@ function renderFacts() {
 }
 
 function renderFilters() {
-  const clubs = [...new Set(editionResults(state.year).filter((result) => result.club).map((result) => result.club))].sort((a, b) => a.localeCompare(b, 'sv'));
+  const clubs = [...new Set((state.searchScope === 'all' ? state.data.results : editionResults(state.year)).filter((result) => result.club).map((result) => result.club))].sort((a, b) => a.localeCompare(b, 'sv'));
   $('#club').innerHTML = '<option value="">Alla klubbar</option>' + clubs.map((club) => `<option value="${esc(club)}">${esc(club)}</option>`).join('');
   $('#club').value = state.club;
-  const genders = [...new Set(editionResults(state.year).filter((result) => result.gender).map((result) => result.gender))].sort((a, b) => a.localeCompare(b, 'sv'));
+  const genders = [...new Set((state.searchScope === 'all' ? state.data.results : editionResults(state.year)).filter((result) => result.gender).map((result) => result.gender))].sort((a, b) => a.localeCompare(b, 'sv'));
   $('#gender').innerHTML = '<option value="">Alla kön</option>' + genders.map((gender) => `<option value="${esc(gender)}">${esc(gender)}</option>`).join('');
   $('#gender').value = state.gender;
+  $('#search-scope').value = state.searchScope;
+  $('#status-filter').value = state.status;
 }
 
 function renderRows() {
@@ -50,7 +52,7 @@ function renderRows() {
   const totalPages = Math.max(1, Math.ceil(visibleRows.length / state.pageSize));
   state.page = Math.min(state.page, totalPages);
   const pageRows = visibleRows.slice((state.page - 1) * state.pageSize, state.page * state.pageSize);
-  $('#result-count').textContent = `${visibleRows.length} träffar i ${esc(edition()?.edition_label || 'vald upplaga')}`;
+  $('#result-count').textContent = `${visibleRows.length} träffar i ${state.searchScope === 'all' ? 'alla år' : esc(edition()?.edition_label || 'vald upplaga')}`;
   $('#rows').innerHTML = pageRows.length ? pageRows.map((result) => `<tr><td data-label="Namn"><strong>${esc(result.name) || '—'}</strong></td><td data-label="Kön">${esc(result.gender) || '—'}</td><td data-label="Klubb">${esc(result.club) || '—'}</td><td data-label="Status" class="status-${esc(result.status.toLowerCase())}">${esc(result.status)}</td><td data-label="Sluttid">${time(result.finish_seconds)}</td><td data-label="Val" class="result-actions"><button type="button" data-id="${esc(result.result_id)}" aria-label="Öppna resultat för ${esc(result.name)}">Öppna</button><button type="button" data-compare="${esc(result.result_id)}" aria-label="Jämför ${esc(result.name)}">${state.compare.includes(result.result_id) ? 'Ta bort' : 'Jämför'}</button><button type="button" data-duel="${esc(result.result_id)}" aria-label="Välj ${esc(result.name)} för Kartduell">${state.duel.includes(result.result_id) ? 'Ta bort duell' : 'Kartduell'}</button><button type="button" data-favorite="${esc(result.result_id)}" aria-label="${state.favorites.has(result.result_id) ? 'Ta bort favorit för' : 'Favoritmarkera'} ${esc(result.name)}">${state.favorites.has(result.result_id) ? '★ Favorit' : '☆ Favorit'}</button><button type="button" data-share="${esc(result.result_id)}" aria-label="Kopiera länk till ${esc(result.name)}">Dela</button></td></tr>`).join('') : '<tr><td colspan="6" class="empty-cell">Ingen verifierad resultatpost matchar urvalet.</td></tr>';
   $('#result-pagination').innerHTML = totalPages > 1
     ? `<button type="button" data-page="${state.page - 1}" ${state.page === 1 ? 'disabled' : ''}>Föregående</button><span>Sida ${state.page} av ${totalPages}</span><button type="button" data-page="${state.page + 1}" ${state.page === totalPages ? 'disabled' : ''}>Nästa</button>`
@@ -242,7 +244,9 @@ function render() { renderFacts(); renderFilters(); renderRows(); renderRunner()
 setupHelpDialog();
 try { state.favorites = new Set(JSON.parse(localStorage.getItem('gax100-favorites') || '[]')); } catch (error) { state.favorites = new Set(); }
 fetch('data.json').then((response) => response.json()).then((data) => { state.data = data; const params = new URLSearchParams(window.location.search); state.year = data.editions.some((item) => item.edition_id === params.get('edition')) ? params.get('edition') : data.editions.slice().sort((a, b) => b.year - a.year || b.edition_id.localeCompare(a.edition_id))[0].edition_id; $('#year').innerHTML = data.editions.map((item) => `<option value="${esc(item.edition_id)}">${esc(item.edition_label)}</option>`).join(''); $('#year').value = state.year; const requested = data.results.find((result) => result.result_id === params.get('result')); if (requested) state.selected = requested; render(); });
-$('#year').onchange = (event) => { state.year = event.target.value; state.page = 1; state.selected = null; state.club = ''; state.gender = ''; state.compare = []; state.duel = []; state.planTarget = null; state.segmentIndex = null; render(); };
+$('#year').onchange = (event) => { state.year = event.target.value; state.page = 1; state.selected = null; state.club = ''; state.gender = ''; if (state.searchScope !== 'all') { state.compare = []; state.duel = []; } state.planTarget = null; state.segmentIndex = null; render(); };
+$('#search-scope').onchange = (event) => { state.searchScope = event.target.value; state.page = 1; state.club = ''; state.gender = ''; renderFilters(); renderRows(); };
+$('#status-filter').onchange = (event) => { state.status = event.target.value; state.page = 1; renderRows(); };
 $('#search').oninput = (event) => { state.query = event.target.value; state.page = 1; renderRows(); };
 $('#club').onchange = (event) => { state.club = event.target.value; state.page = 1; renderRows(); };
 $('#gender').onchange = (event) => { state.gender = event.target.value; state.page = 1; renderRows(); };
