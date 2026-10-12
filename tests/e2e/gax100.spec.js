@@ -65,7 +65,7 @@ test('desktop: upplagor, sökning, filter, sortering, individuell analys och jä
   if (await page.locator('#plan-target').count()) {
     await page.locator('#plan-target').fill('24:00:00');
     await page.locator('#apply-plan-target').click();
-    await expect(page.locator('#plan')).toContainText('Simulerad delsträcka');
+    await expect(page.locator('#plan')).toContainText('Beräknad segmenttid');
   }
 
   await page.locator('#search').fill('');
