@@ -328,3 +328,8 @@ button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-v
   .finish-group-button { flex:1 1 110px; padding:9px 6px; }
   .percentile-item span { font-size:17px; }
 }
+
+/* Scatter points retain the same semantic gender palette as summary cards. */
+#scatter .dot-female { fill:#db2777; }
+#scatter .dot-male { fill:#2563eb; }
+#scatter .dot-unknown { fill:#64748b; }
