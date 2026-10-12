@@ -194,6 +194,40 @@ function durationChart(segments, selectedIndex = null) {
   return '<svg class="duration-chart" viewBox="0 0 900 225" role="img" aria-label="Tidsåtgång per verifierad delsträcka, från Start till sista observation">' +
     grid + bars + '<text class="speed-label" x="' + left + '" y="215">Start → kontrollpunkter → Mål (om officiell sluttid finns)</text></svg>';
 }
+function runnerMedianGapChart(result) {
+  const model = GaxField.runnerGap(result, editionResults(result.edition_id));
+  if (!model) return '<p class="muted">Tidslucka mot fältet visas inte: det saknas en komplett jämförbar kontrollserie med minst fem fullföljare i samma upplaga. Ingen passage eller placering har uppskattats.</p>';
+  const rows = model.rows;
+  const absoluteMaximum = Math.max(1,...rows.map((point) => Math.abs(point.gapSeconds)));
+  const left=80, right=865, middle=132, scale=90/absoluteMaximum;
+  const xp=(index)=>left+index*(right-left)/(rows.length-1);
+  const yp=(seconds)=>middle+seconds*scale;
+  const signed=(seconds)=>seconds===0 ? '0:00:00' : (seconds>0?'+':'−')+time(Math.abs(seconds));
+  const path=rows.map((point,index)=>xp(index)+','+yp(point.gapSeconds)).join(' ');
+  const points=rows.map((point,index) => {
+    const selected=index>0 && state.segmentIndex===index-1;
+    const button=index===0?'': ' data-segment-index="'+(index-1)+'" tabindex="0" role="button"';
+    return '<circle class="gap-dot'+(selected?' selected':'')+'" cx="'+xp(index)+'" cy="'+yp(point.gapSeconds)+
+      '" r="'+(selected?7:5)+'"'+button+' aria-label="'+esc(point.name)+
+      ', tidslucka '+signed(point.gapSeconds)+'"><title>'+esc(point.name)+' · '+signed(point.gapSeconds)+
+      '</title></circle>';
+  }).join('');
+  const labels=rows.map((point,index) => '<text x="'+xp(index)+'" y="252" text-anchor="middle" class="gap-checkpoint">'+
+    esc(point.name.slice(0,15))+'</text>').join('');
+  const ticks=[-1,-0.5,0,0.5,1].map((fraction) => '<line class="gridline" x1="'+left+'" y1="'+yp(fraction*absoluteMaximum)+
+    '" x2="'+right+'" y2="'+yp(fraction*absoluteMaximum)+'"/><text x="1" y="'+(yp(fraction*absoluteMaximum)+5)+'">'+
+    signed(fraction*absoluteMaximum)+'</text>').join('');
+  const table='<div class="table-wrap"><table class="segment-table"><thead><tr><th>Kontroll</th><th>Denna löpare</th>'+
+    '<th>Fältets median</th><th>Skillnad</th></tr></thead><tbody>'+
+    rows.map((point)=>'<tr><td>'+esc(point.name)+'</td><td>'+time(point.elapsedSeconds)+'</td><td>'+
+      time(point.medianElapsedSeconds)+'</td><td>'+signed(point.gapSeconds)+'</td></tr>').join('')+'</tbody></table></div>';
+  return '<p class="muted">Fast referensgrupp med <strong>'+model.n+
+    ' fullföljare</strong> som har samma verifierade kontrollserie. Positiv skillnad betyder senare än medianen; negativ betyder tidigare. Inga placeringar eller GPS-positioner härleds.</p>'+
+    '<svg class="gap-chart" role="img" viewBox="0 0 940 272" aria-label="Tidslucka i sekunder mot en fast komplett referenskohort">'+
+    ticks+'<line class="gap-zero" x1="'+left+'" x2="'+right+'" y1="'+middle+'" y2="'+middle+'"/>'+
+    '<polyline class="gap-line" points="'+path+'" fill="none"/>'+points+labels+'</svg>'+table;
+}
+
 function renderRunner() {
   const result = state.selected;
   if (!result) {
@@ -231,6 +265,7 @@ function renderRunner() {
       '<p>Inga importerade, verifierade mellantidsobservationer för detta resultat.</p>') +
     callout + '<h4>Fart på verifierade delsträckor</h4>' + speedChart(segments, result, state.segmentIndex) +
     '<h4>Tidsåtgång per delsträcka</h4>' + durationChart(segments, state.segmentIndex) +
+    '<h4>Tidslucka mot fältets median</h4>' + runnerMedianGapChart(result) +
     '<p class="muted">Start är tid 0. Mål används bara när en positiv officiell sluttid finns. Saknade observationer eller okänt avstånd ger ingen fabricerad fart eller GPS-replay.</p>';
   const select = (index) => { state.segmentIndex = index; renderRunner(); };
   document.querySelectorAll('[data-segment-index]').forEach((button) => {
