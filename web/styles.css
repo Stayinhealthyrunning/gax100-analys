@@ -459,3 +459,31 @@ button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-v
    trajectories and filled/hollow markers. Unknown gender uses neutral hues. */
 .compare-person, .compare-person.role-b { color:#082235; border-left-color:var(--comparison-color,#0f766e); }
 .compare-person h3 { color:var(--comparison-color,#0f766e); }
+
+/* SVG legibility: original 900-unit chart labels were unreadable at 360–390px.
+ * Internal scrolling reveals the true-size axes, never hides document overflow. */
+.chart-viewport { width:100%; max-width:100%; min-width:0; overflow-x:auto; overflow-y:hidden; overscroll-behavior-inline:contain; border-radius:8px; scrollbar-width:thin; }
+.chart-viewport:focus-visible { outline:3px solid #f59e0b; outline-offset:2px; }
+.chart-viewport svg { display:block; max-height:none; }
+.chart-viewport-actions { display:flex; justify-content:flex-end; margin:3px 0 4px; }
+.chart-viewport-actions .chart-enlarge { min-height:40px; font-size:13px; background:#edf5fd; border:1px solid #c5dbe9; }
+#chart-zoom-dialog { width:min(1040px,calc(100vw - 16px)); max-width:1040px; max-height:92dvh; padding:16px; }
+.chart-zoom-toolbar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:12px; }
+.chart-zoom-toolbar h2 { margin:0; font-size:19px; }
+.chart-zoom-toolbar button { min-height:44px; }
+#chart-zoom-content { width:100%; max-width:100%; overflow:auto; background:#fcfefe; border:1px solid var(--border); border-radius:9px; padding:12px; }
+#chart-zoom-content svg { width:100%; min-width:780px; height:auto!important; max-height:none!important; max-width:none!important; display:block; }
+#chart-zoom-dialog .muted { margin:10px 0 0; font-size:13px; }
+@media(max-width:600px) {
+  .chart-viewport svg { max-width:none!important; min-width:680px; width:680px!important; height:auto!important; max-height:none!important; }
+  .chart-viewport .compare-figure svg, .compare-figure .chart-viewport svg { min-width:860px; width:860px!important; }
+  .chart-viewport .gap-chart, .chart-viewport .duration-chart, .chart-viewport .speed-chart { min-width:780px; width:780px!important; }
+  .chart-viewport svg text { font-size:13px; }
+  #chart-zoom-dialog { padding:12px; }
+  #chart-zoom-content svg { min-width:800px; }
+  .chart-viewport::after { content:'Svep åt sidan för att läsa hela diagrammet →'; display:block; padding:4px 8px 8px; color:#52636e; font-size:12px; }
+}
+@media(min-width:601px) {
+  .chart-viewport svg { max-width:100%; width:100%; }
+  .chart-viewport svg text { font-size:13px; }
+}
