@@ -1,4 +1,4 @@
-const state = { data: null, year: null, query: '', club: '', gender: '', status: '', searchScope: 'year', sort: 'time', page: 1, pageSize: 10, selected: null, compare: [], duel: [], favorites: new Set(), planTarget: null, targetSeconds: null, fieldSegmentIndex: null, finishGroup: 'all', segmentIndex: null };
+const state = { data: null, year: null, query: '', club: '', gender: '', status: '', searchScope: 'year', sort: 'time', page: 1, pageSize: 10, selected: null, compare: [], duel: [], favorites: new Set(), planTarget: null, targetSeconds: null, fieldSegmentIndex: null, finishGroup: 'all', labFrom: null, labTo: null, labGroup: 'all', segmentIndex: null };
 const $ = (selector) => document.querySelector(selector);
 const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
 const time = (seconds) => GaxTime.formatClock(seconds);
@@ -640,6 +640,70 @@ function renderTargetPlacement() {
   $('#target-reset').onclick = () => { state.targetSeconds = null; renderTargetPlacement(); };
 }
 
+function renderSegmentLab() {
+  const target = $('#segment-lab-content');
+  const results = editionResults(state.year);
+  const complete = GaxField.cohort(results);
+  if (!complete) {
+    target.innerHTML = '<p class="muted">Inga fem kompletta, kronologiska och banjämförbara kontrollserier finns för denna upplaga. Delsträckelabbet är därför avstängt – inga mellantider har beräknats eller fyllts i.</p>';
+    return;
+  }
+  const anchors = [{name:'Start',id:'START'},...complete.segments.map((segment) =>
+    ({name:segment.to,id:segment.checkpointId}))];
+  const last = anchors.length-1;
+  if (!Number.isInteger(state.labFrom) || state.labFrom < 0 || state.labFrom >= last) state.labFrom=0;
+  if (!Number.isInteger(state.labTo) || state.labTo<=state.labFrom || state.labTo>last) state.labTo=last;
+  const nByGender = {all:complete.n,
+    female:complete.runners.filter(({runner}) => GaxField.groupGender(runner.gender)==='Kvinnor').length,
+    male:complete.runners.filter(({runner}) => GaxField.groupGender(runner.gender)==='Män').length};
+  if (!['all','female','male'].includes(state.labGroup) || nByGender[state.labGroup]<5) state.labGroup='all';
+  const model = GaxField.segmentLab(results,state.labFrom,state.labTo,state.labGroup);
+  if (!model) {
+    target.textContent='För denna avgränsning saknas minst fem komplett observerade tider. Prova Alla eller andra kontroller.';
+    return;
+  }
+  const options = (selected, lower, upper) => anchors.map((anchor,index) =>
+    index>=lower && index<=upper ? '<option value="'+index+'"'+(index===selected?' selected':'')+'>'+
+    esc(anchor.name)+'</option>':'').join('');
+  const groupOptions = [['all','Hela fältet'],['female','Kvinnor'],['male','Män']]
+    .map(([id,label])=>'<option value="'+id+'"'+(id===state.labGroup?' selected':'')+
+      (nByGender[id]<5?' disabled':'')+'>'+label+' (n='+nByGender[id]+
+      (nByGender[id]<5?' – otillräckligt':'')+')</option>').join('');
+  const timeAmount = (seconds) => time(Math.round(seconds));
+  const distanceLabel = Number.isFinite(model.distanceKm) ?
+    model.distanceKm.toLocaleString('sv-SE',{maximumFractionDigits:2})+' km (verifierat)' :
+    'Distans saknas eller är inte jämförbar';
+  const bands = model.q25Seconds!=null ?
+    '<div><small>Q25–Q75 · mittre 50 %</small><strong>'+timeAmount(model.q25Seconds)+
+    ' – '+timeAmount(model.q75Seconds)+'</strong></div>' :
+    '<div><small>Q25–Q75</small><strong>n &lt; 10 – visas inte</strong></div>';
+  const percentileBand = model.p10Seconds!=null ?
+    '<div><small>P10–P90 · 80 %-spann</small><strong>'+timeAmount(model.p10Seconds)+
+    ' – '+timeAmount(model.p90Seconds)+'</strong></div>' :
+    '<div><small>P10–P90</small><strong>n &lt; 20 – visas inte</strong></div>';
+  target.innerHTML='<p class="muted">Välj två verkligt observerade kontroller från samma upplaga. Samma fullständiga referenskohort används för varje kontroll.</p>'+
+    '<div class="lab-controls"><label for="lab-from">Från <select id="lab-from">'+
+    options(state.labFrom,0,last-1)+'</select></label>'+
+    '<label for="lab-to">Till <select id="lab-to">'+options(state.labTo,state.labFrom+1,last)+'</select></label>'+
+    '<label for="lab-group">Referens <select id="lab-group">'+groupOptions+'</select></label>'+
+    '<button id="lab-reset" type="button">Start → Mål</button>'+
+    '<button id="lab-last" type="button">Sista delsträckan</button></div>'+
+    '<div class="lab-values"><div><small>Vald delsträcka</small><strong>'+esc(model.from)+' → '+esc(model.to)+'</strong></div>'+
+    '<div><small>Distans</small><strong>'+esc(distanceLabel)+'</strong></div>'+
+    '<div><small>Median · n='+model.n+'</small><strong>'+timeAmount(model.medianSeconds)+'</strong></div>'+
+    bands+percentileBand+'</div>'+
+    '<p class="muted">Ingen individuell eller officiell delsträckeplacering publiceras av detta statistikblock. Varje tidsvärde bygger på registrerad start, verkliga kontrollpassager och/eller officiell sluttid. Ingen GPS-position har rekonstruerats.</p>';
+  $('#lab-from').onchange = (event) => {
+    state.labFrom=Number(event.target.value);
+    if(state.labTo<=state.labFrom) state.labTo=state.labFrom+1;
+    renderSegmentLab();
+  };
+  $('#lab-to').onchange = (event) => {state.labTo=Number(event.target.value);renderSegmentLab();};
+  $('#lab-group').onchange = (event) => {state.labGroup=event.target.value;renderSegmentLab();};
+  $('#lab-reset').onclick = () => {state.labFrom=0;state.labTo=last;renderSegmentLab();};
+  $('#lab-last').onclick = () => {state.labFrom=last-1;state.labTo=last;renderSegmentLab();};
+}
+
 function renderFieldInsights() {
   const data = GaxField.analyze(editionResults(state.year));
   const result = $('#field-insights');
@@ -755,7 +819,7 @@ function setupHelpDialog() {
   $('#help-dialog-close').onclick = () => dialog.close();
 }
 
-function render() { renderFacts(); renderFilters(); renderRows(); renderRunner(); renderPlan(); renderComparison(); renderMapDuel(); renderFinishGroupSelector(); chart(); renderPercentiles(); renderTargetPlacement(); renderHistory(); renderQuality(); renderExtended(); renderFieldInsights(); }
+function render() { renderFacts(); renderFilters(); renderRows(); renderRunner(); renderPlan(); renderComparison(); renderMapDuel(); renderFinishGroupSelector(); chart(); renderPercentiles(); renderTargetPlacement(); renderHistory(); renderQuality(); renderExtended(); renderFieldInsights(); renderSegmentLab(); }
 
 setupHelpDialog();
 try { state.favorites = new Set(JSON.parse(localStorage.getItem('gax100-favorites') || '[]')); } catch (error) { state.favorites = new Set(); }
@@ -764,7 +828,7 @@ fetch('data.json').then((response) => response.json()).then((data) => { state.da
   state.compare = (params.get('compare') || '').split(',').filter((id) => validIds.has(id)).slice(0, 2);
   state.duel = (params.get('duel') || '').split(',').filter((id) => validIds.has(id)).slice(0, 5);
   render(); });
-$('#year').onchange = (event) => { state.year = event.target.value; state.page = 1; state.selected = null; state.club = ''; state.gender = ''; if (state.searchScope !== 'all') { state.compare = []; state.duel = []; } state.planTarget = null; state.targetSeconds = null; state.fieldSegmentIndex = null; state.finishGroup = 'all'; state.segmentIndex = null; render(); syncUrl(true); };
+$('#year').onchange = (event) => { state.year = event.target.value; state.page = 1; state.selected = null; state.club = ''; state.gender = ''; if (state.searchScope !== 'all') { state.compare = []; state.duel = []; } state.planTarget = null; state.targetSeconds = null; state.fieldSegmentIndex = null; state.finishGroup = 'all'; state.labFrom = null; state.labTo = null; state.labGroup = 'all'; state.segmentIndex = null; render(); syncUrl(true); };
 $('#search-scope').onchange = (event) => { state.searchScope = event.target.value; state.page = 1; state.club = ''; state.gender = ''; renderFilters(); renderRows(); syncUrl(true); };
 $('#status-filter').onchange = (event) => { state.status = event.target.value; state.page = 1; renderRows(); };
 $('#search').oninput = (event) => { state.query = event.target.value; state.page = 1; renderRows(); };
@@ -784,7 +848,7 @@ window.addEventListener('popstate', () => {
   const ids = (key, max) => [...new Set((params.get(key) || '').split(',').filter((id) => known.has(id)))].slice(0, max);
   state.compare = ids('compare', 2);
   state.duel = ids('duel', 5);
-  state.page = 1; state.planTarget = null; state.targetSeconds = null; state.fieldSegmentIndex = null; state.finishGroup = 'all'; state.segmentIndex = null;
+  state.page = 1; state.planTarget = null; state.targetSeconds = null; state.fieldSegmentIndex = null; state.finishGroup = 'all'; state.labFrom = null; state.labTo = null; state.labGroup = 'all'; state.segmentIndex = null;
   state.query = ''; state.club = ''; state.gender = ''; state.status = '';
   $('#search').value = '';
   $('#year').value = state.year;
