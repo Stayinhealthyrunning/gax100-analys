@@ -388,3 +388,22 @@ test('faktakort: könsmedian och medelvärde presenteras separat utan hoptryckt 
     await assertNoHorizontalOverflow(page);
   }
 });
+
+
+test('historisk jämförelse på mobil visar alla sex fält utan avklippta kolumner', async ({page}) => {
+  for(const width of [360,390]) {
+    await page.setViewportSize({width,height:800});
+    await page.goto('/');
+    const first=page.locator('#history tr').first();
+    await expect(first.locator('td')).toHaveCount(6);
+    await expect(first.locator('[data-label="Mellantider"]')).toBeVisible();
+    await expect(first.locator('[data-label="Snabbaste"]')).toBeVisible();
+    for(const cell of await first.locator('td').all()) {
+      const rect=await cell.boundingBox();
+      expect(rect).not.toBeNull();
+      expect(rect.x).toBeGreaterThanOrEqual(0);
+      expect(rect.x+rect.width).toBeLessThanOrEqual(width+1);
+    }
+    await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth)).toBeLessThanOrEqual(1);
+  }
+});
