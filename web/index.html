@@ -67,11 +67,16 @@
     <h3>Percentiler</h3><details class="help"><summary aria-label="Om sluttidens percentiler">ⓘ</summary><p>P10, P25, P50, P75 och P90 beräknas med linjär interpolation av samtliga giltiga officiella sluttider för upplagan. P50 är medianen, inte medeltiden.</p></details>
     <div id="percentiles" class="runner empty">Ingen verifierad sluttidsdata.</div>
     <p id="stats-note" class="muted"></p>
+    <div class="field-tool" id="target-tool">
+      <div class="section-heading"><h3>Vad räcker tiden till?</h3><details class="help"><summary aria-label="Om hypotetisk måltid och ungefärlig placering">ⓘ</summary><p>Ange en hypotetisk måltid och jämför med alla verifierade FINISHED-tider i den valda upplagan. Positionen är ett retrospektivt ungefärligt resultat, inte en officiell tävlingsplacering. DNS, DNF och okända sluttider ingår inte. Medianen används som standard när underlaget räcker.</p></details></div>
+      <div id="target-placement" aria-live="polite"></div>
+    </div>
   </section>
 
   <section id="extended-analysis">
     <div class="section-heading"><h2>Utökad analys</h2><details class="help"><summary aria-label="Om utökad analys">ⓘ</summary><p>Blocken aktiveras bara när den valda upplagans källa och datamängd stöder beräkningen. Omarkerade analyser är databegränsningar, inte nollvärden.</p></details></div>
     <div id="extended-analysis-content"></div>
+    <div id="field-insights" class="field-insights" aria-live="polite"></div>
   </section>
 
   <section id="course-history">
@@ -110,6 +115,7 @@
 <script src="time.js"></script>
 <script src="plan.js"></script>
 <script src="comparison.js"></script>
+<script src="field.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
