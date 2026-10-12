@@ -372,3 +372,19 @@ test('resultatdatabas: paginering 10, 25, 50 och reset samt stabilt antal', asyn
   await expect(page.locator('#rows tr')).toHaveCount(10);
   await assertNoHorizontalOverflow(page);
 });
+
+
+test('faktakort: könsmedian och medelvärde presenteras separat utan hoptryckt text', async ({page}) => {
+  for (const width of [390,1440]) {
+    await page.setViewportSize({width,height:900});
+    await page.goto('/');
+    await page.locator('#year').selectOption('gax100-2026');
+    await expect(page.locator('#facts .fact')).toHaveCount(5);
+    await expect(page.locator('#facts .gender-group')).toHaveCount(2);
+    await expect(page.locator('#facts .gender-group.f .group-header')).toContainText('n=14');
+    await expect(page.locator('#facts .gender-group.m .group-header')).toContainText('n=52');
+    await expect(page.locator('#facts .gender-group.f .group-row')).toHaveCount(2);
+    await expect(page.locator('#facts .gender-group.m .group-row')).toHaveCount(2);
+    await assertNoHorizontalOverflow(page);
+  }
+});
