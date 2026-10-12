@@ -54,7 +54,7 @@ test('latest edition advertises only source-supported analytics and safely guide
     await expect(page.locator('#segment-lab .field-segment-button')).toHaveCount(0); // the lab uses option controls
     await expect(page.locator('#lab-from')).toBeVisible();
     await expect(page.locator('#edition-capability-content')).toContainText('53 kompletta profiler');
-    await expect(page.locator('#edition-capability-content .capability-item.available')).toHaveCount(3);
+    await expect(page.locator('#edition-capability-content .capability-item.available')).toHaveCount(4);
     await page.locator('#edition-capabilities').screenshot({path:testInfo.outputPath('source-coverage-2024-'+width+'.png')});
     await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth)).toBeLessThanOrEqual(1);
   }
