@@ -401,3 +401,23 @@ button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-v
   .result-database-controls #reset-result-filters { flex:1 1 100%; }
   .result-database-controls #results-page-count { flex:1 1 100%; padding-bottom:0; }
 }
+
+/* Median and mean: separate labeled gender values instead of a wrapped sentence. */
+.fact.gender .gender-values { display:grid; gap:8px; }
+.fact.gender .gender-group { padding:4px 0; min-width:0; }
+.fact.gender .gender-group + .gender-group { border-top:1px solid #dbe7ec; padding-top:8px; }
+.fact.gender .group-header { display:flex; justify-content:space-between; gap:8px; font-size:13px; font-weight:750; }
+.fact.gender .group-header>span { font-weight:500; color:#52636e; white-space:nowrap; }
+.fact.gender .group-row { display:flex; justify-content:space-between; gap:8px; font-size:13px; line-height:1.55; }
+.fact.gender .group-row b { font-size:14px; font-variant-numeric:tabular-nums; text-align:right; white-space:nowrap; }
+@media(max-width:600px) {
+  .fact.gender .gender-values { grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; }
+  .fact.gender .gender-group+.gender-group { border-top:0; border-left:1px solid #dbe7ec; padding:4px 0 4px 9px; }
+  .fact.gender .group-row { display:grid; gap:0; }
+  .fact.gender .group-row b { text-align:left; }
+}
+@media(max-width:379px) {
+  .fact.gender .gender-values { grid-template-columns:1fr; }
+  .fact.gender .gender-group+.gender-group { border-top:1px solid #dbe7ec; border-left:0; padding:8px 0 4px; }
+  .fact.gender .group-row { display:flex; gap:8px; }
+}
