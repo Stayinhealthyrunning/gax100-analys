@@ -1,9 +1,6 @@
 "use strict";
 
-// Privacy safeguard for the public GAX100 export. Shared SHA-256 fingerprints
-// from the other Loppanalys race tools are matched BEFORE public JSON is written.
-// The original, attributable data remains in the local (non-public) curated DB.
-// Masking is pseudonymisation, NOT GDPR anonymisation.
+// Adapter for the access-controlled Loppanalys publication-block registry.
 const fs = require("node:fs");
 const path = require("node:path");
 const crypto = require("node:crypto");
@@ -31,19 +28,63 @@ function candidateNames(name) {
 }
 function loadRules(file = RULES_PATH) {
   const parsed = JSON.parse(fs.readFileSync(file, "utf8"));
-  if (parsed.schema_version !== 1 || !Array.isArray(parsed.suppressed_name_sha256)) {
-    throw new Error("Unsupported Loppanalys privacy suppression format");
+  if (parsed.schema_version !== 2) throw new Error("Unsupported public privacy policy schema");
+  const encoded = String(process.env.LOPPANALYS_PRIVACY_REGISTRY_B64 || "").trim();
+  const registryPath = String(process.env.LOPPANALYS_PRIVACY_REGISTRY_PATH || "").trim();
+  if (encoded && registryPath) throw new Error("Configure one private registry source, not both");
+  let registry = null;
+  try {
+    if (encoded) registry = JSON.parse(Buffer.from(encoded, "base64").toString("utf8"));
+    else if (registryPath) registry = JSON.parse(fs.readFileSync(registryPath, "utf8"));
+  } catch (error) {
+    throw new Error("Invalid private privacy registry secret", { cause: error });
   }
-  for (const value of parsed.suppressed_name_sha256) {
-    if (!/^[a-f0-9]{64}$/i.test(value)) throw new Error("Invalid suppression fingerprint");
+  const required = /^(1|true|yes)$/i.test(String(process.env.LOPPANALYS_REQUIRE_PRIVATE_REGISTRY || ""));
+  if (!registry && required) throw new Error("Private registry missing; publication stopped");
+  if (registry && registry.schema_version !== 2) throw new Error("Unsupported private privacy registry schema");
+  const entries = registry?.entries || [];
+  for (const entry of entries) {
+    if (!['restrict_identifiers', 'remove_result', 'temporary_restriction'].includes(entry.action)) {
+      throw new Error("Unsupported privacy action");
+    }
+    if (!/^[a-f0-9]{64}$/i.test(entry.match?.normalized_name_sha256 || "")) {
+      throw new Error("Invalid suppression fingerprint");
+    }
+    if (['name', 'email', 'birthdate'].some(key => Object.hasOwn(entry, key))) {
+      throw new Error("Private registry must not contain plaintext identity fields");
+    }
   }
   return {
     displayName: parsed.display_name || "Anonym löpare",
-    fingerprints: new Set(parsed.suppressed_name_sha256.map(v => v.toLowerCase())),
+    entries,
+    registryLoaded: Boolean(registry),
   };
 }
 function isSuppressed(name, rules) {
-  return candidateNames(name).some(candidate => rules.fingerprints.has(fingerprint(candidate)));
+  const candidates = new Set(candidateNames(name).map(fingerprint));
+  const now = Date.now();
+  return rules.entries.some(entry => {
+    if (entry.action === 'temporary_restriction' && entry.expires_at && Date.parse(entry.expires_at) <= now) return false;
+    return candidates.has(String(entry.match.normalized_name_sha256).toLowerCase());
+  });
+}
+function suppressionAction(record, rules) {
+  const candidates = new Set(candidateNames(record.name).map(fingerprint));
+  const scope = String(record.edition_id || "*");
+  const now = Date.now();
+  for (const entry of rules.entries) {
+    if (entry.action === 'temporary_restriction' && entry.expires_at && Date.parse(entry.expires_at) <= now) continue;
+    if (!candidates.has(String(entry.match.normalized_name_sha256).toLowerCase())) continue;
+    if (entry.require_review_for_new_matches) {
+      const approved = (entry.approved_matches || []).some(item =>
+        ['*', scope].includes(String(item.scope || '*')) &&
+        Object.entries(item.identifiers || {}).every(([key, value]) => String(record[key] ?? '') === String(value))
+      );
+      if (!approved) throw new Error('Potential protected-identity match requires private manual review; publication stopped');
+    }
+    return entry.action;
+  }
+  return null;
 }
 // Definitive-age policy: exact source age <18, age at maximum based on birth
 // year <18, or a bounded source age category ending at 17. An unknown age
@@ -63,19 +104,7 @@ function confirmedMinor(record) {
   }
   return false;
 }
-function sanitizePublicRecord(record, rules) {
-  if (!isSuppressed(record.name, rules) && !confirmedMinor(record)) return record;
-  // Deterministic opaque key must not expose name, club or original result_id.
-  const opaque = "anon-" + crypto.createHash("sha256")
-    .update("gax100-public|" + record.edition_id + "|" + record.result_id)
-    .digest("hex").slice(0, 24);
-  return {
-    ...record,
-    result_id: opaque,
-    name: rules.displayName,
-    club: null,
-    ...(Object.fromEntries(['age','birth_year','age_category','class_name','bib','source_uid','person_key'].filter(k => Object.hasOwn(record,k)).map(k => [k,null]))),
-    observations: (record.observations || []).map(o => ({ ...o, result_id: opaque })),
-  };
+function shouldWithhold(record, rules) {
+  return confirmedMinor(record) || suppressionAction(record, rules) !== null;
 }
-module.exports = { RULES_PATH, normalizeName, fingerprint, loadRules, isSuppressed, confirmedMinor, sanitizePublicRecord };
+module.exports = { RULES_PATH, normalizeName, fingerprint, loadRules, isSuppressed, suppressionAction, confirmedMinor, shouldWithhold };
