@@ -219,7 +219,7 @@ test('verifierad 2024-delsträcka: tid utan uppfunnet avstånd', async ({ page }
 });
 test('tid mot placering öppnar vald individ med korrekt URL', async ({ page }) => {
   await page.goto('/');
-  await page.locator('#year').selectOption('gax100-2023');
+  await page.locator('#year').selectOption('gax100-2024');
   const point = page.locator('#scatter [data-chart-runner]').first();
   await expect(point).toBeVisible();
   await point.click();
