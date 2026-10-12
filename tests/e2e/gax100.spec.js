@@ -71,7 +71,7 @@ test('desktop: upplagor, sökning, filter, sortering, individuell analys och jä
   await page.locator('#search').fill('');
   await page.locator('#rows [data-compare]').nth(0).click();
   await page.locator('#rows [data-compare]').nth(1).click();
-  await expect(page.locator('#comparison')).toContainText('vs');
+  await expect(page.locator('#comparison .compare-person')).toHaveCount(2);
   await expect(page.locator('#comparison .segment-table')).toHaveCount(1);
   await page.screenshot({ path: testInfo.outputPath('desktop-1440.png'), fullPage: true });
   await assertNoHorizontalOverflow(page);
