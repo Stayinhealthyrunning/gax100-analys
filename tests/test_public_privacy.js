@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const repo = path.join(__dirname, '..');
-const publicFiles = ['web/index.html', 'web/app.js', 'web/statistics.js', 'web/time.js', 'web/data.json', 'web/karta.html'];
+const publicFiles = ['web/index.html', 'web/app.js', 'web/statistics.js', 'web/time.js', 'web/plan.js', 'web/comparison.js', 'web/data.json', 'web/karta.html'];
 const contents = publicFiles.map((file) => ({ file, text: fs.readFileSync(path.join(repo, file), 'utf8') }));
 
 for (const { file, text } of contents) {
