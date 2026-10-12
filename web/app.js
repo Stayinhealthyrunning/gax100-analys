@@ -1,4 +1,4 @@
-const state = { data: null, year: null, query: '', club: '', gender: '', status: '', searchScope: 'year', sort: 'time', page: 1, pageSize: 10, selected: null, compare: [], duel: [], favorites: new Set(), planTarget: null, segmentIndex: null };
+const state = { data: null, year: null, query: '', club: '', gender: '', status: '', searchScope: 'year', sort: 'time', page: 1, pageSize: 10, selected: null, compare: [], duel: [], favorites: new Set(), planTarget: null, targetSeconds: null, fieldSegmentIndex: null, segmentIndex: null };
 const $ = (selector) => document.querySelector(selector);
 const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
 const time = (seconds) => GaxTime.formatClock(seconds);
@@ -450,6 +450,157 @@ function renderExtended() {
   $('#extended-analysis-content').innerHTML = `<div class="analysis-grid"><article class="analysis-card"><h3>Statusflöde</h3><p><strong>${finished.length}</strong> FINISHED · <strong>${dnf.length}</strong> DNF · <strong>${all.filter((result) => result.status === 'DNS').length}</strong> DNS · <strong>${all.filter((result) => result.status === 'UNKNOWN').length}</strong> UNKNOWN</p><small>Endast källstödda statuskoder räknas; UNKNOWN är inte omtolkad till DNF.</small></article><article class="analysis-card"><h3>Köns- och klubbunderlag</h3><p>${esc(genderCounts)} · ${clubs.size ? `${clubs.size} publicerade klubbvärden` : 'klubbunderlag saknas'}</p><small>Ålder, klass och fullständig klubbhistorik saknar ett gemensamt verifierat datakontrakt.</small></article><article class="analysis-card"><h3>Segmentanalys</h3><p>${finished.filter((result) => buildSegments(result).length >= 2).length} FINISHED har minst två kronologiska segment.</p><small>Segmentlab, placeringsvinster och starkaste avslut aktiveras först när källans kontrollpunkter är jämförbara.</small></article><article class="analysis-card"><h3>Ban- och replayförmåga</h3><p>Geometri: lokal forskningspreview · höjdprofil: lokal GPX-preview · replay: avstängd.</p><small>Årsanknytning, rättigheter, checkpoint-koordinater och tidsstämplad löpar-GPS saknas för publik replay.</small></article></div>`;
 }
 
+
+function renderTargetPlacement() {
+  const finishers = editionResults(state.year).filter((r) => r.status === 'FINISHED' &&
+    Number.isFinite(r.finish_seconds) && r.finish_seconds > 0);
+  if (finishers.length < 5) {
+    $('#target-placement').innerHTML = '<p class="muted">Underlaget räcker inte för en retrospektiv måltidsjämförelse.</p>';
+    return;
+  }
+  const medianTime = GaxField.targetPosition(editionResults(state.year), Math.round(GaxStatistics.median(finishers.map((r) => r.finish_seconds))));
+  const target = Number.isSafeInteger(state.targetSeconds) && state.targetSeconds > 0 ?
+    state.targetSeconds : Math.round(medianTime.medianSeconds);
+  const position = GaxField.targetPosition(editionResults(state.year), target);
+  const portion = (100 * position.fraction).toLocaleString('sv-SE', {maximumFractionDigits:1});
+  $('#target-placement').innerHTML =
+    '<div class="target-controls"><label for="target-time-input">Simulerad måltid (H:MM:SS)<input id="target-time-input" type="text" inputmode="numeric" value="' +
+    time(target) + '"></label><button id="target-run" type="button">Beräkna</button>' +
+    '<button id="target-reset" type="button">Återställ median</button><span id="target-error" role="status" class="muted"></span></div>' +
+    '<div class="target-summary"><div><small>Ungefärlig placering</small><strong>cirka ' +
+    position.approximatePlace + ' av ' + position.n + '</strong></div><div><small>Så stor andel hade denna sluttid eller snabbare</small><strong>' +
+    portion + ' %</strong></div><div><small>Upplagans median</small><strong>' +
+    time(medianTime.medianSeconds) + '</strong></div></div>' +
+    '<p class="muted">Retrospektiv jämförelse mot registrerade fullföljare i ' +
+    esc(edition()?.edition_label || 'vald upplaga') +
+    '. Detta är ingen officiell placering eller förutsägelse.</p>';
+  $('#target-run').onclick = () => {
+    const value = $('#target-time-input').value.trim();
+    const match = value.match(/^(\d+):([0-5]\d):([0-5]\d)$/);
+    if (!match) {
+      $('#target-error').textContent = 'Ange en tid som H:MM:SS.';
+      return;
+    }
+    const seconds = Number(match[1])*3600 + Number(match[2])*60 + Number(match[3]);
+    if (!Number.isSafeInteger(seconds) || seconds <= 0) {
+      $('#target-error').textContent = 'Tiden måste vara positiv och rimlig.';
+      return;
+    }
+    state.targetSeconds = seconds;
+    renderTargetPlacement();
+  };
+  $('#target-time-input').onkeydown = (event) => { if (event.key === 'Enter') $('#target-run').click(); };
+  $('#target-reset').onclick = () => { state.targetSeconds = null; renderTargetPlacement(); };
+}
+
+function renderFieldInsights() {
+  const data = GaxField.analyze(editionResults(state.year));
+  const result = $('#field-insights');
+  const info = (title, explanation) => '<details class="help inline-help"><summary aria-label="Om ' +
+    esc(title) + '">ⓘ</summary><p>' + esc(explanation) + '</p></details>';
+  let contents = '<div class="field-summary-row">' +
+    '<div><strong>' + data.dnf.total + '</strong><small>Officiella DNF</small></div>' +
+    '<div><strong>' + (data.complete ? data.complete.n : '–') +
+    '</strong><small>Kompletta verifierade målgångsprofiler</small></div>' +
+    '<div><strong>' + data.genders.reported + ' / ' + data.genders.total +
+    '</strong><small>Fullföljare med angivet kön</small></div></div>';
+  contents += '<article class="field-module"><div class="module-heading"><h3>Delsträckornas karaktär</h3>' +
+    info('delsträckornas karaktär', 'En fast grupp fullföljare med samma observerade kontrollserie och bana används genom hela diagrammet. Median kräver minst fem fullständiga resultat, Q25–Q75 minst tio och P10–P90 minst tjugo. Mål ingår via officiell sluttid. Tiderna är inte GPS-mätningar.') +
+    '</div>';
+  if (!data.complete) {
+    contents += '<p class="muted">Det finns inte fem fullständiga, jämförbara kontrollserier för denna upplaga. Inga mellantider har fyllts i.</p>';
+  } else {
+    const segments = data.complete.segments;
+    const index = Number.isInteger(state.fieldSegmentIndex) && state.fieldSegmentIndex >= 0 &&
+      state.fieldSegmentIndex < segments.length ? state.fieldSegmentIndex : 0;
+    const selected = segments[index];
+    const maxMedian = Math.max(...segments.map((segment) => segment.medianSeconds), 1);
+    contents += '<p class="muted">Verifierad referenskohort: ' + data.complete.n +
+      ' kompletta fullföljare, från Start till Mål. Kvartilband visas endast när underlaget medger det.</p>' +
+      '<div class="field-segment-bars" role="group" aria-label="Välj delsträcka i analysen">' +
+      segments.map((segment, i) => {
+        const width = Math.max(2, Math.round(100 * segment.medianSeconds / maxMedian));
+        return '<button type="button" class="field-segment-button' + (index === i ? ' selected' : '') +
+          '" data-field-segment="' + i + '" aria-pressed="' + (index === i) + '"><span>' +
+          esc(segment.from + ' → ' + segment.to) +
+          '</span><span class="field-segment-bar"><span style="width:' + width + '%"></span></span>' +
+          '<strong>' + time(segment.medianSeconds) + '</strong></button>';
+      }).join('') + '</div>' +
+      '<div id="field-segment-detail" class="field-segment-detail" aria-live="polite"><h4>' +
+      esc(selected.from + ' → ' + selected.to) + '</h4><p><strong>Median:</strong> ' +
+      time(selected.medianSeconds) + ' · <strong>Medianandel av egen sluttid:</strong> ' +
+      selected.medianPercent.toLocaleString('sv-SE',{maximumFractionDigits:1}) +
+      ' % · n=' + selected.n + '</p>' +
+      (selected.p25Seconds != null ? '<p>Q25–Q75: ' +
+        time(selected.p25Seconds) + ' – ' + time(selected.p75Seconds) + '</p>' :
+        '<p>Q25–Q75 visas först vid minst tio fullständiga resultat.</p>') +
+      (selected.p10Seconds != null ? '<p>P10–P90: ' +
+        time(selected.p10Seconds) + ' – ' + time(selected.p90Seconds) + '</p>' :
+        '<p>P10–P90 visas först vid minst tjugo fullständiga resultat.</p>') +
+      (Number.isFinite(selected.distanceKm) ? '<p>Verifierat delsträckeavstånd: ' +
+        selected.distanceKm.toLocaleString('sv-SE',{maximumFractionDigits:1}) + ' km</p>' :
+        '<p>Fysisk delsträckedistans saknas; km-tempo visas inte.</p>') + '</div>';
+  }
+  contents += '</article>';
+  contents += '<article class="field-module"><div class="module-heading"><h3>Snabbaste avslutningen – spurten mot mål</h3>' +
+    info('snabbaste avslutningen', 'Officiell sluttid minus sista faktiska, gemensamma analytiska passagen ger sista delsträckans tid. Ingen avhoppspunkt eller hypotetisk passagetid beräknas. Könsgrupper redovisas bara vid minst fem källverifierade fullföljare i gruppen.') +
+    '</div>';
+  if (!data.sprint) {
+    contents += '<p class="muted">Saknar fem resultat med samma verifierade sista kontroll före mål. Ingen topplista skapas.</p>';
+  } else {
+    const rows = (entries) => entries.filter((r) => !/anonym|valt att vara anonym/i.test(r.name)).slice(0,3)
+      .map((r,i) => '<li><span>' + (i+1) + '. ' + esc(r.name) + '</span><strong>' +
+        time(r.seconds) + '</strong></li>').join('');
+    const section = (label, group, className) =>
+      '<div class="sprint-group ' + className + '"><h4>' + esc(label) + '</h4>' +
+      (group ? '<p>n=' + group.n + ' verifierade slutsegment</p><ol>' +
+        (rows(group.top) || '<li>Inga namn som kan redovisas.</li>') + '</ol>' :
+        '<p>Otillräckligt könsindelat underlag.</p>') + '</div>';
+    contents += '<p class="muted">Verkligt sista segment: ' +
+      esc(data.sprint.checkpoint) + ' → Mål. Underlag: ' + data.sprint.n + ' fullföljare.</p>' +
+      '<div class="sprint-groups">' +
+      section('Kvinnor', data.sprint.genders.Kvinnor, 'female') +
+      section('Män', data.sprint.genders.Män, 'male') +
+      '</div><details class="sprint-all"><summary>Snabbaste slutsegment – alla verifierade resultat</summary><ol>' +
+      (rows(data.sprint.top) || '<li>Inga publicerbara namn i toppen.</li>') + '</ol></details>';
+  }
+  contents += '</article>';
+  contents += '<article class="field-module"><div class="module-heading"><h3>DNF och senast observerade passager</h3>' +
+    info('DNF-passager', 'En sista registrerad kontroll för en DNF betyder endast att den senaste importerade passagen finns där, inte att personen bröt vid kontrollen. Saknade passager kan bero på källluckor. Status DNF kommer från källan och rekonstrueras aldrig.') +
+    '</div><p>Officiellt DNF: <strong>' + data.dnf.total + '</strong>. Senaste passage saknas för ' +
+    data.dnf.withoutPassage + ' DNF-resultat.</p>';
+  const observedCount = data.dnf.observed.reduce((sum, item) => sum + item.count, 0);
+  if (observedCount) {
+    contents += '<p class="muted">' + observedCount + ' DNF-resultat har minst en verkligt registrerad kontrollpassage. Fördelningen beskriver enbart senaste registrerade observation.</p>' +
+      '<ul class="dnf-observations">' + data.dnf.observed.map((item) => '<li>' +
+      esc(item.name) + ': ' + (item.count>=5 ? item.count + ' senaste registrerade' : 'färre än 5 senaste registrerade') +
+      '</li>').join('') + '</ul>';
+  } else {
+    contents += '<p class="muted">Ingen verifierad observerad DNF-passage finns för denna upplaga.</p>';
+  }
+  contents += '</article>';
+  contents += '<article class="field-module"><div class="module-heading"><h3>Kön och klubbar</h3>' +
+    info('kön och klubbar', 'Kvinnor och män bygger bara på uttryckligt rapporterad könsuppgift. Kön härleds inte från namn. Klubbnamn används exakt som publicerat utan gissade alias. Gruppmedian visas först vid minst fem officiella måltider.') + '</div>' +
+    '<div class="gender-median-summary">';
+  for (const label of ['Kvinnor','Män']) {
+    const group = data.genders[label];
+    contents += '<div class="' + (label==='Kvinnor'?'female':'male') + '"><strong>' +
+      label + '</strong><span>' + (group ? 'Median ' + time(group.medianSeconds) + ' · n=' + group.n :
+      'Otillräckligt verifierat underlag') + '</span></div>';
+  }
+  contents += '</div>';
+  contents += data.clubs.length ?
+    '<div class="club-summary"><h4>Klubbar med minst fem målgångar</h4><div class="table-wrap"><table class="segment-table"><thead><tr><th>Klubb</th><th>Fullföljare</th><th>Mediantid</th></tr></thead><tbody>' +
+    data.clubs.map((club) => '<tr><td>' + esc(club.name) + '</td><td>' +
+      club.n + '</td><td>' + time(club.medianSeconds) + '</td></tr>').join('') +
+    '</tbody></table></div></div>' : '<p class="muted">Ingen klubb har minst fem officiella sluttider med exakt samma klubbnamn.</p>';
+  contents += '</article>';
+  result.innerHTML = contents;
+  result.querySelectorAll('[data-field-segment]').forEach((button) => {
+    button.onclick = () => { state.fieldSegmentIndex = Number(button.dataset.fieldSegment); renderFieldInsights(); };
+  });
+}
+
 function setupHelpDialog() {
   const dialog = $('#help-dialog'); const title = $('#help-dialog-title'); const body = $('#help-dialog-body');
   if (!dialog) return;
@@ -457,7 +608,7 @@ function setupHelpDialog() {
   $('#help-dialog-close').onclick = () => dialog.close();
 }
 
-function render() { renderFacts(); renderFilters(); renderRows(); renderRunner(); renderPlan(); renderComparison(); renderMapDuel(); chart(); renderPercentiles(); renderHistory(); renderQuality(); renderExtended(); }
+function render() { renderFacts(); renderFilters(); renderRows(); renderRunner(); renderPlan(); renderComparison(); renderMapDuel(); chart(); renderPercentiles(); renderTargetPlacement(); renderHistory(); renderQuality(); renderExtended(); renderFieldInsights(); }
 
 setupHelpDialog();
 try { state.favorites = new Set(JSON.parse(localStorage.getItem('gax100-favorites') || '[]')); } catch (error) { state.favorites = new Set(); }
@@ -466,7 +617,7 @@ fetch('data.json').then((response) => response.json()).then((data) => { state.da
   state.compare = (params.get('compare') || '').split(',').filter((id) => validIds.has(id)).slice(0, 2);
   state.duel = (params.get('duel') || '').split(',').filter((id) => validIds.has(id)).slice(0, 5);
   render(); });
-$('#year').onchange = (event) => { state.year = event.target.value; state.page = 1; state.selected = null; state.club = ''; state.gender = ''; if (state.searchScope !== 'all') { state.compare = []; state.duel = []; } state.planTarget = null; state.segmentIndex = null; render(); syncUrl(true); };
+$('#year').onchange = (event) => { state.year = event.target.value; state.page = 1; state.selected = null; state.club = ''; state.gender = ''; if (state.searchScope !== 'all') { state.compare = []; state.duel = []; } state.planTarget = null; state.targetSeconds = null; state.fieldSegmentIndex = null; state.segmentIndex = null; render(); syncUrl(true); };
 $('#search-scope').onchange = (event) => { state.searchScope = event.target.value; state.page = 1; state.club = ''; state.gender = ''; renderFilters(); renderRows(); syncUrl(true); };
 $('#status-filter').onchange = (event) => { state.status = event.target.value; state.page = 1; renderRows(); };
 $('#search').oninput = (event) => { state.query = event.target.value; state.page = 1; renderRows(); };
@@ -486,7 +637,7 @@ window.addEventListener('popstate', () => {
   const ids = (key, max) => [...new Set((params.get(key) || '').split(',').filter((id) => known.has(id)))].slice(0, max);
   state.compare = ids('compare', 2);
   state.duel = ids('duel', 5);
-  state.page = 1; state.planTarget = null; state.segmentIndex = null;
+  state.page = 1; state.planTarget = null; state.targetSeconds = null; state.fieldSegmentIndex = null; state.segmentIndex = null;
   state.query = ''; state.club = ''; state.gender = ''; state.status = '';
   $('#search').value = '';
   $('#year').value = state.year;
