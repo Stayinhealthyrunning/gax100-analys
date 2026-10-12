@@ -500,3 +500,17 @@ button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-v
 #runner .gap-chart .gap-dot { stroke:var(--runner-gender-color,#1689a7); }
 #runner .gap-chart .gap-dot.selected { stroke:#f59e0b; fill:var(--runner-gender-color,#1689a7); }
 #runner .segment-callout { border-left-color:var(--runner-gender-color,#1689a7); background:#f6fafc; }
+
+/* Section index prevents excessive navigation through a long one-page analysis. */
+.analysis-navigation { display:flex; flex-wrap:wrap; gap:7px; margin:0 0 14px; padding:11px; background:#eaf3f6; border:1px solid #cce0e7; border-radius:11px; }
+.analysis-navigation a { display:inline-flex; align-items:center; min-height:40px; padding:8px 12px; color:#12436a; background:#fff; border:1px solid #bfd7e1; border-radius:20px; font-weight:650; font-size:13px; text-decoration:none; white-space:nowrap; }
+.analysis-navigation a:hover { background:#dbefff; }
+.analysis-navigation a:focus-visible { outline:3px solid #f59e0b; outline-offset:2px; }
+#runner-finder,#runner-analysis,#direct-comparison,#personal-plan,#field-overview,#segment-lab,#course-history,#results-database { scroll-margin-top:16px; }
+.club-typeahead { display:grid; gap:4px; font-size:13px; font-weight:650; color:#52636e; min-width:180px; }
+.club-typeahead input { min-width:0; width:100%; }
+@media(max-width:600px) {
+  .analysis-navigation { flex-wrap:nowrap; overflow-x:auto; overscroll-behavior-inline:contain; scrollbar-width:thin; padding:9px; }
+  .analysis-navigation a { flex:0 0 auto; }
+  .club-typeahead { min-width:0; flex:1 1 180px; }
+}
