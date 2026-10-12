@@ -36,3 +36,20 @@ for(const width of [360,768,1440]) {
     expect(errors).toEqual([]);
   });
 }
+
+
+test('latest edition advertises only source-supported analytics and safely guides to splits',async({page})=>{
+  for (const width of [360,390,768,1440]) {
+    await page.setViewportSize({width,height:900});
+    await page.goto('/');
+    await expect(page.locator('#year')).toHaveValue('gax100-2026');
+    await expect(page.locator('#edition-capability-content .capability-item')).toHaveCount(4);
+    await expect(page.locator('#edition-capability-content')).toContainText('otillräckligt underlag');
+    await page.locator('#find-split-year').click();
+    await expect(page.locator('#year')).toHaveValue('gax100-2024');
+    await expect(page.locator('#segment-lab .field-segment-button')).toHaveCount(0); // the lab uses option controls
+    await expect(page.locator('#lab-from')).toBeVisible();
+    await expect(page.locator('#edition-capability-content')).toContainText('53 kompletta profiler');
+    await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth-window.innerWidth)).toBeLessThanOrEqual(1);
+  }
+});
