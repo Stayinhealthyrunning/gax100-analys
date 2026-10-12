@@ -56,6 +56,7 @@ jobs:
           npm run test:gpx-geometry
           npm run test:gpx-preview
           npm run test:semantics
+          npm run test:privacy
           npm run test:web
 
       - name: Run Chromium browser QA and screenshots

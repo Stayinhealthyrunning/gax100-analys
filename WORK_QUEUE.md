@@ -1,5 +1,17 @@
 # WORK_QUEUE.md
 
+## Releasekandidat 2026-10-12
+
+| ID | Uppgift | Status | Verifierbart acceptanskriterium |
+|---|---|---|---|
+| REL-001 | Standardparitet och komponentmatris | DONE | `COMPONENT_MATRIX.md` redovisar kontrakt, metod, interaktion, visuellt utförande och teststatus för standardblocken |
+| REL-002 | Historisk kohortbaserad loppplan | DONE | Planen kräver minst fem FINISHED från samma upplaga, använder medianiserade proportioner och största restmetoden med exakt målsumma |
+| REL-003 | Individuell segmentinteraktion | DONE | Verifierade segment kan väljas i tabellen och markeras i relativfartsdiagrammet; saknade observationer bryter serien |
+| REL-004 | Mobil/resultat- och sökinteraktion | DONE | 10-raders paginerade kort, köns-/klubbfilter, namn/startnummer/klubbsökning, favorit och delningslänk |
+| REL-005 | Privacy/security QA | DONE | `tests/test_public_privacy.js` skannar publik export efter råarkiv, SQLite, dynamisk kod och oskyddade externa skript |
+| REL-006 | Full browser-QA på åtta viewportbredder | IN PROGRESS | GitHub Actions-artifakt granskas visuellt för 1536, 1440, 1200, 1024, 900, 768, 390 och 360 px |
+| REL-007 | Release readiness och Pages-status | IN PROGRESS | `RELEASE_READINESS.md` innehåller slutlig commit, teststatus, begränsningar och explicit Pages-verifiering |
+
 ## Färdigställandekörning
 
 | ID | Uppgift | Status | Verifierbart acceptanskriterium |

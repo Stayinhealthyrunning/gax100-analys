@@ -6,13 +6,15 @@ async function loadData(page) {
 
 async function assertNoHorizontalOverflow(page) {
   const violations = await page.evaluate(() => {
-    const candidates = [document.documentElement, document.body, ...document.querySelectorAll('main, main > *, section, .hero, .fact, .runner, .stats-grid, .chart, .filters, .pagination')];
+    const candidates = [document.documentElement, document.body, ...document.querySelectorAll('main, main > *, section, .hero, .fact, .runner, .stats-grid, .chart, .filters, .pagination, .analysis-card, table, tr, td')];
     return [...new Set(candidates)].map((element) => {
       const rect = element.getBoundingClientRect();
+      const style = getComputedStyle(element);
       return {
         selector: element.id || element.className || element.tagName,
         clientWidth: element.clientWidth,
         scrollWidth: element.scrollWidth,
+        overflowX: style.overflowX,
         left: Math.round(rect.left * 10) / 10,
         right: Math.round(rect.right * 10) / 10
       };
@@ -20,6 +22,7 @@ async function assertNoHorizontalOverflow(page) {
   });
   expect(violations, JSON.stringify(violations)).toEqual([]);
   expect(await page.evaluate(() => getComputedStyle(document.documentElement).overflowX)).not.toBe('hidden');
+  expect(await page.evaluate(() => [...document.querySelectorAll('*')].filter((element) => getComputedStyle(element).overflowX === 'hidden' && element.scrollWidth > element.clientWidth + 1).length)).toBe(0);
 }
 
 test('desktop: upplagor, sökning, filter, sortering, individuell analys och jämförelse', async ({ page }, testInfo) => {
@@ -55,6 +58,9 @@ test('desktop: upplagor, sökning, filter, sortering, individuell analys och jä
   }
   await page.locator('#rows [data-id]').click();
   await expect(page.locator('#runner')).not.toHaveClass(/empty/);
+  await page.locator('.help summary').first().click();
+  await expect(page.locator('#help-dialog')).toBeVisible();
+  await page.locator('#help-dialog-close').click();
   if (await page.locator('#plan-target').count()) {
     await page.locator('#plan-target').fill('24:00:00');
     await page.locator('#apply-plan-target').click();
@@ -83,15 +89,15 @@ test('kartduell: exakt 2–5 val och GPX-gating', async ({ page }, testInfo) => 
   await assertNoHorizontalOverflow(page);
 });
 
-for (const viewport of [{ width: 768, height: 1024 }, { width: 390, height: 844 }]) {
+for (const viewport of [{ width: 1536, height: 900 }, { width: 1200, height: 900 }, { width: 1024, height: 900 }, { width: 768, height: 1024 }, { width: 390, height: 844 }, { width: 360, height: 800 }]) {
   test(`responsiv layout ${viewport.width}px`, async ({ page }, testInfo) => {
     await page.setViewportSize(viewport);
     await page.goto('/');
     await expect(page.locator('.facts .fact')).toHaveCount(5);
     await expect(page.locator('#histogram')).toBeVisible();
     await expect(page.locator('#history')).toBeVisible();
-    if (viewport.width === 390) {
-      await expect(page.locator('.result-table tbody tr')).toHaveCount(12);
+    if (viewport.width <= 390) {
+      await expect(page.locator('.result-table tbody tr')).toHaveCount(10);
       await expect(page.locator('#result-pagination')).toContainText('Sida');
       await expect(page.locator('.result-actions button').first()).toBeVisible();
       await page.locator('#result-pagination [data-page]').last().click();

@@ -1,12 +1,12 @@
 # DATA_COVERAGE.md
 
-## Inventeringsstatus 2026-10-09
+## Inventeringsstatus 2026-10-12
 
 `Identifierad` = länk/underlag känt. `Verifierad` = läst i officiell sida/PDF. `Nedladdad` = råfil arkiverad lokalt. `Normaliserad` = kuraterad tabell med proveniens. Råarkivet är lokalt och ignorerat; normaliserad SQLite byggs reproducerbart men publiceras inte.
 
 ## Uppmätt importtäckning
 
-Importerade editions: **14** (2014–2026, med två verkliga 2021-upplagor). Importerade resultatposter: **945**. Tidsobservationer: **1 838**. Normaliserad status: **FINISHED 651**, **DNF 179**, **DNS 10**, **UNKNOWN 105**. Verifierat startantal finns för 2015 (**53**), 2021-A (**38**), 2023 (**89**), 2024 (**87**) och 2025 (**109 = 69 FINISHED + 40 DNF**); övriga upplagor lämnas som ej fastställda. 2026 års officiella PDF verifierar kön för alla 110 importerade resultat: **22 Kvinnor**, **88 Män**. 2025 importeras från arrangörens officiella PDF med 69 placerade FINISHED, 40 DNF och 10 DNS; DNF/DNS utan entydig könsrubrik lämnas utan könsantagande. Se `data/IMPORT_REPORT.md` för editionsfördelning och återuppbyggnadskommandon.
+Importerade editions: **14** (2014–2026, med två verkliga 2021-upplagor). Importerade resultatposter: **945**. Tidsobservationer: **1 838**. Normaliserad status: **FINISHED 651**, **DNF 179**, **DNS 10**, **UNKNOWN 105**. Verifierat startantal finns för 2015 (**53**), 2021-A (**38**), 2023 (**89**), 2024 (**87**) och 2025 (**109 = 69 FINISHED + 40 DNF**); övriga upplagor lämnas som ej fastställda. 2026 års officiella könskälla verifierar **22 Kvinnor** och **88 Män**, medan 44 publicerade rader saknar verifierad status/sluttid och därför är `UNKNOWN`. 2025 importeras från arrangörens officiella PDF med 69 placerade FINISHED, 40 DNF och 10 DNS; DNF/DNS utan entydig könsrubrik lämnas utan könsantagande. Se `data/IMPORT_REPORT.md` för editionsfördelning och återuppbyggnadskommandon.
 
 ## Editionsmatris 2014–2026
 
@@ -25,7 +25,7 @@ Importerade editions: **14** (2014–2026, med två verkliga 2021-upplagor). Imp
 | 2023 | [årsida](https://gax100.se/resultat/resultat-2023/) | verifierad: 69 av 89 enligt sidan | importerad explicit/listad status | ej separat | damer/herrar | klubbfält | verifierad | verifierad: 44/80/130/mål | 2023 PM/banbeskrivning | Plotaroute 2332034 identifierad; AllTrails lokalt auditerad men rättighetsbegränsad | nedladdad och normaliserad; official GPX saknas |
 | 2024 | [årsida](https://gax100.se/resultat/resultat-2024/) | verifierad: 54 av 87 enligt sidan | importerad explicit/listad status | ej separat | damer/herrar | klubbfält | verifierad | verifierad: Magleberg/Haväng/Sandhammaren/mål | ny sträcka vid Knäbäckshusen från 2024 | Plotaroute 2659350 identifierad; ej lokalt arkiverad/officiellt verifierad | nedladdad och normaliserad; historisk banversion textverifierad |
 | 2025 | [resultatindex](https://gax100.se/resultat/) och [officiell resultat-PDF](https://gax100.se/wp-content/uploads/2025/07/GAX-Resultat-2025.pdf) | verifierad: 69 FINISHED | verifierad: 40 DNF | verifierad: 10 DNS | kön verifierat för 69 målrader: 14 Damer/55 Herrar; övriga ej antaget | klubbfält på publicerade rader | verifierad på 69 målrader | inga mellantider i PDF | efter-2024; års-GPX ej verifierad | ej verifierad | indexlänk och PDF identifierade/verifierade; PDF nedladdad och 119 rader normaliserade |
-| 2026 | [resultatindex](https://gax100.se/resultat/) och [officiell resultat-PDF](https://gax100.se/wp-content/uploads/2026/07/Resultat-till-hemsidan.pdf) | verifierad HTML/PDF; 66 verifierade sluttider | verifierad HTML/PDF | verifierad HTML/PDF | kvinnor/män verifierat från PDF: 22/88 | klubbfält | verifierad | ej importerade i indexutdrag | aktuell 2026-bana | [arrangörens Garmin-kurs](https://connect.garmin.com/app/course/484861455) verifierad visuellt: 161,45 km/697 hm; GPX-export ej arkiverad | index + PDF nedladdade/normaliserade; kön har PDF-proveniens, mellantider saknas |
+| 2026 | [resultatindex](https://gax100.se/resultat/) och [officiell resultat-PDF](https://gax100.se/wp-content/uploads/2026/07/Resultat-till-hemsidan.pdf) | verifierad; 66 FINISHED | status ej fastställd för 44 rader | status ej publicerad separat | 22 Kvinnor/88 Män från PDF; övrigt saknat | klubbfält där publicerat | verifierad för 66 | inga importerade mellantider | aktuell 2026-bana | [arrangörens Garmin-kurs](https://connect.garmin.com/app/course/484861455) verifierad visuellt: 161,45 km/697 hm; GPX-export ej arkiverad | index + PDF nedladdade/normaliserade; 110 resultatposter, 44 UNKNOWN, mellantider saknas |
 
 ## Filformat, åtkomst och GPX
 

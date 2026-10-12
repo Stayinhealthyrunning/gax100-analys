@@ -14,9 +14,10 @@
     "test:gpx-geometry": "node tests/test_gpx_geometry.js",
     "test:gpx-preview": "node tests/test_gpx_preview.js",
     "test:semantics": "node tests/test_semantics.js",
+    "test:privacy": "node tests/test_public_privacy.js",
     "test:web": "node tests/test_web.js",
     "test:browser": "playwright test",
-    "test": "npm run test:statistics && npm run test:time-parser && npm run test:time-format && npm run test:database && npm run test:gender-2026 && npm run test:semantics && npm run test:web && npm run test:browser"
+    "test": "npm run test:statistics && npm run test:time-parser && npm run test:time-format && npm run test:database && npm run test:gender-2026 && npm run test:gpx-parser && npm run test:gpx-geometry && npm run test:gpx-preview && npm run test:semantics && npm run test:privacy && npm run test:web && npm run test:browser"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0"

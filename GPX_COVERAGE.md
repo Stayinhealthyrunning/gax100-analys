@@ -1,6 +1,6 @@
 # GAX100 historiskt GPX-arkiv
 
-## Status 2026-10-09
+## Status 2026-10-12
 
 Det lokala råarkivet innehåller fem GPX-filer. De är tekniskt läsbara och analyserade, men ingen av dem är i nuläget klassad som arrangörens officiella, publiceringsklar årsfil. `data/gpx-audit.json` innehåller SHA-256, punktantal, sammanhängande distans efter avbrottsgating, höjddata, geografisk täckning och tidsproveniens. GPX-filerna ligger i det ignorerade privata råarkivet och kopieras inte till `web/`.
 
@@ -88,6 +88,8 @@ Arrangörens officiella informationssida anger kontaktadressen `thegax100@gmail.
 2024 års officiella resultatsida verifierar 87 startande och 54 fullföljande och innehåller mellantider vid Magleberg, Haväng och Sandhammaren, men sidan ger i denna inventering ingen direkt GPX-fil. Den används därför som resultat-/mellantidskälla, inte som banfil: [Resultat 2024](https://gax100.se/resultat/resultat-2024/).
 
 ## Kartanalysens aktuella capability-status
+
+De fem lokala kandidaterna ligger nära varandra i den korrigerade punkt-till-linjesegmentanalysen. Detta stödjer en försiktig slutsats om liknande geometri, men inte att någon fil är officiell årsgeometri. 2024–2026 saknar fortfarande en fristående, rättighetsklar GPX som kan publiceras; arrangörens 2026 Garmin-kurs är visuellt verifierad men exportendpoints gav `{}`.
 
 | Funktion | Status | Orsak |
 |---|---|---|

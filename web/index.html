@@ -23,7 +23,7 @@
 
   <section id="runner-finder">
     <div class="section-heading"><h2>Hitta din löpare</h2><details class="help"><summary aria-label="Om sökningen">ⓘ</summary><p>Sökningen använder publicerade namn och klubbvärden för vald upplaga. Samma namn över år är inte en verifierad personidentitet.</p></details></div>
-    <div class="filters"><input id="search" type="search" placeholder="Sök namn eller klubb" aria-label="Sök namn eller klubb"><select id="club" aria-label="Filtrera klubb"><option value="">Alla klubbar</option></select></div>
+    <div class="filters"><input id="search" type="search" placeholder="Sök namn, startnummer eller klubb" aria-label="Sök namn, startnummer eller klubb"><select id="club" aria-label="Filtrera klubb"><option value="">Alla klubbar</option></select><select id="gender" aria-label="Filtrera kön"><option value="">Alla kön</option></select></div>
     <p id="result-count" class="muted" aria-live="polite"></p>
     <div id="runner" class="runner empty">Välj en rad i resultatdatabasen för individuell visning.</div>
   </section>
@@ -42,7 +42,7 @@
   </section>
 
   <section id="personal-plan">
-    <div class="section-heading"><h2>Personlig loppplan</h2><details class="help"><summary aria-label="Om personlig loppplan">ⓘ</summary><p>Den här versionen visar en historisk personlig referensprofil från valt resultat när minst två verkliga mellantider finns. Den är inte en måltidssimulering eller prognos.</p></details></div>
+    <div class="section-heading"><h2>Personlig loppplan</h2><details class="help"><summary aria-label="Om personlig loppplan">ⓘ</summary><p>Planen använder en verifierad historisk kohort från samma upplaga när minst fem FINISHED-resultat delar segmentserie. Den valda löparen är en separat historisk referens. En vald måltid fördelas matematiskt med medianiserade segmentproportioner och är inte en prognos.</p></details></div>
     <div id="plan" class="runner empty">Välj ett resultat med minst två verifierade mellantider.</div>
   </section>
 
@@ -55,6 +55,11 @@
     <h3>Percentiler</h3>
     <div id="percentiles" class="runner empty">Ingen verifierad sluttidsdata.</div>
     <p id="stats-note" class="muted"></p>
+  </section>
+
+  <section id="extended-analysis">
+    <div class="section-heading"><h2>Utökad analys</h2><details class="help"><summary aria-label="Om utökad analys">ⓘ</summary><p>Blocken aktiveras bara när den valda upplagans källa och datamängd stöder beräkningen. Omarkerade analyser är databegränsningar, inte nollvärden.</p></details></div>
+    <div id="extended-analysis-content"></div>
   </section>
 
   <section id="course-history">
@@ -81,6 +86,13 @@
     <p><a href="https://gax100.se/resultat/" rel="noopener noreferrer">Officiellt resultatindex</a> · <a href="https://gax100.se/bana-karta/" rel="noopener noreferrer">Officiell bana och karta</a></p>
   </section>
 </main>
+<dialog id="help-dialog" aria-labelledby="help-dialog-title">
+  <form method="dialog" class="help-dialog-form">
+    <h2 id="help-dialog-title">Metodförklaring</h2>
+    <p id="help-dialog-body"></p>
+    <button id="help-dialog-close" type="submit">Stäng</button>
+  </form>
+</dialog>
 <script src="statistics.js"></script>
 <script src="time.js"></script>
 <script src="app.js"></script>
