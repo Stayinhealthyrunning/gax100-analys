@@ -36,6 +36,14 @@ for (const width of [390,1440]) {
     await page.locator('#finder-preview [data-compare="'+second.result_id+'"]').first().click();
     await expect(page.locator('#comparison .compare-person')).toHaveCount(2);
     await expect(page.locator('#comparison .compare-figure')).toHaveCount(1);
+    const strokes = await page.locator('#comparison .compare-figure polyline').evaluateAll(nodes =>
+      nodes.map(node => ({color:node.getAttribute('stroke'),dash:node.getAttribute('stroke-dasharray')})));
+    expect(strokes).toHaveLength(2);
+    // 2023 first two finishers both have source-reported Herrar gender.
+    expect(strokes[0].color).toBe('#2563eb');
+    expect(strokes[1].color).toBe('#2563eb');
+    expect(strokes[0].dash).toBeNull();
+    expect(strokes[1].dash).toBe('7 5');
     await expect(page.locator('#comparison .mobile-card-table tbody tr').first().locator('td')).toHaveCount(4);
     await page.locator('#direct-comparison').screenshot({path:testInfo.outputPath('03-comparison-'+width+'.png')});
     await page.locator('#swap-comparison').click();
