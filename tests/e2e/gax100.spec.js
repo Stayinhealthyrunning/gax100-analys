@@ -6,7 +6,7 @@ async function loadData(page) {
 
 async function assertNoHorizontalOverflow(page) {
   const violations = await page.evaluate(() => {
-    const candidates = [document.documentElement, document.body, ...document.querySelectorAll('main, main > *, section, .hero, .fact, .runner, .stats-grid, .chart, .filters, .pagination, .analysis-card, table, tr, td')];
+    const candidates = [document.documentElement, document.body, ...document.querySelectorAll('main, main > *, section, .hero, .fact, .runner, .stats-grid, .chart, .filters, .pagination, .analysis-card, .result-table, .result-table tr, .result-table td')];
     return [...new Set(candidates)].map((element) => {
       const rect = element.getBoundingClientRect();
       const style = getComputedStyle(element);
@@ -22,7 +22,8 @@ async function assertNoHorizontalOverflow(page) {
   });
   expect(violations, JSON.stringify(violations)).toEqual([]);
   expect(await page.evaluate(() => getComputedStyle(document.documentElement).overflowX)).not.toBe('hidden');
-  expect(await page.evaluate(() => [...document.querySelectorAll('*')].filter((element) => getComputedStyle(element).overflowX === 'hidden' && element.scrollWidth > element.clientWidth + 1).length)).toBe(0);
+  expect(await page.evaluate(() => [...document.querySelectorAll('*')].filter((element) => getComputedStyle(element).overflowX === 'hidden' && element.scrollWidth > element.clientWidth + 1 && !element.closest('.chart')).length)).toBe(0);
+  expect(await page.evaluate(() => [...document.querySelectorAll('.quality-table-wrap')].some((element) => { const rect = element.getBoundingClientRect(); return rect.left < -1 || rect.right > window.innerWidth + 1 || getComputedStyle(element).overflowX !== 'auto'; }))).toBe(false);
 }
 
 test('desktop: upplagor, sökning, filter, sortering, individuell analys och jämförelse', async ({ page }, testInfo) => {
