@@ -19,6 +19,7 @@ Detta avsnitt beskriver **en separat granskningsbranch**, `audit/gax100-plan-pre
 - Verifierade checkpointavstånd bevaras från `web/plan.js` till `web/field.js`. Exempel: 2023 Magleberg 44 km → Haväng 80 km = 36 km, medan samma intervall 2024 saknar verifierad fysisk distans och måste visa detta.
 - Resultatdatabasen stöder 10 (standard), 25 eller 50 rader per sida, synligt aktuellt intervall, återställning, svenska sök-/sorteringsregler och deterministisk sekundärsortering på result_id.
 - Delningslänk från sökresultat i läget Alla år använder nu resultatets egen edition, inte en annan aktiv upplaga.
+- Den visuella QA-granskningen av faktaraden ledde till en ny kompakt uppställning av könens median, medeltid och antal med semantiska blå/rosa värden; responsivt testas både 390 och 1440 px.
 - QA måste vara grön på den exakta slutliga PR #3-headen, även efter dokumentationscommits. Fullt geografiskt replay/positionsmodellering är fortfarande separat rättighets- och källgated.
 
 ## Aktuellt
