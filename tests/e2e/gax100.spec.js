@@ -211,8 +211,8 @@ test('verifierad 2024-delsträcka: tid utan uppfunnet avstånd', async ({ page }
   await page.locator('#search').fill(result.name);
   await page.locator('#finder-preview [data-id]').first().click();
   await expect(page.locator('#runner .duration-chart')).toBeVisible();
-  await expect(page.locator('#runner .segment-table')).toContainText('Start');
-  await expect(page.locator('#runner .segment-table')).toContainText('Mål');
+  await expect(page.locator('#runner .segment-table').first()).toContainText('Start');
+  await expect(page.locator('#runner .segment-table').first()).toContainText('Mål');
   await expect(page.locator('#runner')).toContainText('Fysisk fart kan inte beräknas');
   await page.locator('#runner .segment-select').first().click();
   await expect(page.locator('#runner .selected-segment')).toHaveCount(1);
