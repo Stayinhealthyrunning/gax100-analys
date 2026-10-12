@@ -356,10 +356,18 @@ function renderPlan() {
   $('#reset-plan-target').onclick = () => { state.planTarget = null; renderPlan(); };
 }
 
+function comparisonColor(result, role) {
+  const gender = GaxField.groupGender(result.gender);
+  // No guessing from names. Roles are differentiated by solid/dashed line.
+  return gender === 'Män' ? '#2563eb' : gender === 'Kvinnor' ? '#db2777' : role === 'A' ? '#0f766e' : '#b45309';
+}
 function comparisonTimeChart(model) {
   const stops = model.checkpoints;
   if (model.crossEdition || stops.length < 2) return '<p class="muted">En sammanhängande tvålinjegraf kräver minst två jämförbara, officiella mellantider i samma upplaga.</p>';
-  const series = [{ name: model.a.name, key: 'a', color: '#2563eb' }, { name: model.b.name, key: 'b', color: '#c026d3' }];
+  const series = [
+    { name: model.a.name, key: 'a', color: comparisonColor(model.a, 'A'), dash: '' },
+    { name: model.b.name, key: 'b', color: comparisonColor(model.b, 'B'), dash: '7 5' }
+  ];
   const maximum = Math.max(1, ...stops.map((stop) => Math.max(stop.a, stop.b)));
   const chartLeft = 82, chartRight = 850, chartBottom = 225, chartTop = 30;
   const x = (index) => chartLeft + index * (chartRight - chartLeft) / (stops.length - 1);
@@ -372,13 +380,18 @@ function comparisonTimeChart(model) {
   const paths = series.map((seriesInfo) => {
     const coords = stops.map((stop, index) => x(index) + ',' + y(stop[seriesInfo.key])).join(' ');
     const dots = stops.map((stop, index) => '<circle cx="' + x(index) + '" cy="' + y(stop[seriesInfo.key]) +
-      '" r="5" fill="' + seriesInfo.color + '"><title>' + esc(seriesInfo.name) + ' · ' + esc(stop.name) +
+      '" r="5" fill="' + (seriesInfo.dash ? '#ffffff' : seriesInfo.color) +
+      '" stroke="' + seriesInfo.color + '" stroke-width="2"><title>' + esc(seriesInfo.name) + ' · ' + esc(stop.name) +
       ': ' + time(stop[seriesInfo.key]) + '</title></circle>').join('');
-    return '<polyline fill="none" stroke="' + seriesInfo.color + '" stroke-width="3" points="' + coords + '"/>' + dots;
+    return '<polyline fill="none" stroke="' + seriesInfo.color + '" stroke-width="3" ' +
+      (seriesInfo.dash ? 'stroke-dasharray="' + seriesInfo.dash + '" ' : '') +
+      'points="' + coords + '"/>' + dots;
   }).join('');
   return '<figure class="compare-figure"><figcaption>Ackumulerad officiell tid vid gemensamma kontroller</figcaption>' +
-    '<div class="comparison-legend"><span class="role-a">' + esc(runnerChip(model.a)) + '</span><span class="role-b">' + esc(runnerChip(model.b)) + '</span></div>' +
-    '<svg viewBox="0 0 900 260" role="img" aria-label="Två officiella ackumulerade tidsserier, A blå och B magenta">' +
+    '<div class="comparison-legend"><span class="role-a" style="color:' + comparisonColor(model.a, 'A') + '">A · heldragen – ' +
+    esc(runnerChip(model.a)) + '</span><span class="role-b" style="color:' + comparisonColor(model.b, 'B') +
+    '">B · streckad – ' + esc(runnerChip(model.b)) + '</span></div>' +
+    '<svg viewBox="0 0 900 260" role="img" aria-label="Två officiella tidsserier. A heldragen och B streckad, könsfärg bara när källan anger kön">' +
     grid + '<line class="axis" x1="' + chartLeft + '" x2="' + chartRight + '" y1="' + chartBottom + '" y2="' + chartBottom +
     '"/>' + paths + marks + '</svg><p class="muted">X: gemensamma kontrollpunkter i ordning. Y: tid från start. Kurvorna är inte GPS-positioner.</p></figure>';
 }
@@ -398,7 +411,8 @@ function renderComparison() {
   const person = (runner, letter, role) => {
     const finish = runner.status === 'FINISHED' ? time(runner.finish_seconds) : esc(runner.status);
     const rank = runner.rank != null && String(runner.rank).trim() ? ' · officiell placering ' + esc(runner.rank) : '';
-    return '<div class="compare-person ' + role + '"><h3>' + letter + ' · ' + esc(runnerChip(runner)) + '</h3><p>' +
+    return '<div class="compare-person ' + role + '" style="--comparison-color:' +
+      comparisonColor(runner, letter) + '"><h3>' + letter + ' · ' + esc(runnerChip(runner)) + '</h3><p>' +
       finish + rank + '</p><small>' + esc(runner.club || 'Klubb ej publicerad') + ' · ' +
       (runner.observations || []).length + ' verifierade passager</small></div>';
   };
