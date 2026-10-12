@@ -518,3 +518,21 @@ button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-v
 /* WCAG 2.2 AA – improve small pink text contrast against near-white KPI card. */
 #race-facts .fact.gender .f { color:#be185d; }
 .quality-table-wrap:focus-visible { outline:3px solid #f59e0b; outline-offset:2px; }
+
+/* Historical volumes (not cross-course performance comparisons). */
+.history-vis { min-width:0; margin:10px 0 14px; }
+.history-legend { display:flex; flex-wrap:wrap; gap:15px; font-size:13px; font-weight:650; margin:5px 0 8px; }
+.history-legend span::before { content:''; display:inline-block; width:12px; height:12px; margin-right:7px; border-radius:3px; }
+.history-legend .finish::before { background:#0f766e; }
+.history-legend .dnf::before { background:#c2410c; }
+.history-vis svg { display:block; width:100%; height:auto; max-height:330px; }
+.history-vis svg text { font-size:13px; fill:#52636e; }
+.history-vis .history-finished { fill:#0f766e; }
+.history-vis .history-dnf { fill:#c2410c; }
+.history-vis .history-edition { cursor:pointer; }
+.history-vis .history-edition.selected .history-finished { stroke:#eab308; stroke-width:3; }
+.history-vis .history-edition:focus-visible { outline:none; }
+.history-vis .history-edition:focus-visible rect { stroke:#f59e0b; stroke-width:4; }
+@media(max-width:600px) {
+  .history-vis .chart-viewport svg { min-width:1080px!important; width:1080px!important; max-width:none!important; }
+}
