@@ -333,3 +333,14 @@ button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-v
 #scatter .dot-female { fill:#db2777; }
 #scatter .dot-male { fill:#2563eb; }
 #scatter .dot-unknown { fill:#64748b; }
+
+/* Cumulative, evidence-backed median gap; tap or keyboard-seek to matching segment. */
+.gap-chart { display:block; width:100%; max-width:100%; height:auto; max-height:320px; border:1px solid var(--border); border-radius:9px; background:#fcfefe; margin-bottom:12px; }
+.gap-chart text { font-size:13px; fill:#52636e; }
+.gap-chart .gap-zero { stroke:#64748b; stroke-width:1.5; stroke-dasharray:6 5; }
+.gap-chart .gap-line { stroke:#1689a7; stroke-width:3; stroke-linejoin:round; stroke-linecap:round; }
+.gap-chart .gap-dot { fill:#fff; stroke:#1689a7; stroke-width:3; }
+.gap-chart .gap-dot[role=button] { cursor:pointer; }
+.gap-chart .gap-dot.selected { fill:#db2777; stroke:#a21caf; }
+.gap-chart .gap-dot:focus-visible { stroke:#f59e0b; stroke-width:4; outline:none; }
+.gap-chart .gap-checkpoint { font-size:13px; }
