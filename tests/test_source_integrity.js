@@ -3,7 +3,7 @@ const fs=require('node:fs');
 const os=require('node:os');
 const path=require('node:path');
 const crypto=require('node:crypto');
-const {checkManifest,checkPublicPayload}=require('../scripts/verify_source_integrity');
+const {checkManifest,checkPublicPayload,checkFilteredPayload}=require('../scripts/verify_source_integrity');
 const root=fs.mkdtempSync(path.join(os.tmpdir(),'gax-source-contract-'));
 try {
   const htmlIds=['result-2014','result-2015','result-2016','result-2017','result-2018',
@@ -30,5 +30,16 @@ try {
   assert(checkPublicPayload({...src,editions:src.editions.slice(0,1)}).some(x=>/14 edition/.test(x)));
   assert(checkPublicPayload({...src,results:src.results.slice(0,1)}).some(x=>/945 results/.test(x)));
   assert(checkPublicPayload({...src,results:[...src.results,src.results[0]]}).some(x=>/duplicate/.test(x)));
-  console.log('PASS: fail-closed bot interstitial/source integrity and 14/945/1838 snapshot baseline');
+  const removed=new Set([src.results[0].result_id,src.results[1].result_id]);
+  const filtered={editions:src.editions,results:src.results.filter(r=>!removed.has(r.result_id))};
+  const rule=r=>removed.has(r.result_id);
+  assert.deepEqual(checkFilteredPayload(src,filtered,rule),[]);
+  assert(checkFilteredPayload(src,{...filtered,results:filtered.results.slice(1)},rule)
+    .some(x=>/result count/.test(x)));
+  assert(checkFilteredPayload(src,{...filtered,results:[...filtered.results,src.results[0]]},rule).length>0);
+  const tampered={...filtered,results:[{...filtered.results[0],name:'Modified'},...filtered.results.slice(1)]};
+  assert(checkFilteredPayload(src,tampered,rule).some(x=>/modified/.test(x)));
+  assert(checkFilteredPayload(src,{...filtered,results:filtered.results.concat(filtered.results[0])},rule)
+    .some(x=>/duplicate/.test(x)));
+  console.log('PASS: fail-closed source completeness and privacy-filtered exact subset; no count inflation');
 } finally { fs.rmSync(root,{recursive:true,force:true}); }

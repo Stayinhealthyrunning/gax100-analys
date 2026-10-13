@@ -1,5 +1,9 @@
 name: GAX100 QA
 
+env:
+  LOPPANALYS_PRIVACY_REGISTRY_B64: ${{ secrets.LOPPANALYS_PRIVACY_REGISTRY_B64 }}
+  LOPPANALYS_REQUIRE_PRIVATE_REGISTRY: "1"
+
 on:
   push:
     branches: [codex/gax100-etapp2, audit/gax100-plan-precision-2026-10-12]

@@ -55,6 +55,42 @@ function checkPublicPayload(payload) {
   return problems;
 }
 
+/**
+ * Privacy-sanitized publication can have fewer results than the verified
+ * unfiltered source. It must contain EXACTLY the non-protected source rows,
+ * retain their observations, and never introduce new IDs or extra editions.
+ * The caller supplies the registry-backed removal predicate.
+ */
+function checkFilteredPayload(source,publicPayload,shouldRemove) {
+  const issues=[];
+  if (!source || !publicPayload || !Array.isArray(source.results) ||
+      !Array.isArray(publicPayload.results) || !Array.isArray(source.editions) ||
+      !Array.isArray(publicPayload.editions) || typeof shouldRemove!=='function')
+    return ['missing source/public results or private suppression predicate'];
+  const expected=source.results.filter(r=>!shouldRemove(r));
+  const expectedIds=new Set(expected.map(r=>r.result_id));
+  const actualIds=new Set(publicPayload.results.map(r=>r.result_id));
+  if (actualIds.size!==publicPayload.results.length) issues.push('duplicate sanitized result IDs');
+  if (expectedIds.size!==expected.length) issues.push('duplicate source result IDs');
+  if (source.editions.length!==publicPayload.editions.length ||
+      source.editions.some((e,i)=>e.edition_id!==publicPayload.editions[i]?.edition_id))
+    issues.push('edition list changed during privacy filtering');
+  if (publicPayload.results.length!==expected.length)
+    issues.push('privacy-filtered result count does not match source minus protected records');
+  if (publicPayload.results.some(r=>!expectedIds.has(r.result_id)) ||
+      expected.some(r=>!actualIds.has(r.result_id)))
+    issues.push('privacy-filtered results are not the exact source subset');
+  const indexed=new Map(expected.map(r=>[r.result_id,r]));
+  for (const row of publicPayload.results) {
+    const original=indexed.get(row.result_id);
+    if (!original) continue;
+    if (JSON.stringify(original)!==JSON.stringify(row)) {
+      issues.push('non-protected observation or result modified during export');break;
+    }
+  }
+  return issues;
+}
+
 if (require.main === module) {
   const root = path.resolve(__dirname,'..');
   const manifest = JSON.parse(fs.readFileSync(path.join(root,'data/raw/MANIFEST.json'),'utf8').replace(/^\uFEFF/,''));
@@ -66,4 +102,4 @@ if (require.main === module) {
   } else console.log('PASS: live sources include verified historical race-table structure and authentic PDF headers.');
 }
 
-module.exports = {checkManifest,checkPublicPayload};
+module.exports = {checkManifest,checkPublicPayload,checkFilteredPayload};

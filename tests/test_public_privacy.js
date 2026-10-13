@@ -20,11 +20,16 @@ if (!/noindex/i.test(contents.find((item) => item.file === 'web/karta.html').tex
 
 
 // Independent fixture protects the public export against future identity leaks.
-const { fingerprint, loadRules, isSuppressed, confirmedMinor, sanitizePublicRecord } = require('../scripts/public_privacy');
+const { fingerprint, loadRules, isSuppressed, confirmedMinor, shouldWithhold } = require('../scripts/public_privacy');
 const sharedRules = loadRules();
 const fixtureRules = {
   ...sharedRules,
-  fingerprints: new Set([fingerprint('Anna Exempel')]),
+  entries: [...sharedRules.entries, {
+    subject_id: 'case-test', action: 'remove_result', scopes: ['*'],
+    match: {normalized_name_sha256: fingerprint('Anna Exempel')},
+    require_review_for_new_matches: true,
+    approved_matches: [{scope:'gax100-2024', identifiers:{result_id:'source-result-123'}}],
+  }],
   displayName: 'Anonym löpare',
 };
 const fixture = {
@@ -34,10 +39,7 @@ const fixture = {
   observations: [{ result_id: 'source-result-123', checkpoint_id: 'checkpoint1', elapsed_seconds: 10000 }]
 };
 const youth = {...fixture, result_id: 'source-youth-124', name:'Ung, Exempel', age:17};
-const maskedYouth = sanitizePublicRecord(youth, sharedRules);
-if (!confirmedMinor(youth) || maskedYouth.name !== 'Anonym löpare' ||
-    maskedYouth.age !== null || maskedYouth.club !== null ||
-    !maskedYouth.result_id.startsWith('anon-')) {
+if (!confirmedMinor(youth) || !shouldWithhold(youth, sharedRules)) {
   throw new Error('A verified minor was exposed by GAX100 public-export policy');
 }
 if (confirmedMinor({...youth, age:18}) || confirmedMinor({...youth, age:null}) ||
@@ -45,32 +47,36 @@ if (confirmedMinor({...youth, age:18}) || confirmedMinor({...youth, age:null}) |
     confirmedMinor({edition_id:'gax100-2026', birth_year:2008})) {
   throw new Error('GAX100 age classification is not conservative at age-18 boundary');
 }
-const masked = sanitizePublicRecord(fixture, fixtureRules);
-if (masked.name !== 'Anonym löpare' || masked.club !== null || !masked.result_id.startsWith('anon-')) {
-  throw new Error('Suppressed athlete exposes identifying fields');
-}
-if (masked.result_id.includes('source-result') || masked.observations[0].result_id !== masked.result_id) {
-  throw new Error('Suppressed original result ID leaks through public data');
-}
-if (masked.finish_seconds !== fixture.finish_seconds || masked.observations[0].elapsed_seconds !== 10000) {
-  throw new Error('Privacy protection corrupted the performance observations');
-}
-if (!isSuppressed('Exempel, Anna', fixtureRules) || isSuppressed('Other, Runner', fixtureRules)) {
+if (!shouldWithhold(fixture, fixtureRules) || !isSuppressed('Exempel, Anna', fixtureRules) || isSuppressed('Other, Runner', fixtureRules)) {
   throw new Error('Name-fingerprint matching failed');
 }
+const publicPolicy = fs.readFileSync(path.join(repo, 'config/privacy-suppressions.json'), 'utf8');
+if (/suppressed_name_sha256|[a-f0-9]{64}/i.test(publicPolicy)) {
+  throw new Error('Public privacy policy exposes a subject fingerprint');
+}
+const saved = {
+  value: process.env.LOPPANALYS_PRIVACY_REGISTRY_B64,
+  path: process.env.LOPPANALYS_PRIVACY_REGISTRY_PATH,
+  required: process.env.LOPPANALYS_REQUIRE_PRIVATE_REGISTRY,
+};
+delete process.env.LOPPANALYS_PRIVACY_REGISTRY_B64;
+delete process.env.LOPPANALYS_PRIVACY_REGISTRY_PATH;
+process.env.LOPPANALYS_REQUIRE_PRIVATE_REGISTRY = '1';
+let failedClosed = false;
+try { loadRules(); } catch (error) { failedClosed = /Private registry missing/.test(error.message); }
+for (const [key, value] of Object.entries({LOPPANALYS_PRIVACY_REGISTRY_B64:saved.value,LOPPANALYS_PRIVACY_REGISTRY_PATH:saved.path,LOPPANALYS_REQUIRE_PRIVATE_REGISTRY:saved.required})) {
+  if (value === undefined) delete process.env[key]; else process.env[key] = value;
+}
+if (!failedClosed) throw new Error('Production privacy registry did not fail closed');
 if (!index.includes('<meta name="robots" content="noindex, nofollow">')) {
   throw new Error('Public GAX analysis page must be noindex');
 }
 const data = JSON.parse(contents.find(item => item.file === 'web/data.json').text);
 for (const result of data.results) {
-  if (isSuppressed(result.name, sharedRules)) {
+  if (isSuppressed(result.name, sharedRules) || confirmedMinor(result)) {
     throw new Error('Suppressed public identity present in web/data.json');
   }
-  if (result.result_id.startsWith('anon-') &&
-      (result.name !== sharedRules.displayName || result.club !== null ||
-       result.observations.some(o => o.result_id !== result.result_id))) {
-    throw new Error('Incomplete identity suppression in public JSON');
-  }
+  if (result.result_id.startsWith('anon-') || result.name === sharedRules.displayName) throw new Error('Pseudonymous row remains in public JSON');
 }
 
 console.log(JSON.stringify({ pass: true, scanned: publicFiles.length, raw_archives_excluded: true, external_map: 'Leaflet SRI + optional OpenStreetMap tiles' }, null, 2));
