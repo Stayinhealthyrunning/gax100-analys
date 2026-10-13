@@ -25,7 +25,18 @@ try {
   assert(checkManifest(manifest,root).some(x=>/result-2023.*bot challenge/.test(x)));
   blocked.status='failed';
   assert(checkManifest(manifest,root).some(x=>/result-2023.*not downloaded/.test(x)));
-  const src=JSON.parse(fs.readFileSync(path.join(__dirname,'../web/data.json'),'utf8'));
+  // Source completeness must not depend on the privacy-sanitized public JSON,
+  // which can legitimately contain fewer than the 945 source records.
+  const fixtureEditions=[{edition_id:'gax100-2021-a'},{edition_id:'gax100-2021-b'},
+    ...Array.from({length:12},(_,i)=>({edition_id:'fixture-edition-'+i}))];
+  const fixtureResults=Array.from({length:945},(_,i)=>({
+    result_id:'fixture-result-'+i,edition_id:'gax100-2021-a',
+    name:'Synthetic '+i,observations:Array.from({length:i<893?2:1},
+      (_,checkpoint)=>({result_id:'fixture-result-'+i, checkpoint_id:'cp-'+checkpoint,
+        elapsed_seconds:(checkpoint+1)*3600}))
+  }));
+  const src={editions:fixtureEditions,results:fixtureResults};
+
   assert.deepEqual(checkPublicPayload(src),[]);
   assert(checkPublicPayload({...src,editions:src.editions.slice(0,1)}).some(x=>/14 edition/.test(x)));
   assert(checkPublicPayload({...src,results:src.results.slice(0,1)}).some(x=>/945 results/.test(x)));
