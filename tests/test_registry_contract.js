@@ -44,6 +44,12 @@ try {
   assert.throws(()=>shouldWithhold(athlete,emptyApprovalRules),
     /Potential protected-identity match requires private manual review/);
 
+  // The export command itself must never rely solely on an opt-in CI flag.
+  // Guard against accidental removal of this unconditional publication gate.
+  const exportSource=fs.readFileSync(path.join(__dirname,'..','scripts','export_web_data.js'),'utf8');
+  assert.match(exportSource,/if\s*\(\s*!privacyRules\.registryLoaded\s*\)/);
+  assert.match(exportSource,/Private registry missing; public export stopped/);
+
   process.env.LOPPANALYS_PRIVACY_REGISTRY_B64='invalid-base64-json';
   assert.throws(()=>loadRules(),/Invalid private privacy registry secret/);
   process.env.LOPPANALYS_PRIVACY_REGISTRY_B64=
