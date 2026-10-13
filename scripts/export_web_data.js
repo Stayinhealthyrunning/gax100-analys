@@ -19,6 +19,12 @@ if (rawViolations.length) {
 // Publication requires an access-controlled private registry, never a public
 // list of reversible person fingerprints. Remove *whole* protected results.
 const privacyRules = loadRules();
+// The public export itself must always require the private registry, even
+// when invoked locally without the CI-only REQUIRE_PRIVATE_REGISTRY setting.
+if (!privacyRules.registryLoaded) {
+  db.close();
+  throw new Error('Private registry missing; public export stopped');
+}
 const publicResults = rawPayload.results.filter(row => !shouldWithhold(row,privacyRules));
 const payload = {generated_at:new Date().toISOString(), editions, results:publicResults};
 const publishedViolations = checkFilteredPayload(rawPayload,payload,row => shouldWithhold(row,privacyRules));
