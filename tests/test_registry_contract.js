@@ -32,6 +32,18 @@ try {
   assert.equal(confirmedMinor({...athlete,age:18}),false);
   assert.throws(()=>shouldWithhold({...athlete,result_id:'unapproved-match'},rules),
     /Potential protected-identity match requires private manual review/);
+
+  // Narrow-scope restrictions must not accidentally remove another edition.
+  const scopedRules={...rules,entries:rules.entries.map(entry=>({...entry,scopes:['gax100-2024']}))};
+  assert.equal(shouldWithhold(athlete,scopedRules),true);
+  assert.equal(shouldWithhold({...athlete,edition_id:'gax100-2025'},scopedRules),false);
+  // An approval without identifiers must never authorize everyone with the same name.
+  const emptyApprovalRules={...rules,entries:rules.entries.map(entry=>({
+    ...entry,approved_matches:[{scope:'gax100-2024',identifiers:{}}]
+  }))};
+  assert.throws(()=>shouldWithhold(athlete,emptyApprovalRules),
+    /Potential protected-identity match requires private manual review/);
+
   process.env.LOPPANALYS_PRIVACY_REGISTRY_B64='invalid-base64-json';
   assert.throws(()=>loadRules(),/Invalid private privacy registry secret/);
   process.env.LOPPANALYS_PRIVACY_REGISTRY_B64=
