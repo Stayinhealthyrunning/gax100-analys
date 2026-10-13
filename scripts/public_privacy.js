@@ -82,7 +82,9 @@ function suppressionAction(record, rules) {
       const approved = (entry.approved_matches || []).some(item =>
         ['*', scope].includes(String(item.scope || '*')) &&
         Object.keys(item.identifiers || {}).length > 0 &&
-        Object.entries(item.identifiers).every(([key, value]) => String(record[key] ?? '') === String(value))
+        Object.entries(item.identifiers).every(([key, value]) =>
+          Object.hasOwn(record, key) && record[key] !== null && record[key] !== '' &&
+          value !== null && value !== '' && String(record[key]) === String(value))
       );
       if (!approved) throw new Error('Potential protected-identity match requires private manual review; publication stopped');
     }
