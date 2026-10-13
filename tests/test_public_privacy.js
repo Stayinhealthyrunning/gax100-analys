@@ -50,6 +50,34 @@ if (confirmedMinor({...youth, age:18}) || confirmedMinor({...youth, age:null}) |
 if (!shouldWithhold(fixture, fixtureRules) || !isSuppressed('Exempel, Anna', fixtureRules) || isSuppressed('Other, Runner', fixtureRules)) {
   throw new Error('Name-fingerprint matching failed');
 }
+// A review approval may never match a missing or explicitly empty source identifier.
+const invalidApprovalRules = {
+  ...fixtureRules,
+  entries: fixtureRules.entries.map(entry => entry.subject_id === 'case-test'
+    ? {...entry, approved_matches: [{scope:'gax100-2024', identifiers:{result_id:''}}]}
+    : entry),
+};
+for (const row of [
+  {...fixture, result_id:''},
+  {name:fixture.name, edition_id:'gax100-2024'},
+]) {
+  let rejected = false;
+  try { shouldWithhold(row, invalidApprovalRules); } catch (error) {
+    rejected = /manual review/.test(error.message);
+  }
+  if (!rejected) throw new Error('Blank or missing approved identifier incorrectly authorized a protected name');
+}
+
+// Checked against the *private* registry in the protected QA run; never print names.
+// Public original source files require the same review as sanitized web/data.json.
+const original2025 = require('../data/verified/result-2025-official.json');
+for (const row of original2025.rows || []) {
+  const sourceName = [row.first, row.last].filter(Boolean).join(' ').trim();
+  if (sourceName && isSuppressed(sourceName, sharedRules)) {
+    throw new Error('Protected identity present in publicly committed original GAX100 results');
+  }
+}
+
 const publicPolicy = fs.readFileSync(path.join(repo, 'config/privacy-suppressions.json'), 'utf8');
 if (/suppressed_name_sha256|[a-f0-9]{64}/i.test(publicPolicy)) {
   throw new Error('Public privacy policy exposes a subject fingerprint');
