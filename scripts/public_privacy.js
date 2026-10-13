@@ -75,10 +75,14 @@ function suppressionAction(record, rules) {
   for (const entry of rules.entries) {
     if (entry.action === 'temporary_restriction' && entry.expires_at && Date.parse(entry.expires_at) <= now) continue;
     if (!candidates.has(String(entry.match.normalized_name_sha256).toLowerCase())) continue;
+    // Narrow restrictions apply only to their configured race/edition scope.
+    // A missing scopes field means global protection for legacy entries.
+    if (Array.isArray(entry.scopes) && !entry.scopes.includes('*') && !entry.scopes.includes(scope)) continue;
     if (entry.require_review_for_new_matches) {
       const approved = (entry.approved_matches || []).some(item =>
         ['*', scope].includes(String(item.scope || '*')) &&
-        Object.entries(item.identifiers || {}).every(([key, value]) => String(record[key] ?? '') === String(value))
+        Object.keys(item.identifiers || {}).length > 0 &&
+        Object.entries(item.identifiers).every(([key, value]) => String(record[key] ?? '') === String(value))
       );
       if (!approved) throw new Error('Potential protected-identity match requires private manual review; publication stopped');
     }
