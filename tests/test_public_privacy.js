@@ -68,16 +68,6 @@ for (const row of [
   if (!rejected) throw new Error('Blank or missing approved identifier incorrectly authorized a protected name');
 }
 
-// Checked against the *private* registry in the protected QA run; never print names.
-// Public original source files require the same review as sanitized web/data.json.
-const original2025 = require('../data/verified/result-2025-official.json');
-for (const row of original2025.rows || []) {
-  const sourceName = [row.first, row.last].filter(Boolean).join(' ').trim();
-  if (sourceName && isSuppressed(sourceName, sharedRules)) {
-    throw new Error('Protected identity present in publicly committed original GAX100 results');
-  }
-}
-
 const publicPolicy = fs.readFileSync(path.join(repo, 'config/privacy-suppressions.json'), 'utf8');
 if (/suppressed_name_sha256|[a-f0-9]{64}/i.test(publicPolicy)) {
   throw new Error('Public privacy policy exposes a subject fingerprint');

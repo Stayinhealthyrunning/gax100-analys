@@ -16,6 +16,7 @@
     "test:gpx-geometry": "node tests/test_gpx_geometry.js",
     "test:gpx-preview": "node tests/test_gpx_preview.js",
     "test:semantics": "node tests/test_semantics.js",
+    "test:source-privacy": "node tests/test_private_source_privacy.js",
     "test:privacy": "node tests/test_public_privacy.js",
     "test:web": "node tests/test_web.js",
     "test:browser": "playwright test",
