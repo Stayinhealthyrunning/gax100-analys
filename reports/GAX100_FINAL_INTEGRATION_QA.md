@@ -1,5 +1,41 @@
 # GAX100 – integrations- och QA-läge, 2026-10-14
 
+## Aktuellt GDPR-saneringstillstånd
+
+Efter det privata ägarbeslutet #7 har den äldre GAX100 Pages-sajten
+avpublicerats: GAX100:s Pages-workflow är `disabled_manually`, Pages API ger
+404, och tidigare `/`, `/index.html` och `/data.json` ger HTTP 404 även efter
+grenpusharna. Loppanalys.se:s huvudsida ger fortsatt 200; ingen ny release har
+distribuerats. Privat originalarkiv är provåterläst och verifierat **17/17**.
+En komplett före-sanering-Git-bundle är hashkontrollerad, lokalt DPAPI-krypterad
+och provdekrypterad; oberoende offsite-backup återstår.
+
+Sju berörda offentliga grenar är sanerade med versionslåst `git-filter-repo`
+och atomisk `force-with-lease`; `main` och PR #1 förblev oförändrade. En ny
+fetch från GitHub verifierade **9/9** vanliga gren-/tagghistoriker utan den
+historiska skyddade filen eller dess gamla blob. PR #8:s kodträd och gemensamma
+bas med `main` är bevarade, och PR:n är fortsatt öppen, Draft och omergad på
+`8b9a8880b0d8b038ebebfe6457c82bd85baf2598`. På just denna SHA passerade
+[full QA #38599843065](https://github.com/Stayinhealthyrunning/gax100-analys/actions/runs/38599843065)
+(51/51 Chromiumtester, 17/17 privat restore, verklig exportaudit: 945/945
+publicerade, 0 spärrträffar, 5 historiska Git-snapshots utan fel),
+[snapshot-QA #38599842934](https://github.com/Stayinhealthyrunning/gax100-analys/actions/runs/38599842934)
+och [privacy guard #38599842956](https://github.com/Stayinhealthyrunning/gax100-analys/actions/runs/38599842956).
+
+**Inte färdigsanerat hos GitHub:** direkt introduktionscommit och en gammal
+`refs/pull/3/merge` var fortfarande nåbara (HEAD-metadata 200). PR #2/#5:s
+tidigare patch-/diffcache kan kvarstå. [Full revisionsuppföljning](GAX100_HISTORICAL_DISTRIBUTION_AUDIT.md)
+och [Support-underlag](GAX100_GITHUB_SUPPORT_CASE_DRAFT.md) anger exakta
+kontroller utan personuppgifter. Support-ärendet är förberett men inte skickat.
+Actions-metadata omfattar nu 223 aktiva artefakter (215 före saneringen); två
+gamla ZIP-strukturer men inte innehållet har granskats, ingen har raderats.
+Allt detta är skilt från kvarvarande juridiska beslut om okänd ålder,
+rättslig grund, publiceringsrätt och retention. Kartduell/replay förblir
+spärrade. **Ingen merge, ny Pages-release eller katalogpublicering.**
+
+Äldre avsnitt nedan beskriver integrationsbaslinjen före denna sanering där
+de använder ord som ”fortfarande live” eller ”ingen historikomskrivning”.
+
 ## Beslut och beroendekedja
 
 Integrationskandidat: `codex/gax100-final-integration-2026-10-14`, baserad på
@@ -7,15 +43,16 @@ Integrationskandidat: `codex/gax100-final-integration-2026-10-14`, baserad på
 kod ska inte mergas en andra gång. PR #7 (`4da1f99`) tillför endast en audit
 av den **äldre** PR #5-headen. Auditen har lästs, men kopieras inte ordagrant:
 dess råd att behålla den identifierande 2025-fixturen är upphävt av PR #6:s
-privata källmigrering. Ingen befintlig PR, `main`, produktionskatalog eller
-publik Pages-konfiguration ändras här.
+privata källmigrering. I denna äldre integrationsfas ändrades ingen befintlig
+PR, `main`, produktionskatalog eller publik Pages-konfiguration; den senare
+avgränsade saneringen redovisas högst upp.
 
 Norm: [Loppanalys Standard 1.0](https://github.com/Stayinhealthyrunning/Stayinhealthyrunning.github.io/blob/main/standards/LOPPANALYS_STANDARD_V1_0.md).
 Se även `COMPONENT_MATRIX.md`, `reports/GAX100_STANDARD_PARITY_AUDIT_2026-10-12.md`
 och `SOURCE_REGISTER.md`. Referenssystemen beskriver beteendekontrakt; de
 utgör inte källor för GAX100:s deltagarresultat.
 
-## Slutlig historisk distributionsrevision (PR #8, 2026-10-14)
+## Historisk distributionsrevision före sanering (PR #8, 2026-10-14)
 
 Efter [senaste granskningskommentaren i PR #8](https://github.com/Stayinhealthyrunning/gax100-analys/pull/8#issuecomment-6170463619)
 har [en avgränsad revision](GAX100_HISTORICAL_DISTRIBUTION_AUDIT.md) gjorts
@@ -63,7 +100,7 @@ klassificering, bevarande, samordnad sanering och eventuell Support-kontakt.
 - Verifierad *rå* källa: 14 upplagor, 945 resultat och 1 838 mellantidsobservationer. Publicerat resultatantal kan vara **lägre** efter skyddad-rad-filtrering; 945 är inte ett krav på publikt antal.
 - `LOPPANALYS_SOURCE_APP_ID`/`LOPPANALYS_SOURCE_APP_PRIVATE_KEY` hämtar endast det privata GAX100-trädet med kortlivad lästoken. 17 filer måste ha godkänd relativ sökväg, byteantal och SHA-256. Ny preflight kopierar inget förrän hela mängden kontrollerats; testet använder enbart syntetiska bytes.
 - `LOPPANALYS_PRIVACY_REGISTRY_B64` krävs för varje offentlig export. Saknat eller ogiltigt register stoppar jobbet; skyddade och verifierat minderåriga poster tas bort i sin helhet. Okänd ålder förblir okänd, aldrig antagen vuxen.
-- Rå HTML/PDF, privat transkription och SQLite ska inte lämna CI-jobbet eller publikt `web/`. Det tidigare `web/data.json` är ett **historiskt fryst snapshot** i Git-historiken; det är inte bevis på aktuell GDPR-filtrering. Fem sådana Git-blobbar har nu granskats mot verkligt register; separat granskning av tidigare externa kopior återstår. Ingen historikomskrivning görs här.
+- Rå HTML/PDF, privat transkription och SQLite ska inte lämna CI-jobbet eller publikt `web/`. Det tidigare `web/data.json` är ett **historiskt fryst snapshot** i Git-historiken; det är inte bevis på aktuell GDPR-filtrering. Fem sådana Git-blobbar har nu granskats mot verkligt register; separat granskning av tidigare externa kopior återstår. Historikomskrivningen redovisas i det aktuella saneringsavsnittet ovan.
 - Originalens rättsliga grund, återanvändningsrätt, retention, oberoende krypterad backup och GPX-licenser kräver ägarbeslut. Ingen tredjepartsgeometri läggs till i publik export.
 
 ## QA och acceptans
@@ -138,8 +175,8 @@ Lokal `node tests/test_gpx_preview.js` kunde inte öppna loopback-adressen
 
 ## Kvarvarande defekter och releasebeslut
 
-1. Den äldre identifierande 2025-transkriptionen är bekräftat nåbar via äldre publika Git-/PR-refar; PR #2 och #5:s additioner har publikt patchfält. 215 aktiva artefakter finns, varav endast två ZIP-strukturer har kontrollerats. Den gamla Pages-versionen är fortfarande live med fryst JSON. Åtgärdsomfång, externa cachekopior och eventuell Support-process kräver behörigt ägarbeslut. Ingen personuppgiftsdiff eller råkälla får publiceras som revisionsbevis.
+1. Vanliga offentliga branch-/tagghistoriker och den gamla Pages-sajten är nu sanerade/avpublicerade och verifierade ovan. Direkt äldre commit och en GitHub-ägd PR #3-merge-ref är fortfarande åtkomliga; PR #2/#5:s diffcache kan finnas kvar. 223 aktiva artefakter fanns i senaste metadataomläsningen, endast två äldre ZIP-strukturer är kontrollerade. GitHub Support, externa cachekopior och selektiv artefaktretention återstår. Ingen personuppgiftsdiff eller råkälla får publiceras som revisionsbevis.
 2. Ingen verifierad, rättighetsklar 2024–2026-GPX eller checkpoint-koordinatserie finns för publik replay. Kartduell förblir gated.
 3. Full mallparitet saknas för licensierad bildhero, central hjälpkatalog, avancerade kart-/replaykontroller och flera dataintensiva placerings-/åldersblock. Se matrisen ovan.
 
-**Rekommendation:** Håll integrations-PR:n Draft. Varken merge, ny Pages-publicering eller länk i Loppanalys.se-katalogen är godkänd av denna QA. Kodheadens Actions, skärmbilder och verkliga export är verifierade; slutligt publiceringsbeslut kräver även kontroll av historiska distributionskopior, explicit rättighets-/integritetsbeslut och gröna checks på den faktiska slutliga PR-headen.
+**Rekommendation:** Håll integrations-PR:n Draft. Varken merge, ny Pages-publicering eller länk i Loppanalys.se-katalogen är godkänd av denna QA. Sanerad kodhead har gröna Actions och verifierad verklig export; slutligt publiceringsbeslut kräver GitHub Support-hantering av kvarvarande ref/cache, selektiv artefaktbedömning, explicit rättighets-/integritetsbeslut och gröna checks på den faktiska slutliga PR-headen.

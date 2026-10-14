@@ -1,6 +1,21 @@
 # WORK_QUEUE.md
 
-## Integrationskandidat 2026-10-14
+## GDPR-sanering 2026-10-14 – aktuell arbetskö
+
+| ID | Status | Verifiering / nästa säkra åtgärd |
+|---|---|---|
+| GDPR-01 Privat bevarande | DONE lokalt | 17/17 källfiler och provåterläsning verifierade; komplett Git-bundle hashkontrollerad, lokalt DPAPI-krypterad och provdekrypterad. Oberoende offsite-backup återstår. |
+| GDPR-02 GAX100 Pages | DONE | Endast GAX100-workflow avstängt; Pages API samt gamla HTML-/JSON-URL:er ger 404. Huvudportalen ger 200. Externa cachekopior okända. |
+| GDPR-03 Offentlig branch-/tagghistorik | DONE | Sju berörda grenar sanerade med riktad `git-filter-repo` och atomisk `force-with-lease`; färsk fetch visar 9/9 vanliga refar utan originalet. `main` och PR #1 oförändrade. |
+| GDPR-04 GitHub-ägda refar/cache | BLOCKED EXTERN | PR #3:s gamla merge-ref och direkt introduktionscommit ger fortsatt metadata-HEAD 200. Support-underlag för `refs/pull/*`, diffar och objekt-GC är klart men inte skickat. Behörig ägare/Support krävs. |
+| GDPR-05 QA på sanerad PR #8-head | DONE | `8b9a888`: full QA `38599843065` med 51/51 Chromium, snapshot `38599842934`, privacy guard `38599842956` alla success. Dokumentationscommit behöver egna checks. |
+| GDPR-06 Actions-retention | ÖPPEN | Baslinje 215; metadata 2026-10-14 16:43 UTC visar 223. Två gamla ZIP-strukturer granskade, 221 innehållsgranskningar återstår. Ingen bulkradering; bevarande-/retentionsbeslut krävs. |
+| GDPR-07 Slutligt releasebeslut | BLOCKED EXTERN | Okänd ålder, rättslig grund, publicerings-/GPX-rättigheter och historiska distributionskopior kräver separat beslut. PR #8 Draft; ingen merge/Pages-release/kataloglänk. |
+
+Äldre köposter nedan är historiska och ska inte användas som aktuell
+saneringsstatus.
+
+## Integrationskandidat 2026-10-14 (historisk baslinje)
 
 | ID | Status | Acceptans / nästa kontroll |
 |---|---|---|

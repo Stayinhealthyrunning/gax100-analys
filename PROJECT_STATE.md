@@ -1,6 +1,56 @@
 # Projektstatus: GAX100 Analys
 
-## Aktuell integrationskandidat 2026-10-14
+## Aktuell saneringsstatus 2026-10-14
+
+Repositoryägaren godkände den avgränsade GAX100-GDPR-saneringen i privat ärende
+#7. Privat arkiv `a56fd488a6e3cf7263753f975ff8427b8f4dd8cf`: **17/17**
+filer verifierade med manifestets byteantal/SHA-256 och verklig provåterläsning.
+En komplett före-sanering-Git-bundle (9 grenar, 15 PR-refar) verifierades,
+DPAPI-krypterades lokalt och provdekrypterades mot SHA-256
+`79EB64F9574A1912C86555CBFBA19DCE7449C7416D5F7C9B55B1212E4F1B5A74`.
+Den okrypterade bundle-kopian togs bort. Oberoende offsite-backup återstår;
+DPAPI-kopian är kontobunden och ligger ignorerad under `data/raw/gdpr-sanitize/`.
+
+Endast GAX100:s gamla Pages-workflow `379338869` inaktiverades. Repo-specifik
+Pages avpublicerades (DELETE 204, API GET 404), och gamla `/`, `/index.html`
+och `/data.json` gav 404 även efter cacheutgång och branchpush. Huvudportalen
+`www.loppanalys.se/` gav fortsatt 200. Ingen ny export/release publicerades.
+
+Officiell `git-filter-repo` v2.47.0 kördes i isolerad spegel med exakt
+skyddad sökväg och riktade revisionsintervall; First Changed Commit
+`7757cf18608002859745c66d6a016eaa6d8bcdce`. Sju berörda grenar pushades
+atomiskt med exakta `force-with-lease`; `main` och PR #1:s SHA ändrades inte.
+En oberoende fetch från GitHub visade 9/9 vanliga gren-/tagghistoriker utan
+den skyddade filen eller nåbar gammal blob. PR #8:s kodträd och merge-base
+med `main` är oförändrade; PR #8 är öppen, Draft och omergad på
+`8b9a8880b0d8b038ebebfe6457c82bd85baf2598` (lokal arbetsbranch synkad).
+Full QA [38599843065](https://github.com/Stayinhealthyrunning/gax100-analys/actions/runs/38599843065)
+gav 51/51 Chromiumtester, 17/17 privat restore och administrativ exportaudit
+(945/945 publicerade, 0 spärrträffar, 5 Git-snapshots utan fel);
+snapshot-QA [38599842934](https://github.com/Stayinhealthyrunning/gax100-analys/actions/runs/38599842934)
+och privacy guard [38599842956](https://github.com/Stayinhealthyrunning/gax100-analys/actions/runs/38599842956)
+passerade på samma SHA. Dokumentationscommit efter denna SHA måste få egna checks.
+
+**Kvarvarande säkerhetsärende:** originalcommittens direkta URL och en gammal
+GitHub-ägd `refs/pull/3/merge` är fortfarande nåbara (HEAD-metadata 200).
+PR #2/#5:s äldre diff-/patchcache kan kvarstå. Support-underlaget är färdigt
+men inte skickat. 215 Actions-artefakter var ursprunglig baslinje; senaste
+metadataomläsning 2026-10-14 16:43 UTC gav 223 (199 före privat migrering).
+Endast två äldre ZIP-strukturer har granskats, inte bild-/HTML-innehåll; ingen
+artefakt är raderad. Se `reports/GAX100_HISTORICAL_DISTRIBUTION_AUDIT.md`,
+`reports/GAX100_GITHUB_SUPPORT_CASE_DRAFT.md` och
+`reports/GAX100_FINAL_INTEGRATION_QA.md`.
+
+**Nästa steg:** Låt behörig ägare skicka privat GitHub Support-ärende för
+PR-refar, direkta objekt och diffcache; verifiera plattformsrensning. Besluta
+selektiv retention/innehållsgranskning av Actions-artefakter och eventuell
+oberoende krypterad backup. Separata juridiska beslut om okänd ålder,
+rättslig grund och publicerings-/GPX-rättigheter kvarstår. Kartduell/replay
+förblir spärrade. Ingen merge, ny Pages-release eller katalogpublicering.
+
+Äldre avsnitt nedan är historik från före den godkända saneringen.
+
+## Tidigare integrationskandidat 2026-10-14 (historisk baslinje)
 
 Ny avgränsad historisk distributionsrevision efter PR #8:s senaste kommentar:
 se `reports/GAX100_HISTORICAL_DISTRIBUTION_AUDIT.md` och det **oskickade**
@@ -44,11 +94,9 @@ tillkommit på denna branch. Den äldre QA:n på `502cf11` är historisk och
 ersätts för aktuell kod av körningarna på `4752d9a` ovan. Ingen merge eller
 katalogpublicering.
 
-Nästa session: kontrollera PR #8:s exakta head/checks; läs
-`reports/GAX100_FINAL_INTEGRATION_QA.md` och distributionsrevisionen. Be om
-ägarens uttryckliga beslut innan ref-/historiksanering, artefaktradering,
-Support-kontakt eller release. De tekniska fynden och fem Git-snapshots är
-redan dokumenterade; upprepa inte källinsamlingen.
+Historisk återstartsinstruktion före saneringen: då återstod ägarbeslut om
+ref-/historikarbete. Beslutet finns nu i privat ärende #7 och genomförd
+sanering/aktuella nästa steg anges högst upp. Gör inte om källinsamlingen.
 
 
 ## Privat källmigrering (2026-10-14)
