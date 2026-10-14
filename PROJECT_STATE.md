@@ -2,6 +2,19 @@
 
 ## Aktuell integrationskandidat 2026-10-14
 
+Ny avgränsad historisk distributionsrevision efter PR #8:s senaste kommentar:
+se `reports/GAX100_HISTORICAL_DISTRIBUTION_AUDIT.md` och det **oskickade**
+`reports/GAX100_GITHUB_SUPPORT_CASE_DRAFT.md`. Bekräftad risk: den tidigare
+identifierande 2025-transkriptionen är fortfarande publikt nåbar via en gammal
+commit och PR-refar #2–5/#7; PR #2/#5 har också patchmetadata. `main` och
+aktuell PR #8-head saknar filen. 215 aktiva Actions-artefakter har inventerats
+via metadata, två äldre ZIP-strukturer granskats; övriga innehåll är okända.
+Den befintliga Pages-sidan serverar fortfarande äldre fryst JSON (945 rader),
+inte aktuell PR #8-export. Nuvarande registerkontroll hade 0 skyddade träffar,
+men ger inget juridiskt godkännande eller åldersbevis. Ingen historikomskrivning,
+artefaktradering, Support-kontakt, merge eller ny publicering har gjorts.
+Ägarbeslut om sanering, rättslig grund, okänd ålder och GPX-rättigheter återstår.
+
 Senaste PR #8-granskningsåtgärder: mobil relativfartszoom omritad för 360/390
 utan horisontell dialogscroll; faktakorten etiketterar källtotal startande
 skilt från publicerade GDPR-filtrerade FINISHED/DNF utan blandad procent;
@@ -31,11 +44,11 @@ tillkommit på denna branch. Den äldre QA:n på `502cf11` är historisk och
 ersätts för aktuell kod av körningarna på `4752d9a` ovan. Ingen merge eller
 katalogpublicering.
 
-Nästa session: kontrollera aktuell PR #8-head och dess exakta Actions;
-läs `reports/GAX100_FINAL_INTEGRATION_QA.md`; låt behörig ägare granska äldre
-Actions-/cache-/Pages-kopior och den tidigare transkriptionens tillgänglighet
-före varje releasebeslut. Verklig filtrerad export och fem Git-snapshots är
-redan maskinellt granskade; upprepa inte källinsamlingen.
+Nästa session: kontrollera PR #8:s exakta head/checks; läs
+`reports/GAX100_FINAL_INTEGRATION_QA.md` och distributionsrevisionen. Be om
+ägarens uttryckliga beslut innan ref-/historiksanering, artefaktradering,
+Support-kontakt eller release. De tekniska fynden och fem Git-snapshots är
+redan dokumenterade; upprepa inte källinsamlingen.
 
 
 ## Privat källmigrering (2026-10-14)

@@ -15,6 +15,28 @@ Se även `COMPONENT_MATRIX.md`, `reports/GAX100_STANDARD_PARITY_AUDIT_2026-10-12
 och `SOURCE_REGISTER.md`. Referenssystemen beskriver beteendekontrakt; de
 utgör inte källor för GAX100:s deltagarresultat.
 
+## Slutlig historisk distributionsrevision (PR #8, 2026-10-14)
+
+Efter [senaste granskningskommentaren i PR #8](https://github.com/Stayinhealthyrunning/gax100-analys/pull/8#issuecomment-6170463619)
+har [en avgränsad revision](GAX100_HISTORICAL_DISTRIBUTION_AUDIT.md) gjorts
+utan ny datainsamling och utan att publicera personuppgifter. GitHubs API
+listar 215 aktiva QA-/snapshot-artefakter (199 före privat källmigrering);
+två äldre ZIP-strukturer kontrollerades, men övrigt artefaktinnehåll är
+okontrollerat. Actions-cachelistan är tom. Den befintliga Pages-sidan är
+fortfarande live med det äldre frysta JSON-snapshotet, inte PR #8:s aktuella
+export. Nuvarande export och fem Git-snapshots hade fortsatt 0 träffar i
+det privata skyddsregistret, vilket **inte** avgör ålder eller laglig grund.
+
+Viktigast: den tidigare identifierande 2025-transkriptionen är fortfarande
+publikt nåbar via introduktionscommit och äldre PR-referenser #2–5 och #7;
+PR #2 och #5 har dessutom tillgänglig patchmetadata för tillägget. Aktuellt
+`main` och PR #8-head saknar filen, men gamla refar/diffar kvarstår. Detta är
+en bekräftad historisk exponeringsrisk, inte ett fel i den nya filtrerade
+exporten. [GitHub Support-underlaget](GAX100_GITHUB_SUPPORT_CASE_DRAFT.md)
+är förberett men **inte skickat**. Ingen historikomskrivning, radering,
+merge eller ny publicering har gjorts. Ägare måste besluta om juridisk
+klassificering, bevarande, samordnad sanering och eventuell Support-kontakt.
+
 ## Funktionsmatris mot standarden
 
 `Fungerar` avser källstödd funktion, inte full generisk standardparitet.
@@ -116,7 +138,7 @@ Lokal `node tests/test_gpx_preview.js` kunde inte öppna loopback-adressen
 
 ## Kvarvarande defekter och releasebeslut
 
-1. De fem Git-snapshots som full QA nådde är granskade med verkligt register utan skyddad träff. Tidigare Actions-artefakter, externa cachekopior, historisk Pages-distribution och den äldre identifierande 2025-transkriptionens tillgänglighet behöver fortfarande en separat behörig ägargranskning. Ingen personuppgiftsdiff eller råkälla får publiceras som revisionsbevis.
+1. Den äldre identifierande 2025-transkriptionen är bekräftat nåbar via äldre publika Git-/PR-refar; PR #2 och #5:s additioner har publikt patchfält. 215 aktiva artefakter finns, varav endast två ZIP-strukturer har kontrollerats. Den gamla Pages-versionen är fortfarande live med fryst JSON. Åtgärdsomfång, externa cachekopior och eventuell Support-process kräver behörigt ägarbeslut. Ingen personuppgiftsdiff eller råkälla får publiceras som revisionsbevis.
 2. Ingen verifierad, rättighetsklar 2024–2026-GPX eller checkpoint-koordinatserie finns för publik replay. Kartduell förblir gated.
 3. Full mallparitet saknas för licensierad bildhero, central hjälpkatalog, avancerade kart-/replaykontroller och flera dataintensiva placerings-/åldersblock. Se matrisen ovan.
 
