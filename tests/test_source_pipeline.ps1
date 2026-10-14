@@ -3,7 +3,7 @@ $repo = Split-Path -Parent $PSScriptRoot
 $manifestPath = Join-Path $repo 'data\raw\MANIFEST.json'
 $auditPath = Join-Path $repo 'data\source-audit.json'
 
-if (-not (Test-Path $manifestPath)) { throw 'MANIFEST.json saknas: kör scripts/fetch_sources.ps1 först.' }
+if (-not (Test-Path $manifestPath)) { throw 'MANIFEST.json saknas: återställ privata källor eller kör scripts/fetch_sources.ps1 först.' }
 if (-not (Test-Path $auditPath)) { throw 'source-audit.json saknas: kör scripts/audit_sources.ps1 först.' }
 
 $manifest = Get-Content $manifestPath -Raw | ConvertFrom-Json

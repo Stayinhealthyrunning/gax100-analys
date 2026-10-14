@@ -33,10 +33,15 @@ jobs:
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
-      - name: Fetch and build verified local data
+      - name: Restore verified private source data
+        uses: ./.github/actions/restore-private-source
+        with:
+          app-id: ${{ secrets.LOPPANALYS_SOURCE_APP_ID }}
+          private-key: ${{ secrets.LOPPANALYS_SOURCE_APP_PRIVATE_KEY }}
+
+      - name: Audit restored source data
         shell: pwsh
         run: |
-          ./scripts/fetch_sources.ps1
           ./scripts/audit_sources.ps1
 
       - name: Fail closed on blocked upstream result pages

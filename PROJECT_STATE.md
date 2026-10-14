@@ -1,5 +1,18 @@
 # Projektstatus: GAX100 Analys
 
+## Privat källmigrering (2026-10-14)
+
+- 16 officiella råkällor och den exakta Git-blobben för 2025-transkriptionen
+  har verifierats i det privata källrepot; 17/17 filer matchar manifestets
+  byteantal och SHA-256.
+- En separat, staplad Draft-PR tar bort den identifierande transkriptionen från
+  det publika trädet och återställer alla källor fail-closed med kortlivad
+  GitHub App-token. Befintliga Draft-PR:er är oförändrade.
+- Läsappen och secrets `LOPPANALYS_SOURCE_APP_ID` samt
+  `LOPPANALYS_SOURCE_APP_PRIVATE_KEY` måste konfigureras och full CI passera
+  innan källborttagningen kan lämna Draft. Rättslig grund,
+  återanvändningsrätt, gallring och oberoende krypterad backup återstår.
+
 ## Visuell komponent-QA (tillägg 2026-10-12)
 
 - Föregående granskning av standardlayout bedömdes otillräcklig för visuell slutacceptans: aktiverade mobilvyer hade inte granskats analysdel för analysdel.
