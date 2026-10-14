@@ -8,13 +8,15 @@ skilt från publicerade GDPR-filtrerade FINISHED/DNF utan blandad procent;
 syntetiska browser- och administrativa regressioner har lagts till. Full QA
 utför nu en fail-closed kontroll av verklig privat-registerfiltrerad export
 och en separat aggregerad Git-snapshotgranskning. Privat register finns inte
-i lokal miljö. Mellancommit `a2b3301` körde verklig audit i Actions: 945/945
-resultat publicerade, 0 skyddade träffar och 5 Git-snapshots utan matchning.
-Den körningen hade 50/51 browserpass på grund av en felaktig test-locator;
-dess skärmbilder granskades i 360/390/768/1440 och visade svarta mobilbarer.
-Locator, färgklass och legend är korrigerade; **ny exact-head QA och visuell
-granskning återstår**. Tidigare Actions-artefakter, cachekopior och historisk
-Pages-publicering är inte automatiskt frikända av Git-snapshotkontrollen.
+i lokal miljö. Kodhead `4752d9a` har grön full QA (51/51 Chromium), snapshot UX
+och privacy guard. Verklig audit: 945/945 publicerade resultat, 0 skyddade
+träffar och 5 Git-snapshots utan matchning. Slutliga skärmbilder vid
+360/390/768/1440 har öppnats och granskats: blå mobilstaplar, rosa
+100 %-referens, läsbara axlar/legend och ingen dialogscroll. Exakta run-ID:n,
+artefakt och kvarvarande villkor finns i integrationsrapporten. En senare
+dokumentationscommit ska ha egna gröna checks. Tidigare Actions-artefakter,
+cachekopior och historisk Pages-publicering är inte automatiskt frikända av
+Git-snapshotkontrollen.
 Alla 945 kuraterade resultat saknar verifierat åldersfält; ingen okänd ålder
 klassas som vuxen. Kartduell/replay förblir dataspärrade. PR #8 förblir Draft;
 ingen merge eller ny produktionspublicering.
@@ -25,16 +27,15 @@ riskklassning ovanpå #5 och har granskats separat. Inga tidigare PR:er har
 mergats här. `reports/GAX100_FINAL_INTEGRATION_QA.md` är den aktuella
 sammanhållna funktions-, integritets- och QA-bedömningen; äldre avsnitt nedan
 är historiska. Privat källpreflight och fem separata faktakortshjälper har
-tillkommit på denna branch. På `502cf11` passerade full QA `38565887921`,
-snapshot UX `38565887999` och privacy guard `38565887862`; Playwright-
-artefakten öppnades och ett kvarvarande horisontellt mobilt diagramzoom-läge
-dokumenterades. Denna statuskomplettering kräver egen exact-head CI efter
-push. Ingen merge eller katalogpublicering.
+tillkommit på denna branch. Den äldre QA:n på `502cf11` är historisk och
+ersätts för aktuell kod av körningarna på `4752d9a` ovan. Ingen merge eller
+katalogpublicering.
 
-Nästa session: kontrollera aktuell PR #8-head och Actions på exakt SHA; läs
-`reports/GAX100_FINAL_INTEGRATION_QA.md`; åtgärda mobil diagramzoom utan att
-försvaga evidens- eller GDPR-spärrar; låt behörig ägare granska verklig
-filtrerad export och historiska offentliga artefakter före varje releasebeslut.
+Nästa session: kontrollera aktuell PR #8-head och dess exakta Actions;
+läs `reports/GAX100_FINAL_INTEGRATION_QA.md`; låt behörig ägare granska äldre
+Actions-/cache-/Pages-kopior och den tidigare transkriptionens tillgänglighet
+före varje releasebeslut. Verklig filtrerad export och fem Git-snapshots är
+redan maskinellt granskade; upprepa inte källinsamlingen.
 
 
 ## Privat källmigrering (2026-10-14)

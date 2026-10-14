@@ -34,14 +34,14 @@ utgör inte källor för GAX100:s deltagarresultat.
 | Resultatdatabas | Sök/filter/sortering, 10/25/50 per sida, mobila radkort | Använder publicerad, filtrerad export i full QA |
 | Mobil och tillgänglighet | Responsiva tester 360–1536 px, axe på 390/1440 px | Full manuell skärmläsar-, zoom- och visuell referensrevision återstår |
 | Ljud och delning | Resultat-/jämförelselänkar; inget automatiskt ljud | Replayljud saknar godkänd media/positionsmodell och är avstängt |
-| GDPR och privata källor | Privat register krävs ovillkorligt; 17 hashkontrollerade källfiler; skyddade resultat tas bort | Administrativ kontroll av verkligt filtrerad export och historiska artefakter återstår |
+| GDPR och privata källor | Privat register krävs ovillkorligt; 17 hashkontrollerade källfiler; skyddade resultat tas bort | Verklig export och 5 Git-snapshots granskade; äldre Actions-/cache-/Pages-kopior återstår för ägargranskning |
 
 ## Källa, integritet och säkerhet
 
 - Verifierad *rå* källa: 14 upplagor, 945 resultat och 1 838 mellantidsobservationer. Publicerat resultatantal kan vara **lägre** efter skyddad-rad-filtrering; 945 är inte ett krav på publikt antal.
 - `LOPPANALYS_SOURCE_APP_ID`/`LOPPANALYS_SOURCE_APP_PRIVATE_KEY` hämtar endast det privata GAX100-trädet med kortlivad lästoken. 17 filer måste ha godkänd relativ sökväg, byteantal och SHA-256. Ny preflight kopierar inget förrän hela mängden kontrollerats; testet använder enbart syntetiska bytes.
 - `LOPPANALYS_PRIVACY_REGISTRY_B64` krävs för varje offentlig export. Saknat eller ogiltigt register stoppar jobbet; skyddade och verifierat minderåriga poster tas bort i sin helhet. Okänd ålder förblir okänd, aldrig antagen vuxen.
-- Rå HTML/PDF, privat transkription och SQLite ska inte lämna CI-jobbet eller publikt `web/`. Det tidigare `web/data.json` är ett **historiskt fryst snapshot** i Git-historiken; det är inte bevis på aktuell GDPR-filtrering och måste granskas separat före release. Ingen historikomskrivning görs här.
+- Rå HTML/PDF, privat transkription och SQLite ska inte lämna CI-jobbet eller publikt `web/`. Det tidigare `web/data.json` är ett **historiskt fryst snapshot** i Git-historiken; det är inte bevis på aktuell GDPR-filtrering. Fem sådana Git-blobbar har nu granskats mot verkligt register; separat granskning av tidigare externa kopior återstår. Ingen historikomskrivning görs här.
 - Originalens rättsliga grund, återanvändningsrätt, retention, oberoende krypterad backup och GPX-licenser kräver ägarbeslut. Ingen tredjepartsgeometri läggs till i publik export.
 
 ## QA och acceptans
@@ -74,19 +74,22 @@ utgör inte källor för GAX100:s deltagarresultat.
   och GPS-replay förblir spärrade utan årsverifierad rättighetsklar geometri
   och tillräckliga kontrollpunkter. Inga privata original, resultat eller
   publicerade datakontrakt har ändrats.
-- Lokal syntax-, kontrakts-, syntetisk audit- och webtest passerar. Verklig
-  registeraudit på mellancommit `a2b3301` passerade i [full QA #38574695517](https://github.com/Stayinhealthyrunning/gax100-analys/actions/runs/38574695517):
-  945 källresultat, 945 publicerade, 0 skyddade träffar, 8 publika kod-/HTML-filer
-  och 5 historiska Git-snapshots granskade utan träff. Detta är inte en
-  kontroll av äldre Actions-artefakter eller extern cache. 50 av 51 Chromium-
-  tester passerade; ett nytt test använde fel locator när ingen löpare valts.
-  Locatorn korrigerades på efterföljande commit. Skärmbildsgranskningen vid
-  360/390/768/1440 upptäckte dessutom svarta mobilbarer eftersom kompakt-SVG:n
-  saknade originalets färgklass. Färgklass, delsträckelegend och regressionskrav
-  är nu tillagda; ny exact-head QA krävs. Lokal `npm`/Playwright saknas.
-  Frysta snapshot-UX är **inte** ett bevis på
-  aktuell GDPR-filtrering. Historisk Pages-uppgift nedan gäller endast en
-  tidigare publicering och är inte en ny release eller behörighet att publicera.
+- På kodhead `4752d9a18b107a91b458720432056ca2d3786a23` passerade
+  [full GAX100 QA #38575583801](https://github.com/Stayinhealthyrunning/gax100-analys/actions/runs/38575583801)
+  med 51/51 Chromiumtester,
+  [snapshot UX #38575583547](https://github.com/Stayinhealthyrunning/gax100-analys/actions/runs/38575583547)
+  och [privacy guard #38575583532](https://github.com/Stayinhealthyrunning/gax100-analys/actions/runs/38575583532).
+  Verklig registeraudit: PASS, 945 källresultat, 945 publicerade, 0 skyddade
+  träffar, 8 publika kod-/HTML-filer och 5 historiska Git-snapshots utan träff.
+  Artefakt `11900112082` laddades ned och diagramdialogens skärmbilder öppnades
+  och granskades vid 360/390/768/1440 px. Blå staplar, rosa streckad
+  100 %-referens, fem axelvärden och tre läsbara delsträckor syns i mobilvyn;
+  ingen horisontell dialogscroll eller kapning sågs. Esc/fokus och desktop
+  verifieras också av Playwright. Lokal `npm`/Playwright saknas.
+  Dokumentationsändringar efter denna kodhead behöver egen exact-head QA.
+  Fryst snapshot-UX är **inte** ett bevis på aktuell GDPR-filtrering.
+  Historisk Pages-uppgift nedan gäller endast en tidigare publicering och är
+  inte en ny release eller behörighet att publicera.
 
 PR #6:s bashead `67b7e6a` hade grön [obligatorisk QA](https://github.com/Stayinhealthyrunning/gax100-analys/actions/runs/38543620956), [snapshot UX QA](https://github.com/Stayinhealthyrunning/gax100-analys/actions/runs/38543620852) och [privacy guard](https://github.com/Stayinhealthyrunning/gax100-analys/actions/runs/38543620821). Dessa körningar bevisar inte den **nya** headen.
 
@@ -113,11 +116,8 @@ Lokal `node tests/test_gpx_preview.js` kunde inte öppna loopback-adressen
 
 ## Kvarvarande defekter och releasebeslut
 
-1. Det äldre publika snapshotet och historiska commit-/Actions-/cacheartefakter kräver en behörig, separat integritetsrevision med faktisk privat registermatchning. Ett grönt syntetiskt test är inte en sådan revision.
-2. Den publika faktaradens FINISHED/DNF-tal härleds i dag ur **visade** resultatrader, medan verifierat startantal kommer från upplagekällan. Efter skyddsfiltrering kan talen därför ha olika population. Innan release behöver UI antingen källstödda integritetssäkra aggregat eller tydlig etikett för publicerat urval; ingen uppblåst officiell siffra får antas.
-3. Ingen verifierad, rättighetsklar 2024–2026-GPX eller checkpoint-koordinatserie finns för publik replay. Kartduell förblir gated.
-4. Full mallparitet saknas för bildhero, central hjälpkatalog, komplett mobil
-   diagramzoom utan horisontell läsning, kart-/replaykontroller och flera
-   dataintensiva placerings-/åldersblock. Se matrisen ovan.
+1. De fem Git-snapshots som full QA nådde är granskade med verkligt register utan skyddad träff. Tidigare Actions-artefakter, externa cachekopior, historisk Pages-distribution och den äldre identifierande 2025-transkriptionens tillgänglighet behöver fortfarande en separat behörig ägargranskning. Ingen personuppgiftsdiff eller råkälla får publiceras som revisionsbevis.
+2. Ingen verifierad, rättighetsklar 2024–2026-GPX eller checkpoint-koordinatserie finns för publik replay. Kartduell förblir gated.
+3. Full mallparitet saknas för licensierad bildhero, central hjälpkatalog, avancerade kart-/replaykontroller och flera dataintensiva placerings-/åldersblock. Se matrisen ovan.
 
-**Rekommendation:** Håll integrations-PR:n Draft. Varken merge, ny Pages-publicering eller länk i Loppanalys.se-katalogen är godkänd av denna QA. Nästa beslut kräver exakt-head Actions, visuell artefaktgranskning, integritetsrevision av verklig export och uttryckligt ägar-/rättighetsgodkännande.
+**Rekommendation:** Håll integrations-PR:n Draft. Varken merge, ny Pages-publicering eller länk i Loppanalys.se-katalogen är godkänd av denna QA. Kodheadens Actions, skärmbilder och verkliga export är verifierade; slutligt publiceringsbeslut kräver även kontroll av historiska distributionskopior, explicit rättighets-/integritetsbeslut och gröna checks på den faktiska slutliga PR-headen.
