@@ -44,7 +44,9 @@ jobs:
       - name: Test active UX and responsive screenshots on frozen source snapshot
         run: npm run test:browser
       - name: Upload screenshot and interaction diagnostics
-        if: always()
+        # Frozen historical snapshot cannot be proved privacy-clean for future suppressions.
+        # Browser QA still runs; rely on the privacy-audited full QA for retained screenshots.
+        if: ${{ false }}
         uses: actions/upload-artifact@v4
         with:
           name: gax100-snapshot-ui-${{ github.sha }}
@@ -52,3 +54,4 @@ jobs:
             playwright-report/
             test-results/
           if-no-files-found: warn
+          retention-days: 7
