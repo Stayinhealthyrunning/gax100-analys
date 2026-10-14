@@ -48,7 +48,20 @@ utgör inte källor för GAX100:s deltagarresultat.
 
 PR #6:s bashead `67b7e6a` hade grön [obligatorisk QA](https://github.com/Stayinhealthyrunning/gax100-analys/actions/runs/38543620956), [snapshot UX QA](https://github.com/Stayinhealthyrunning/gax100-analys/actions/runs/38543620852) och [privacy guard](https://github.com/Stayinhealthyrunning/gax100-analys/actions/runs/38543620821). Dessa körningar bevisar inte den **nya** headen.
 
-Ny head ska kontrolleras med full `GAX100 QA` (privat återläsning, käll-/semantik-/GDPR-grind, Chromium), separat snapshot UX och privacy guard. Visuella artefakter ska granskas efter körning, särskilt faktaradens fem nya hjälpknappar vid 390 och 1440 px. Grön statisk testning får inte kallas browser-QA.
+På kod-/rapporthead `502cf11fde4be7cdca4bf75f660c089438e5601c` passerade
+[full GAX100 QA #38565887921](https://github.com/Stayinhealthyrunning/gax100-analys/actions/runs/38565887921),
+[snapshot UX #38565887999](https://github.com/Stayinhealthyrunning/gax100-analys/actions/runs/38565887999)
+och [privacy guard #38565887862](https://github.com/Stayinhealthyrunning/gax100-analys/actions/runs/38565887862).
+Full QA:s steg för privat restore, den nya syntetiska preflighten,
+käll-/semantik-/GDPR-tester och Chromium passerade. Actions-artefakten
+`11895885286` (run head SHA `502cf11…`) öppnades lokalt och skärmbilderna
+granskades för aktiv sökning, individanalys, jämförelse, plan, segmentlabb,
+resultat och diagram på 390/1440 px samt befintlig responsiv matris. Inget
+nytt viewportöverflöd eller kapat faktakort sågs. Den förstorade
+relativfartsgrafen kräver dock horisontell läsning i 390-px-dialogen; detta
+är en kvarvarande visuell avvikelse, inte full paritet med standard §2.3.
+En dokumentationscommit efter denna kontroll måste få egen exact-head QA;
+tidigare gröna körningar får inte etiketteras som bevis för en senare SHA.
 
 Lokalt på denna branch: statistik, plan, fält, jämförelse, registerkontrakt, källintegritet, privacy och web-kontrakt passerade före ändringarna. Efter ändringarna passerade syntetisk 17-filspreflight, `node --check web/app.js` och `tests/test_web.js`. Full browser-QA körs i Actions eftersom lokal Playwright-installation saknas.
 
@@ -61,6 +74,8 @@ Lokal `node tests/test_gpx_preview.js` kunde inte öppna loopback-adressen
 1. Det äldre publika snapshotet och historiska commit-/Actions-/cacheartefakter kräver en behörig, separat integritetsrevision med faktisk privat registermatchning. Ett grönt syntetiskt test är inte en sådan revision.
 2. Den publika faktaradens FINISHED/DNF-tal härleds i dag ur **visade** resultatrader, medan verifierat startantal kommer från upplagekällan. Efter skyddsfiltrering kan talen därför ha olika population. Innan release behöver UI antingen källstödda integritetssäkra aggregat eller tydlig etikett för publicerat urval; ingen uppblåst officiell siffra får antas.
 3. Ingen verifierad, rättighetsklar 2024–2026-GPX eller checkpoint-koordinatserie finns för publik replay. Kartduell förblir gated.
-4. Full mallparitet saknas för bildhero, central hjälpkatalog, kompletta kart-/replaykontroller och flera dataintensiva placerings-/åldersblock. Se matrisen ovan.
+4. Full mallparitet saknas för bildhero, central hjälpkatalog, komplett mobil
+   diagramzoom utan horisontell läsning, kart-/replaykontroller och flera
+   dataintensiva placerings-/åldersblock. Se matrisen ovan.
 
 **Rekommendation:** Håll integrations-PR:n Draft. Varken merge, ny Pages-publicering eller länk i Loppanalys.se-katalogen är godkänd av denna QA. Nästa beslut kräver exakt-head Actions, visuell artefaktgranskning, integritetsrevision av verklig export och uttryckligt ägar-/rättighetsgodkännande.
