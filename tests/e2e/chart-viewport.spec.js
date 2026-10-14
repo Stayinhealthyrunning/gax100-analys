@@ -101,5 +101,5 @@ test('fact cards never divide GDPR-filtered counts by source starters',async({pa
   await expect(page.locator('body')).not.toContainText('Protected, Finished');
   await expect(page.locator('body')).not.toContainText('Protected, Dnf');
   await page.goto('/?edition=gax100-2023&result=synthetic-protected-finished');
-  await expect(page.locator('#runner')).not.toContainText('Protected, Finished');
+  await expect(page.locator('body')).not.toContainText('Protected, Finished');
 });
