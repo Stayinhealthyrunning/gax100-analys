@@ -74,20 +74,20 @@ def main() -> None:
 
     restored = 0
     runtime_manifest = []
+    verified = []
+    seen = set()
     for entry in files:
         relative = entry.get("path")
-        if not isinstance(relative, str):
+        if not isinstance(relative, str) or relative in seen:
             raise SystemExit("Private GAX100 source manifest is invalid")
+        seen.add(relative)
         source = project / relative
         expected = (entry.get("bytes"), entry.get("sha256"))
-        if not source.is_file() or digest(source) != expected:
+        if (source.is_symlink() or not source.resolve().is_relative_to(project) or
+                not source.is_file() or digest(source) != expected):
             raise SystemExit("A private GAX100 source failed integrity verification")
         target = destination(relative)
-        target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(source, target)
-        if digest(target) != expected:
-            raise SystemExit("A restored GAX100 source failed verification")
-        restored += 1
+        verified.append((source, target, expected))
 
         if target.parent.name in {"html", "pdf"}:
             source_id = target.stem
@@ -108,6 +108,15 @@ def main() -> None:
 
     if len(runtime_manifest) != 16 or set(SOURCE_URLS) != {x["id"] for x in runtime_manifest}:
         raise SystemExit("The private GAX100 source set is incomplete")
+    # No private file is copied until the complete allowlisted set has passed
+    # its hash and provenance checks. A bad last entry cannot leave a partial
+    # restored source collection behind for a later step to mistake as complete.
+    for source, target, expected in verified:
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source, target)
+        if digest(target) != expected:
+            raise SystemExit("A restored GAX100 source failed verification")
+        restored += 1
     by_id = {item["id"]: item for item in runtime_manifest}
     runtime_manifest = [by_id[source_id] for source_id in SOURCE_URLS]
     raw_manifest = ROOT / "data" / "raw" / "MANIFEST.json"

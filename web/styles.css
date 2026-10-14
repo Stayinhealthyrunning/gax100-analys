@@ -31,6 +31,9 @@ section { min-width: 0; }
 .fact, .runner, section { background: #fff; border-radius: 12px; }
 .fact { padding: 16px; min-height: 112px; min-width: 0; overflow-wrap: anywhere; }
 .fact h3 { font-size: 13px; margin: 0 0 12px; color: var(--muted); }
+.fact-heading { display:flex; align-items:flex-start; justify-content:space-between; gap:4px; min-width:0; }
+.fact-heading h3 { margin-top:7px; }
+.fact-heading .help summary { min-width:44px; min-height:44px; font-size:17px; }
 .fact strong { font-size: 25px; }
 .fact small { display: block; margin-top: 5px; color: var(--muted); }
 .fact.gender strong { font-size: 15px; display: block; overflow-wrap: anywhere; }

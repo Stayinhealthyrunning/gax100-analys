@@ -101,7 +101,8 @@ function renderFacts() {
         '<span class="group-row"><span>Underlag saknas</span></span>')+'</span>';
   };
   const finishRate = starters ? ` · ${Math.round(finished.length / starters * 100)} % av fastställda startande` : '';
-  $('#facts').innerHTML = `<div class="fact"><h3>STARTANDE</h3><strong>${starterLabel}</strong><small>${esc(starterNote)}</small></div><div class="fact"><h3>FULLFÖLJDE</h3><strong>${finished.length}</strong><small>${starters === null ? 'giltig officiell sluttid; startantal ej fastställt' : `giltig officiell sluttid av ${starters} startande${finishRate}`}</small></div><div class="fact"><h3>DNF</h3><strong>${dnf.length}</strong><small>${starters ? `${Math.round(dnf.length / starters * 100)} % av fastställda startande` : 'explicit källstödd status'}</small></div><div class="fact gender"><h3>TIDER KVINNOR / MÄN</h3><div class="gender-values">${groupCard('Kvinnor', women.map((result) => result.finish_seconds), 'f')}${groupCard('Män', men.map((result) => result.finish_seconds), 'm')}</div></div><div class="fact"><h3>SNABBASTE TID</h3><strong>${best ? time(best.finish_seconds) : '—'}</strong><small>${best ? esc(best.name) : 'Ej fastställt'}</small></div>`;
+  const help = (id, title, copy) => `<details class="help" data-help-id="${id}"><summary aria-label="Om ${title}">ⓘ</summary><p>${copy}</p></details>`;
+  $('#facts').innerHTML = `<div class="fact"><div class="fact-heading"><h3>STARTANDE</h3>${help('help-starters', 'startande', 'Antal som enligt källan startade, inte antal anmälda eller resultatposter. FINISHED och DNF räknas som startande; DNS och UNKNOWN gör det inte. Om källan inte skiljer statusarna visas Ej fastställt. Övre faktaraden påverkas inte av sökfilter.')}</div><strong>${starterLabel}</strong><small>${esc(starterNote)}</small></div><div class="fact"><div class="fact-heading"><h3>FULLFÖLJDE</h3>${help('help-finishers', 'fullföljde', 'FINISHED med giltig positiv officiell sluttid i vald upplaga. Andelen beräknas som 100 × fullföljde / verifierat startande, endast när startantal finns. DNF, DNS och UNKNOWN ingår inte. Sökfilter påverkar inte detta kort.')}</div><strong>${finished.length}</strong><small>${starters === null ? 'giltig officiell sluttid; startantal ej fastställt' : `giltig officiell sluttid av ${starters} startande${finishRate}`}</small></div><div class="fact"><div class="fact-heading"><h3>DNF</h3>${help('help-dnf', 'DNF', 'Endast explicit källstödd DNF i vald upplaga räknas. Andelen är 100 × DNF / verifierat startande när detta antal finns. DNS och UNKNOWN räknas inte som DNF. Antalet visar inte var eller varför löparen bröt.')}</div><strong>${dnf.length}</strong><small>${starters ? `${Math.round(dnf.length / starters * 100)} % av fastställda startande` : 'explicit källstödd status'}</small></div><div class="fact gender"><div class="fact-heading"><h3>TIDER KVINNOR / MÄN</h3>${help('help-times-sex', 'tider för kvinnor och män', 'Median är den mittersta sorterade sluttiden; vid jämnt antal medelvärdet av de två mittersta. Medel är summan av giltiga sluttider delad med antalet, avrundad till hel sekund. Endast källrapporterat kön används; grupper med färre än fem tider visas inte. Saknat kön ingår fortfarande i totalerna.')}</div><div class="gender-values">${groupCard('Kvinnor', women.map((result) => result.finish_seconds), 'f')}${groupCard('Män', men.map((result) => result.finish_seconds), 'm')}</div></div><div class="fact"><div class="fact-heading"><h3>SNABBASTE TID</h3>${help('help-fastest', 'snabbaste tid', 'Den lägsta positiva officiella sluttiden bland FINISHED i vald upplaga, oberoende av sökfilter. Detta är inte automatiskt banrekord över år: banversioner kan skilja sig. Saknad eller skyddad uppgift får inte ersättas med ett antaget namn eller en beräknad tid.')}</div><strong>${best ? time(best.finish_seconds) : '—'}</strong><small>${best ? esc(best.name) : 'Ej fastställt'}</small></div>`;
 }
 
 function renderFilters() {
@@ -1002,7 +1003,18 @@ function enhanceChartViewports() {
 function setupHelpDialog() {
   const dialog = $('#help-dialog'); const title = $('#help-dialog-title'); const body = $('#help-dialog-body');
   if (!dialog) return;
-  document.querySelectorAll('.help summary').forEach((summary) => summary.addEventListener('click', (event) => { event.preventDefault(); title.textContent = summary.getAttribute('aria-label') || 'Metodförklaring'; body.textContent = summary.parentElement.querySelector('p')?.textContent || 'Metodförklaring saknas.'; dialog.showModal(); }));
+  let opener = null;
+  document.addEventListener('click', (event) => {
+    const summary = event.target.closest?.('.help summary');
+    if (!summary) return;
+    event.preventDefault();
+    opener = summary;
+    title.textContent = summary.getAttribute('aria-label') || 'Metodförklaring';
+    body.textContent = summary.parentElement.querySelector('p')?.textContent || 'Metodförklaring saknas.';
+    dialog.showModal();
+    $('#help-dialog-close').focus();
+  });
+  dialog.addEventListener('close', () => { if (opener?.isConnected) opener.focus({preventScroll:true}); opener = null; });
   $('#help-dialog-close').onclick = () => dialog.close();
 }
 

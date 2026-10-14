@@ -77,6 +77,26 @@ test('desktop: upplagor, sökning, filter, sortering, individuell analys och jä
   await assertNoHorizontalOverflow(page);
 });
 
+test('fem faktakort har fungerande metodhjälp även efter årbyte', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  const help = page.locator('#facts .help summary');
+  await expect(help).toHaveCount(5);
+  for (const year of ['gax100-2023', 'gax100-2025']) {
+    await page.locator('#year').selectOption(year);
+    for (let i = 0; i < 5; i += 1) {
+      const trigger = help.nth(i);
+      await trigger.focus();
+      await page.keyboard.press('Enter');
+      await expect(page.locator('#help-dialog')).toBeVisible();
+      await expect(page.locator('#help-dialog-body')).not.toBeEmpty();
+      await page.keyboard.press('Escape');
+      await expect(page.locator('#help-dialog')).not.toBeVisible();
+      await expect(trigger).toBeFocused();
+    }
+  }
+});
+
 test('kartduell: exakt 2–5 val och GPX-gating', async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 900, height: 900 });
   await page.goto('/');

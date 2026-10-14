@@ -39,6 +39,9 @@ jobs:
           app-id: ${{ secrets.LOPPANALYS_SOURCE_APP_ID }}
           private-key: ${{ secrets.LOPPANALYS_SOURCE_APP_PRIVATE_KEY }}
 
+      - name: Verify private-source restore contract
+        run: python3 tests/test_restore_private_sources.py
+
       - name: Audit restored source data
         shell: pwsh
         run: |
