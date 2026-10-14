@@ -1,0 +1,103 @@
+name: GAX100 QA
+
+env:
+  LOPPANALYS_PRIVACY_REGISTRY_B64: ${{ secrets.LOPPANALYS_PRIVACY_REGISTRY_B64 }}
+  LOPPANALYS_REQUIRE_PRIVATE_REGISTRY: "1"
+
+on:
+  push:
+    branches: [codex/gax100-etapp2, audit/gax100-plan-precision-2026-10-12]
+  pull_request:
+    branches: [main, codex/gax100-etapp2]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact commit
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Restore verified private source data
+        uses: ./.github/actions/restore-private-source
+        with:
+          app-id: ${{ secrets.LOPPANALYS_SOURCE_APP_ID }}
+          private-key: ${{ secrets.LOPPANALYS_SOURCE_APP_PRIVATE_KEY }}
+
+      - name: Verify private-source restore contract
+        run: python3 tests/test_restore_private_sources.py
+
+      - name: Audit restored source data
+        shell: pwsh
+        run: |
+          ./scripts/audit_sources.ps1
+
+      - name: Fail closed on blocked upstream result pages
+        run: node scripts/verify_source_integrity.js
+
+      - name: Build SQLite and web export
+        shell: bash
+        run: |
+          node scripts/build_database.js
+          node scripts/export_web_data.js
+
+      - name: Administrative audit of real filtered export and Git snapshots
+        id: privacy_audit
+        run: node scripts/audit_public_export.js --history
+
+      - name: Run source, data and semantic tests
+        shell: pwsh
+        run: ./tests/test_source_pipeline.ps1
+
+      - name: Run Node contract tests
+        run: |
+          npm run test:statistics
+          node tests/test_source_integrity.js
+          node tests/test_registry_contract.js
+          npm run test:plan
+          node tests/test_comparison.js
+          npm run test:field
+          npm run test:time-parser
+          npm run test:time-format
+          npm run test:database
+          npm run test:gender-2026
+          npm run test:gpx-parser
+          npm run test:gpx-geometry
+          npm run test:gpx-preview
+          npm run test:semantics
+          npm run test:source-privacy
+          npm run test:privacy
+          node tests/test_admin_privacy_audit.js
+          npm run test:web
+
+      - name: Run Chromium browser QA and screenshots
+        run: npm run test:browser
+
+      - name: Upload Playwright report and diagnostics
+        # Never upload user-facing diagnostics if the real export privacy audit fails or does not run.
+        if: ${{ always() && steps.privacy_audit.outcome == 'success' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: gax100-playwright-qa-${{ github.sha }}
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: warn
+          retention-days: 7
