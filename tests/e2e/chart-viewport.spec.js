@@ -33,6 +33,8 @@ for(const width of [360,390,768,1440]) {
         scrollWidth:el.scrollWidth,clientWidth:el.clientWidth,overflow:getComputedStyle(el).overflowX,
         axes:el.querySelectorAll('text.speed-label').length,
         reference:!!el.querySelector('.speed-reference'),
+        barFill:getComputedStyle(el.querySelector('.speed-bar')).fill,
+        legend:el.querySelectorAll('.compact-speed-legend li').length,
         bars:[...el.querySelectorAll('.speed-bar')].every(bar=>{
           const a=bar.getBoundingClientRect(),b=el.getBoundingClientRect();
           return a.left>=b.left-1&&a.right<=b.right+1;
@@ -42,6 +44,8 @@ for(const width of [360,390,768,1440]) {
       expect(audit.overflow).not.toBe('hidden');
       expect(audit.axes).toBeGreaterThanOrEqual(6);
       expect(audit.reference).toBe(true);
+      expect(audit.barFill).not.toBe('rgb(0, 0, 0)');
+      expect(audit.legend).toBeGreaterThanOrEqual(1);
       expect(audit.bars).toBe(true);
       expect(big).toBeLessThanOrEqual(audit.clientWidth);
     } else {

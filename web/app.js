@@ -962,7 +962,7 @@ let chartZoomOpener = null;
 function compactSpeedChart(source) {
   const ns = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(ns, 'svg');
-  svg.setAttribute('class', 'compact-speed-chart');
+  svg.setAttribute('class', 'speed-chart compact-speed-chart');
   svg.setAttribute('viewBox', '0 0 340 245');
   svg.setAttribute('role', 'img');
   svg.setAttribute('aria-label', source.getAttribute('aria-label') || 'Relativ fart per delsträcka');
@@ -999,7 +999,17 @@ function compactSpeedChart(source) {
     add('text', { class: 'speed-label', x: x + (step - 10) / 2, y: 207, 'text-anchor': 'middle' }, index + 1);
   });
   add('text', { class: 'speed-label', x: left, y: 232 }, 'Delsträcka i ordning →');
-  return svg;
+  const fragment = document.createDocumentFragment();
+  fragment.appendChild(svg);
+  const legend = document.createElement('ol');
+  legend.className = 'compact-speed-legend';
+  bars.forEach(bar => {
+    const item = document.createElement('li');
+    item.textContent = bar.querySelector('title')?.textContent || 'Delsträcka';
+    legend.appendChild(item);
+  });
+  fragment.appendChild(legend);
+  return fragment;
 }
 function enhanceChartViewports() {
   const dialog = $('#chart-zoom-dialog');

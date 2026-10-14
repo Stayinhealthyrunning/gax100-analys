@@ -487,6 +487,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-v
   #chart-zoom-content:has(.compact-speed-chart) { overflow-x:visible; }
   #chart-zoom-content .compact-speed-chart { width:100%; min-width:0; max-width:100%; }
   #chart-zoom-content .compact-speed-chart text { font-size:12px; }
+  #chart-zoom-content .compact-speed-legend { margin:8px 0 0; padding-left:25px; font-size:12px; line-height:1.4; overflow-wrap:anywhere; }
   .chart-viewport::after { content:'Svep åt sidan för att läsa hela diagrammet →'; display:block; padding:4px 8px 8px; color:#52636e; font-size:12px; }
 }
 @media(min-width:601px) {

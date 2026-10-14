@@ -8,8 +8,12 @@ skilt från publicerade GDPR-filtrerade FINISHED/DNF utan blandad procent;
 syntetiska browser- och administrativa regressioner har lagts till. Full QA
 utför nu en fail-closed kontroll av verklig privat-registerfiltrerad export
 och en separat aggregerad Git-snapshotgranskning. Privat register finns inte
-i lokal miljö, varför den verkliga kontrollen återstår tills Actions på exakt
-slutlig SHA har körts. Tidigare Actions-artefakter, cachekopior och historisk
+i lokal miljö. Mellancommit `a2b3301` körde verklig audit i Actions: 945/945
+resultat publicerade, 0 skyddade träffar och 5 Git-snapshots utan matchning.
+Den körningen hade 50/51 browserpass på grund av en felaktig test-locator;
+dess skärmbilder granskades i 360/390/768/1440 och visade svarta mobilbarer.
+Locator, färgklass och legend är korrigerade; **ny exact-head QA och visuell
+granskning återstår**. Tidigare Actions-artefakter, cachekopior och historisk
 Pages-publicering är inte automatiskt frikända av Git-snapshotkontrollen.
 Alla 945 kuraterade resultat saknar verifierat åldersfält; ingen okänd ålder
 klassas som vuxen. Kartduell/replay förblir dataspärrade. PR #8 förblir Draft;

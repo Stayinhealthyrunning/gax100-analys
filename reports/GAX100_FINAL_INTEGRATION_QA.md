@@ -75,8 +75,16 @@ utgör inte källor för GAX100:s deltagarresultat.
   och tillräckliga kontrollpunkter. Inga privata original, resultat eller
   publicerade datakontrakt har ändrats.
 - Lokal syntax-, kontrakts-, syntetisk audit- och webtest passerar. Verklig
-  registeraudit och Chromium-körning inväntar GitHub Actions på slutlig head;
-  lokal `npm`/Playwright saknas. Frysna snapshot-UX är **inte** ett bevis på
+  registeraudit på mellancommit `a2b3301` passerade i [full QA #38574695517](https://github.com/Stayinhealthyrunning/gax100-analys/actions/runs/38574695517):
+  945 källresultat, 945 publicerade, 0 skyddade träffar, 8 publika kod-/HTML-filer
+  och 5 historiska Git-snapshots granskade utan träff. Detta är inte en
+  kontroll av äldre Actions-artefakter eller extern cache. 50 av 51 Chromium-
+  tester passerade; ett nytt test använde fel locator när ingen löpare valts.
+  Locatorn korrigerades på efterföljande commit. Skärmbildsgranskningen vid
+  360/390/768/1440 upptäckte dessutom svarta mobilbarer eftersom kompakt-SVG:n
+  saknade originalets färgklass. Färgklass, delsträckelegend och regressionskrav
+  är nu tillagda; ny exact-head QA krävs. Lokal `npm`/Playwright saknas.
+  Frysta snapshot-UX är **inte** ett bevis på
   aktuell GDPR-filtrering. Historisk Pages-uppgift nedan gäller endast en
   tidigare publicering och är inte en ny release eller behörighet att publicera.
 
