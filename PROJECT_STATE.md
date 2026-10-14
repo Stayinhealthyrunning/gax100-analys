@@ -1,5 +1,17 @@
 # Projektstatus: GAX100 Analys
 
+## Aktuell integrationskandidat 2026-10-14
+
+Arbetsbranch `codex/gax100-final-integration-2026-10-14` utgår från Draft PR #6:s
+head `67b7e6a`; denna innehåller redan Draft PR #5. Draft PR #7 är en äldre
+riskklassning ovanpå #5 och har granskats separat. Inga tidigare PR:er har
+mergats här. `reports/GAX100_FINAL_INTEGRATION_QA.md` är den aktuella
+sammanhållna funktions-, integritets- och QA-bedömningen; äldre avsnitt nedan
+är historiska. Privat källpreflight och fem separata faktakortshjälper har
+tillkommit på denna branch. Full QA/visuell artefaktgranskning på ny head ska
+kontrolleras innan något releasebeslut. Ingen merge eller katalogpublicering.
+
+
 ## Privat källmigrering (2026-10-14)
 
 - 16 officiella råkällor och den exakta Git-blobben för 2025-transkriptionen

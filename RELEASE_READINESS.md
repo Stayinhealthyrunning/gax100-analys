@@ -1,5 +1,10 @@
 # GAX100 Analys – release readiness
 
+> **Historisk PR #2-bedömning.** För aktuell integrationskandidat och dess
+> kvarvarande integritets-/rättighetsgrindar, se
+> `reports/GAX100_FINAL_INTEGRATION_QA.md`. Grön QA för den äldre headen är
+> inte ett releasegodkännande för privat källmigrering eller ny PR-head.
+
 Status: release candidate under review. Branch `codex/gax100-etapp2`, Draft PR #2. Merge and catalog publication remain explicitly blocked pending maintainer approval.
 
 ## 1. Klart i denna kandidat

@@ -14,4 +14,4 @@ GAX100 Analys är ett källspårbart analysunderlag för The GAX 100 Miles. Arbe
 
 ## Status
 
-ETAPP 1 är mergad till `main`. ETAPP 2 körs på `codex/gax100-etapp2`; resultatimport, korrigerad tids-/statusnormalisering, verifierad 2026-könskälla, standardiserad statistik, en testbar webbfunktion och reproducerbar GPX-audit är implementerade. Fem lokala GPX-spår är geometriskt analyserade men ingen är publiceringsklar eller officiellt årsverifierad. Chromium browser-QA körs i GitHub Actions; lokal npm/Playwright-körning saknas eftersom npm inte finns i Codex-miljön.
+ETAPP 1 är mergad till `main`. Aktuell integrationskandidat är `codex/gax100-final-integration-2026-10-14`, byggd på Draft PR #6 som redan innehåller #5. Tidigare ETAPP 2- och audit-PR:er är separata och får inte dubbelmergas. Källorna återläses hashverifierat från privat repo och offentlig export kräver privat GDPR-register. Se `reports/GAX100_FINAL_INTEGRATION_QA.md` och `PROJECT_STATE.md`. Fem lokala GPX-kandidater är analyserade men ingen är officiellt årsverifierad och publiceringsklar. Chromium-QA körs i GitHub Actions; lokal Playwright-installation saknas.

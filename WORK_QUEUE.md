@@ -1,5 +1,17 @@
 # WORK_QUEUE.md
 
+## Integrationskandidat 2026-10-14
+
+| ID | Status | Acceptans / nästa kontroll |
+|---|---|---|
+| INT-01 Beroendekedja | DONE | PR #6 innehåller #5; PR #7:s äldre audit granskad utan dubbelmerge |
+| INT-02 Privat källpreflight | DONE lokalt | 17 syntetiska filer återlästa; hash-, dubblett- och traversal-fall stoppar före kopiering |
+| INT-03 Faktakortshjälp | KOD KLAR | Fem separata hjälp-ID; Chromium-test av tangentbord, fokus och årbyte väntar Actions |
+| INT-04 Exakt-head QA | VÄNTAR | Full privat restore, semantik, GDPR, Chromium och skärmbilder på slutlig branch-head |
+| INT-05 Slutlig integritetsrevision | BLOCKERAD | Behörig kontroll av filtrerad export, historiska snapshot och laglig grund |
+| INT-06 GPX/replay | BLOCKERAD | Årskopplad geometri, rättigheter och verifierade tidsankare saknas |
+
+
 ## Releasekandidat 2026-10-12
 
 | ID | Uppgift | Status | Verifierbart acceptanskriterium |

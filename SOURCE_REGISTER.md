@@ -1,5 +1,13 @@
 # SOURCE_REGISTER.md
 
+> **Integrationsnot 2026-10-14:** Råresultat, PDF/HTML och den identifierande
+> 2025-transkriptionen återläses i full CI från
+> `Stayinhealthyrunning/loppanalys-private-data`, inte från en ny direkt
+> webbhämtning eller en publikt spårad fixture. Exakt 17 filer måste matcha
+> privat manifest (sökväg, byteantal, SHA-256) innan import. Tabellen nedan
+> beskriver ursprungskällor, inte publiceringstillstånd. Se
+> `PRIVATE_SOURCE_MIGRATION.md` och `reports/GAX100_FINAL_INTEGRATION_QA.md`.
+
 ## Primärkällor
 
 | ID | Källa | Användning | Status |
