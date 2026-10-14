@@ -21,6 +21,8 @@ jobs:
     steps:
       - name: Checkout exact commit
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -56,6 +58,9 @@ jobs:
           node scripts/build_database.js
           node scripts/export_web_data.js
 
+      - name: Administrative audit of real filtered export and Git snapshots
+        run: node scripts/audit_public_export.js --history
+
       - name: Run source, data and semantic tests
         shell: pwsh
         run: ./tests/test_source_pipeline.ps1
@@ -78,6 +83,7 @@ jobs:
           npm run test:semantics
           npm run test:source-privacy
           npm run test:privacy
+          node tests/test_admin_privacy_audit.js
           npm run test:web
 
       - name: Run Chromium browser QA and screenshots

@@ -46,6 +46,40 @@ utgör inte källor för GAX100:s deltagarresultat.
 
 ## QA och acceptans
 
+### PR #8: åtgärder efter senaste granskning (2026-10-14)
+
+- Relativfartens mobil-dialog ritar samma barvärden och 100 %-referens i en
+  separat 340-enheters vy. Fem y-axelvärden och ordnade delsträckenummer
+  ryms utan horisontell scroll vid 360/390 px. Originaldiagrammets
+  tangentbordsval och desktop-dialog är oförändrade; dialogen stängs med Esc
+  och fokus återgår till öppningsknappen. Playwright kontrollerar verklig
+  `scrollWidth`, barernas synliga rektanglar och skärmbilder vid 360/390/768/1440.
+- Faktaraden skiljer **källtotal startande** från **GDPR-filtrerade publicerade
+  FINISHED/DNF**. Ingen kvot mellan olika populationer visas. Även snabbaste
+  tid och könsgrupper avser publicerat urval. Syntetisk browserregression
+  lägger till en skyddad FINISHED och DNF i råfixturen men utesluter dem ur
+  publicerad payload, sökning och resultatlänk.
+- Ny administrativ kontroll `scripts/audit_public_export.js` körs i full QA
+  efter verklig privat restore och export. Den jämför varje offentlig rad och
+  observation mot råbasen minus verkliga registerträffar, söker skyddade
+  identifierare/namn i publik JSON och HTML/JS, och skriver enbart aggregerade
+  antal och PASS/FAIL. Publicerad sökning och URL-upplösning är bundna till
+  samma filtrerade `data.results`. Git-historikens `web/data.json`-blobbar
+  granskas separat med samma privata regler. Historiska Actions-artefakter,
+  externa cachekopior och tidigare faktisk Pages-distribution kan inte
+  därmed anses granskade; de kräver behörig ägargranskning utan offentlig
+  personuppgiftsdiff eller återpublicering.
+- Alla 945 råresultat saknar ett verifierat åldersfält i den kuraterade
+  resultatmodellen; okänd ålder förblir okänd. Kartduell, positionsrekonstruktion
+  och GPS-replay förblir spärrade utan årsverifierad rättighetsklar geometri
+  och tillräckliga kontrollpunkter. Inga privata original, resultat eller
+  publicerade datakontrakt har ändrats.
+- Lokal syntax-, kontrakts-, syntetisk audit- och webtest passerar. Verklig
+  registeraudit och Chromium-körning inväntar GitHub Actions på slutlig head;
+  lokal `npm`/Playwright saknas. Frysna snapshot-UX är **inte** ett bevis på
+  aktuell GDPR-filtrering. Historisk Pages-uppgift nedan gäller endast en
+  tidigare publicering och är inte en ny release eller behörighet att publicera.
+
 PR #6:s bashead `67b7e6a` hade grön [obligatorisk QA](https://github.com/Stayinhealthyrunning/gax100-analys/actions/runs/38543620956), [snapshot UX QA](https://github.com/Stayinhealthyrunning/gax100-analys/actions/runs/38543620852) och [privacy guard](https://github.com/Stayinhealthyrunning/gax100-analys/actions/runs/38543620821). Dessa körningar bevisar inte den **nya** headen.
 
 På kod-/rapporthead `502cf11fde4be7cdca4bf75f660c089438e5601c` passerade

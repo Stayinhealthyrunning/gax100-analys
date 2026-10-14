@@ -100,9 +100,8 @@ function renderFacts() {
         '<span class="group-row"><span>Medel</span><b>'+time(mean(values))+'</b></span>' :
         '<span class="group-row"><span>Underlag saknas</span></span>')+'</span>';
   };
-  const finishRate = starters ? ` · ${Math.round(finished.length / starters * 100)} % av fastställda startande` : '';
   const help = (id, title, copy) => `<details class="help" data-help-id="${id}"><summary aria-label="Om ${title}">ⓘ</summary><p>${copy}</p></details>`;
-  $('#facts').innerHTML = `<div class="fact"><div class="fact-heading"><h3>STARTANDE</h3>${help('help-starters', 'startande', 'Antal som enligt källan startade, inte antal anmälda eller resultatposter. FINISHED och DNF räknas som startande; DNS och UNKNOWN gör det inte. Om källan inte skiljer statusarna visas Ej fastställt. Övre faktaraden påverkas inte av sökfilter.')}</div><strong>${starterLabel}</strong><small>${esc(starterNote)}</small></div><div class="fact"><div class="fact-heading"><h3>FULLFÖLJDE</h3>${help('help-finishers', 'fullföljde', 'FINISHED med giltig positiv officiell sluttid i vald upplaga. Andelen beräknas som 100 × fullföljde / verifierat startande, endast när startantal finns. DNF, DNS och UNKNOWN ingår inte. Sökfilter påverkar inte detta kort.')}</div><strong>${finished.length}</strong><small>${starters === null ? 'giltig officiell sluttid; startantal ej fastställt' : `giltig officiell sluttid av ${starters} startande${finishRate}`}</small></div><div class="fact"><div class="fact-heading"><h3>DNF</h3>${help('help-dnf', 'DNF', 'Endast explicit källstödd DNF i vald upplaga räknas. Andelen är 100 × DNF / verifierat startande när detta antal finns. DNS och UNKNOWN räknas inte som DNF. Antalet visar inte var eller varför löparen bröt.')}</div><strong>${dnf.length}</strong><small>${starters ? `${Math.round(dnf.length / starters * 100)} % av fastställda startande` : 'explicit källstödd status'}</small></div><div class="fact gender"><div class="fact-heading"><h3>TIDER KVINNOR / MÄN</h3>${help('help-times-sex', 'tider för kvinnor och män', 'Median är den mittersta sorterade sluttiden; vid jämnt antal medelvärdet av de två mittersta. Medel är summan av giltiga sluttider delad med antalet, avrundad till hel sekund. Endast källrapporterat kön används; grupper med färre än fem tider visas inte. Saknat kön ingår fortfarande i totalerna.')}</div><div class="gender-values">${groupCard('Kvinnor', women.map((result) => result.finish_seconds), 'f')}${groupCard('Män', men.map((result) => result.finish_seconds), 'm')}</div></div><div class="fact"><div class="fact-heading"><h3>SNABBASTE TID</h3>${help('help-fastest', 'snabbaste tid', 'Den lägsta positiva officiella sluttiden bland FINISHED i vald upplaga, oberoende av sökfilter. Detta är inte automatiskt banrekord över år: banversioner kan skilja sig. Saknad eller skyddad uppgift får inte ersättas med ett antaget namn eller en beräknad tid.')}</div><strong>${best ? time(best.finish_seconds) : '—'}</strong><small>${best ? esc(best.name) : 'Ej fastställt'}</small></div>`;
+  $('#facts').innerHTML = `<div class="fact"><div class="fact-heading"><h3>STARTANDE · KÄLLTOTAL</h3>${help('help-starters', 'startande', 'Källverifierad totalsiffra för upplagan före integritetsskydd. Den har inte samma population som publicerade resultatposter. Använd den inte som nämnare för de filtrerade FINISHED- eller DNF-talen.')}</div><strong>${starterLabel}</strong><small>${esc(starterNote)}</small></div><div class="fact"><div class="fact-heading"><h3>FULLFÖLJDE · PUBLICERAT URVAL</h3>${help('help-finishers', 'fullföljde', 'FINISHED med positiv officiell sluttid bland de GDPR-filtrerade, publicerade resultatposterna i vald upplaga. Skyddade resultat ingår inte. Ingen andel av källans startantal beräknas.')}</div><strong>${finished.length}</strong><small>Publicerade resultat med giltig sluttid</small></div><div class="fact"><div class="fact-heading"><h3>DNF · PUBLICERAT URVAL</h3>${help('help-dnf', 'DNF', 'Explicit källstödd DNF bland de GDPR-filtrerade, publicerade resultatposterna. Skyddade resultat ingår inte. Ingen andel av källans startantal beräknas.')}</div><strong>${dnf.length}</strong><small>Publicerade resultat med DNF-status</small></div><div class="fact gender"><div class="fact-heading"><h3>TIDER KVINNOR / MÄN</h3>${help('help-times-sex', 'tider för kvinnor och män', 'Median är den mittersta sorterade sluttiden; vid jämnt antal medelvärdet av de två mittersta. Medel är summan av giltiga sluttider delad med antalet, avrundad till hel sekund. Endast publicerade resultat och källrapporterat kön används; grupper med färre än fem tider visas inte.')}</div><div class="gender-values">${groupCard('Kvinnor', women.map((result) => result.finish_seconds), 'f')}${groupCard('Män', men.map((result) => result.finish_seconds), 'm')}</div></div><div class="fact"><div class="fact-heading"><h3>SNABBASTE PUBLICERADE TID</h3>${help('help-fastest', 'snabbaste publicerade tid', 'Lägsta positiva officiella sluttid bland publicerade FINISHED-resultat i vald upplaga. Ett skyddat resultat kan vara snabbare; detta är inte nödvändigtvis officiell bästa tid eller banrekord.')}</div><strong>${best ? time(best.finish_seconds) : '—'}</strong><small>${best ? esc(best.name) : 'Ej fastställt'}</small></div>`;
 }
 
 function renderFilters() {
@@ -960,6 +959,48 @@ function renderFieldInsights() {
 // its text would shrink to illegible 4–7 px without a contained viewport.
 // Preserve full fidelity with a horizontally scrollable canvas and a zoom modal.
 let chartZoomOpener = null;
+function compactSpeedChart(source) {
+  const ns = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(ns, 'svg');
+  svg.setAttribute('class', 'compact-speed-chart');
+  svg.setAttribute('viewBox', '0 0 340 245');
+  svg.setAttribute('role', 'img');
+  svg.setAttribute('aria-label', source.getAttribute('aria-label') || 'Relativ fart per delsträcka');
+  const add = (tag, attrs, value) => {
+    const element = document.createElementNS(ns, tag);
+    for (const [key, val] of Object.entries(attrs)) element.setAttribute(key, String(val));
+    if (value != null) element.textContent = String(value);
+    svg.appendChild(element);
+    return element;
+  };
+  const originalBottom = 183;
+  const originalHeight = 163;
+  const refY = Number(source.querySelector('.speed-reference')?.getAttribute('y1'));
+  const maximum = 100 * originalHeight / (originalBottom - refY);
+  const bars = [...source.querySelectorAll('.speed-bar')];
+  const left = 48, right = 328, top = 18, bottom = 190, height = bottom - top;
+  for (const fraction of [0, .25, .5, .75, 1]) {
+    const y = bottom - fraction * height;
+    add('line', { class: 'gridline', x1: left, x2: right, y1: y, y2: y });
+    add('text', { class: 'speed-label', x: 2, y: y + 4 }, Math.round(maximum * fraction) + ' %');
+  }
+  const referenceY = bottom - 100 / maximum * height;
+  add('line', { class: 'speed-reference', x1: left, x2: right, y1: referenceY, y2: referenceY });
+  bars.forEach((bar, index) => {
+    const fraction = Number(bar.getAttribute('height')) / originalHeight;
+    const barHeight = fraction * height;
+    const step = (right - left) / bars.length;
+    const x = left + index * step + 5;
+    const rect = add('rect', { class: bar.getAttribute('class'), x, y: bottom - barHeight,
+      width: Math.max(4, step - 10), height: barHeight });
+    const title = document.createElementNS(ns, 'title');
+    title.textContent = bar.querySelector('title')?.textContent || '';
+    rect.appendChild(title);
+    add('text', { class: 'speed-label', x: x + (step - 10) / 2, y: 207, 'text-anchor': 'middle' }, index + 1);
+  });
+  add('text', { class: 'speed-label', x: left, y: 232 }, 'Delsträcka i ordning →');
+  return svg;
+}
 function enhanceChartViewports() {
   const dialog = $('#chart-zoom-dialog');
   if (!dialog) return;
@@ -985,7 +1026,8 @@ function enhanceChartViewports() {
       chartZoomOpener = zoom;
       $('#chart-zoom-title').textContent = svg.getAttribute('aria-label') || 'Förstorat diagram';
       const content = $('#chart-zoom-content');
-      content.replaceChildren(svg.cloneNode(true));
+      const compact = svg.classList.contains('speed-chart') && window.matchMedia('(max-width:600px)').matches;
+      content.replaceChildren(compact ? compactSpeedChart(svg) : svg.cloneNode(true));
       // Explicitly disable controls in the copied image. The original chart
       // remains operable and retains its data-action handlers.
       content.querySelectorAll('[role="button"]').forEach((element) => {

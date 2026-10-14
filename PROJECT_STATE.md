@@ -2,6 +2,19 @@
 
 ## Aktuell integrationskandidat 2026-10-14
 
+Senaste PR #8-granskningsåtgärder: mobil relativfartszoom omritad för 360/390
+utan horisontell dialogscroll; faktakorten etiketterar källtotal startande
+skilt från publicerade GDPR-filtrerade FINISHED/DNF utan blandad procent;
+syntetiska browser- och administrativa regressioner har lagts till. Full QA
+utför nu en fail-closed kontroll av verklig privat-registerfiltrerad export
+och en separat aggregerad Git-snapshotgranskning. Privat register finns inte
+i lokal miljö, varför den verkliga kontrollen återstår tills Actions på exakt
+slutlig SHA har körts. Tidigare Actions-artefakter, cachekopior och historisk
+Pages-publicering är inte automatiskt frikända av Git-snapshotkontrollen.
+Alla 945 kuraterade resultat saknar verifierat åldersfält; ingen okänd ålder
+klassas som vuxen. Kartduell/replay förblir dataspärrade. PR #8 förblir Draft;
+ingen merge eller ny produktionspublicering.
+
 Arbetsbranch `codex/gax100-final-integration-2026-10-14` utgår från Draft PR #6:s
 head `67b7e6a`; denna innehåller redan Draft PR #5. Draft PR #7 är en äldre
 riskklassning ovanpå #5 och har granskats separat. Inga tidigare PR:er har
