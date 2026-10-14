@@ -59,6 +59,7 @@ jobs:
           node scripts/export_web_data.js
 
       - name: Administrative audit of real filtered export and Git snapshots
+        id: privacy_audit
         run: node scripts/audit_public_export.js --history
 
       - name: Run source, data and semantic tests
@@ -90,7 +91,8 @@ jobs:
         run: npm run test:browser
 
       - name: Upload Playwright report and diagnostics
-        if: always()
+        # Never upload user-facing diagnostics if the real export privacy audit fails or does not run.
+        if: ${{ always() && steps.privacy_audit.outcome == 'success' }}
         uses: actions/upload-artifact@v4
         with:
           name: gax100-playwright-qa-${{ github.sha }}
@@ -98,3 +100,4 @@ jobs:
             playwright-report/
             test-results/
           if-no-files-found: warn
+          retention-days: 7
