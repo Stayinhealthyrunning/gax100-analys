@@ -60,19 +60,19 @@ function create(){
   }
   function hide(){suggestions.hidden=true;suggestions.innerHTML='';search.setAttribute('aria-expanded','false');suggestionMap.clear()}
   function renderSelected(){
-    chips.innerHTML=selected.length?selected.map(item=>`<button type="button" data-multi-year-remove="${esc(item.token)}" aria-label="Ta bort ${esc(item.record.name)} · ${item.edition.year}"><span>${esc(item.record.name)} · ${item.edition.year}</span><b aria-hidden="true">×</b></button>`).join(''):'<span class="muted small">Välj 2–5 resultat. Samma namn kan väljas flera gånger från olika år utan att identiteten automatiskt antas vara verifierad.</span>';
+    chips.innerHTML=selected.length?selected.map(item=>`<button type="button" data-multi-year-remove="${esc(item.token)}" aria-label="Ta bort ${esc(item.record.name)} · ${item.edition.edition_label||item.edition.year}"><span>${esc(item.record.name)} · ${item.edition.edition_label||item.edition.year}</span><b aria-hidden="true">×</b></button>`).join(''):'<span class="muted small">Välj 2–5 resultat. Samma namn kan väljas flera gånger från olika år utan att identiteten automatiskt antas vara verifierad.</span>';
     button.disabled=selected.length<2;button.textContent=selected.length>=2?'Jämför '+selected.length+' resultat på kartan':'Välj minst två resultat för kartjämförelse';
     feedback.textContent=selected.length>=2?'De valda årens banor visas separat där dokumenterad GPX finns.':'';
   }
   async function runSearch(){
     const version=++searchVersion,q=search.value.trim();if(!q){hide();return}
     suggestions.hidden=false;suggestions.innerHTML='<p class="muted small">Laddar historiska resultat…</p>';search.setAttribute('aria-expanded','true');
-    const metas=year.value==='all'?editions():editions().filter(ed=>String(ed.year)===year.value),loaded=(await Promise.allSettled(metas.map(loadEdition))).filter(x=>x.status==='fulfilled').map(x=>x.value);if(version!==searchVersion)return;
+    const metas=year.value==='all'?editions():editions().filter(ed=>String(ed.race_key)===year.value),loaded=(await Promise.allSettled(metas.map(loadEdition))).filter(x=>x.status==='fulfilled').map(x=>x.value);if(version!==searchVersion)return;
     const chosen=new Set(selected.map(x=>x.token)),needle=normalized(q),matches=[];
     for(const edition of loaded)for(const record of edition.race.results||[])if(resultMatches(record,q)){const token=tokenFor(edition.edition.race_key,record.id);if(!chosen.has(token))matches.push({...edition,record,token});}
     matches.sort((a,b)=>{const an=normalized(a.record.name),bn=normalized(b.record.name);return (an.startsWith(needle)?0:1)-(bn.startsWith(needle)?0:1)||b.edition.year-a.edition.year||(Number(a.record.place)||99999)-(Number(b.record.place)||99999)||an.localeCompare(bn,'sv')});
     suggestionMap=new Map(matches.slice(0,16).map(item=>[item.token,item]));
-    suggestions.innerHTML=suggestionMap.size?[...suggestionMap.values()].map(item=>`<button type="button" class="suggestion" data-multi-year-add="${esc(item.token)}"><span><strong>${esc(item.record.name)}</strong><small>${item.edition.year}${item.record.bib?' · #'+esc(item.record.bib):''}${item.record.club?' · '+esc(item.record.club):''}</small></span><b>${formatTime(item.record.finish_seconds)}</b></button>`).join(''):'<p class="muted small">Ingen löpare hittades i valda år.</p>';
+    suggestions.innerHTML=suggestionMap.size?[...suggestionMap.values()].map(item=>`<button type="button" class="suggestion" data-multi-year-add="${esc(item.token)}"><span><strong>${esc(item.record.name)}</strong><small>${item.edition.edition_label||item.edition.year}${item.record.bib?' · #'+esc(item.record.bib):''}${item.record.club?' · '+esc(item.record.club):''}</small></span><b>${formatTime(item.record.finish_seconds)}</b></button>`).join(''):'<p class="muted small">Ingen löpare hittades i valda år.</p>';
   }
   function shareUrl(){
     const url=new URL(location.href);for(const key of ['myFamily','myA','myB','myResult'])url.searchParams.delete(key);
@@ -132,7 +132,8 @@ function create(){
     if(selected.length){crossYearSelectionActive=true;renderSelected();}
   }
   function updatePicker(focus=false){
-    const current=String(year.value)===String(currentYear)&&!crossYearSelectionActive;
+    const currentEdition=getCurrentSelection?.()?.edition?.race_key;
+    const current=String(year.value)===String(currentEdition)&&!crossYearSelectionActive;
     root.hidden=current;
     const regular=$('#duel-current-picker');if(regular)regular.hidden=!current;
     if(focus){if(!current)search.focus();else $('#map-duel-search')?.focus();}
@@ -148,7 +149,12 @@ function create(){
   return{
     init(payload){boot=payload.boot;getCurrentSelection=payload.getCurrentSelection||null;},
     captureCurrentSelection,
-    setContext(nextFamily,nextYear){const changed=family!==nextFamily,previousActiveYear=currentYear;family=nextFamily;currentYear=Number(nextYear)||null;if(changed){selected=[];restoredFamily=null;crossYearSelectionActive=false}const latest=editions()[0]?.year,previous=changed||!previousActiveYear||String(year.value)===String(previousActiveYear)?String(currentYear):year.value;year.innerHTML=editions().map(ed=>`<option value="${ed.year}">${ed.year}</option>`).join('')+'<option value="all">Alla år</option>';const deepLink=new URLSearchParams(location.search).get('myFamily')===family;year.value=deepLink?'all':editions().some(ed=>String(ed.year)===String(previous))?String(previous):String(latest);if(deepLink)crossYearSelectionActive=true;renderSelected();if(changed)hide();updatePicker();restore().catch(console.error)}
+    setContext(nextFamily,nextYear){const changed=family!==nextFamily,previousActiveYear=currentYear;family=nextFamily;currentYear=Number(nextYear)||null;if(changed){selected=[];restoredFamily=null;crossYearSelectionActive=false}const currentEdition=getCurrentSelection?.()?.edition?.race_key;
+      const latest=editions()[0]?.race_key;
+      const previous=changed||!previousActiveYear||String(year.value)===String(currentEdition)?String(currentEdition||latest):year.value;
+      year.innerHTML=editions().map(ed=>`<option value="${esc(ed.race_key)}">${esc(ed.edition_label||ed.year)}</option>`).join('')+'<option value="all">Alla år</option>';
+      const deepLink=new URLSearchParams(location.search).get('myFamily')===family;
+      year.value=deepLink?'all':editions().some(ed=>String(ed.race_key)===String(previous))?String(previous):String(latest);if(deepLink)crossYearSelectionActive=true;renderSelected();if(changed)hide();updatePicker();restore().catch(console.error)}
   };
 }
 const controller=create();
