@@ -1,0 +1,75 @@
+name: GAX100 safe Pages preview - fictional runners
+on:
+  push:
+    branches: [main]
+    paths: [.github/workflows/gax100-safe-preview.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: gax100-pages
+  cancel-in-progress: false
+
+jobs:
+  publish-fictional-design-review:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout EXACT verified GAX100 frontend without private results
+        uses: actions/checkout@v4
+        with:
+          ref: 8bf5fe6f610fda43cb92ac450dd4cf3a3e1f629d
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build complete design preview with fabricated data, never actual entrants
+        run: python3 -B scripts/build_offline_preview.py --docs docs --out public-preview/index.html
+      - name: Fail closed if any real source or unapproved asset is present
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s public-preview/index.html
+          test ! -e public-preview/data.json
+          test ! -e public-preview/CNAME
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          root=Path('public-preview')
+          files=list(root.rglob('*'))
+          assert len(files)==1 and files[0].name=='index.html', "Unexpected deploy file"
+          raw=files[0].read_text(encoding='utf-8')
+          assert 'FÖRHANDSGRANSKNING' in raw
+          assert 'Demolöpare ' in raw
+          assert 'LOPPANALYS_PRIVACY_REGISTRY_B64' not in raw
+          assert 'PRIVATE_DATA_WITHHELD' in raw
+          assert '<meta name="robots" content="noindex, nofollow">' in raw
+          assert re.search(r'ALL NAMES AND TIMES ARE FABRICATED',raw)
+          assert 'gax100.sqlite' not in raw
+          print('GAX_SAFE_PAGES_PREVIEW_PASS fictional_runner_rows=945 real_runner_rows=0')
+          PY
+          printf 'User-agent: *\nDisallow: /\n' > public-preview/robots.txt
+          printf 'GitHub Pages design review, entirely fictional results. No live participant data.\n' > public-preview/README.txt
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - name: Upload synthetic-only static review site
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: public-preview/
+          name: gax100-synthetic-review-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Deploy GAX100 fictional-data design review
+        uses: actions/deploy-pages@v4
+        id: deployment
+        with:
+          artifact_name: gax100-synthetic-review-${{ github.run_id }}-${{ github.run_attempt }}
+
+# The GAX Pages address is public even without a hyperlink.
+# Never add real names, original results, raw observations, CNAME or hidden
+# database exports. Legal publication of real entrants is a separate decision.
