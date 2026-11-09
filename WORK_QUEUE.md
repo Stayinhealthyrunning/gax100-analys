@@ -1,5 +1,14 @@
 # WORK_QUEUE.md
 
+## Slutligt rensningsläge 9 november 2026 (efter nyimport)
+
+- De **nio** vanliga GAX100-grenarnas aktuella filträd har nu granskats: `web/data.json` finns inte längre i någon gren. Sex äldre aktiva grenar fick varsin fast-forward-rensningscommit där historisk JSON togs bort och gammal QA/snapshot-artefaktgenerering pensionerades; den sjunde aktiva utvecklingsgrenen PR #8 rensades separat. `main` och ETAPP1 hade ingen webbkatalog. Äldre Git-objekt, PR-refar och cachekopior återstår separat hos GitHub Support.
+- Den gamla **privata** GAX100-källkopian (16 HTML/PDF + den manuella 2025-JSON-transkriptionen) samt dess föråldrade manifest har tagits bort från `loppanalys-private-data/main` med commit `2bdd961de8f8df882919d579cc90cf7d1eae76d8`. Totalt 18 filvägar borttagna ur aktuellt träd.
+- Nyimporten är kvar i `loppanalys-private-data/main:gax100/fresh/gax100.sqlite` (1 241 088 byte). Ny privat verifierad originalhämtning och PDF/HTML-extraktion kördes i Actions #42590244783, 14 upplagor, 945 resultat och 1 838 tidsobservationer. Privat PR #24 är mergad.
+- Ingen historikomskrivning eller begäran om radering hos GitHub Support har utförts här. Originalfiler kan fortfarande finnas i äldre commit-historik. Ingen offentlig export/deploy är godkänd. Nästa gate: GDPR, rättslig grund, 2023 officiell sifferskillnad samt säker export av den nya privata databasen.
+
+
+
 ## Ny omimport och integritetshantering 2026-11-09
 
 | ID | Status | Nästa steg |
