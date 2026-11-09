@@ -61,6 +61,9 @@ const genderByName = genderPdf ? extractGenderByName(genderPdf.path) : new Map()
 
 for (const src of manifest.filter(x => x.kind === 'html' && x.status === 'downloaded')) {
   const source = sourceId(path.basename(src.path));
+  // A fresh 2026 extraction is preferable to the legacy layout-dependent parser.
+  // It preserves official DNF/DNS section headings and is audited separately.
+  if (source === 'result-index-2026' && fs.existsSync(path.join(repo, 'data', 'verified', 'result-2026-official.json'))) continue;
   const html = fs.readFileSync(src.path, 'utf8');
   const yearMatch = source.match(/(20\d\d)/); const year = yearMatch ? Number(yearMatch[1]) : 2026;
   let heading = ''; let gender = null; let rowNo = 0; let imported = 0; let observations = 0;
@@ -160,6 +163,33 @@ if (official2025 && fs.existsSync(fixturePath)) {
   }
   stats.push({ source, year: 2025, imported, observations: 0, extraction: 'data/verified/result-2025-official.json' });
 }
+
+/* Rebuilt from current official 2026 HTML, not the historic public snapshot.
+ * The private source importer checks 110 rows / 66 FINISHED / 33 DNF / 11 DNS. */
+const fresh2026Path = path.join(repo, 'data', 'verified', 'result-2026-official.json');
+if (fs.existsSync(fresh2026Path)) {
+  const fixture = JSON.parse(fs.readFileSync(fresh2026Path, 'utf8'));
+  if (!Array.isArray(fixture.rows) || fixture.rows.length !== 110) throw new Error('Incomplete official 2026 extraction');
+  const counts = Object.fromEntries(['FINISHED', 'DNF', 'DNS'].map(status =>
+    [status, fixture.rows.filter(r => r.status === status).length]));
+  if (counts.FINISHED !== 66 || counts.DNF !== 33 || counts.DNS !== 11)
+    throw new Error('Official 2026 source sections failed completeness check');
+  const edition = {id: 'gax100-2026', label: '2026'};
+  const source = 'result-index-2026';
+  insertEdition.run(edition.id, 2026, edition.label, source, null, null, null);
+  for (const [index, row] of fixture.rows.entries()) {
+    const rawName = `${row.first} ${row.last}`.trim();
+    const rawRank = row.rank || '';
+    const resultId = crypto.createHash('sha256').update(`${edition.id}|${source}|${index + 1}|${rawName}|${rawRank}`).digest('hex').slice(0, 24);
+    insertResult.run(resultId, edition.id, source, index + 1,
+      JSON.stringify({extraction: fixture.extraction_note, row}), rawName,
+      row.gender || null, row.club || null, rawRank, row.time || null, row.status,
+      row.gender || null, parseClockSeconds(row.time || ''), source);
+  }
+  stats.push({source, year: 2026, imported: 110, observations: 0,
+    extraction: 'private fresh official 2026 HTML result sections'});
+}
+
 fs.writeFileSync(path.join(dbDir, 'import-report.json'), JSON.stringify({ generated_at: new Date().toISOString(), stats }, null, 2));
 console.log(JSON.stringify(stats, null, 2));
 console.log(`results=${db.prepare('SELECT COUNT(*) n FROM results').get().n} observations=${db.prepare('SELECT COUNT(*) n FROM observations').get().n}`);
