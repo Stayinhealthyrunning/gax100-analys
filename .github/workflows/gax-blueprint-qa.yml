@@ -1,0 +1,28 @@
+name: GAX100 public blueprint contract – no participant data
+on:
+  push:
+    branches: [codex/gax100-satila-blueprint-2026-11-09]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  blueprint-privacy:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Public preview must contain no named participants or raw records
+        run: python -B -m unittest discover -s tests -p 'test_blueprint_contract.py' -v
+      - name: Original Sätila blueprint JS remains syntactically valid
+        run: |
+          for file in docs/assets/*.js; do node --check "$file"; done
+# Never restore PRIVATE participants to a public runner.
+# No screenshots, no artifacts, no Pages and no public raw export.
