@@ -2,7 +2,7 @@
 
 **Status 2026-11-09: endast källkod och aggregerad förhandsvy. INGEN offentlig export av deltagaruppgifter.**
 
-Detta är en separat ren kodgren skapad från GAX100 `main` och använder den faktiska Sätila `docs/index.html`, `docs/assets/app.js`, profil- och jämförelsemodulerna och samma CSS som layout- och funktionell blueprint. Endast eventidentitet, distans-/upplageselektion, banningsrättigheter och datamodell skiljer sig.
+Detta är en separat kodgren skapad från GAX100 `main` och använder den faktiska Sätila `docs/index.html`, `docs/assets/app.js`, profil- och jämförelsemodulerna och samma CSS som layout- och funktionell blueprint. Endast eventidentitet, distans-/upplageselektion, banningsrättigheter och datamodell skiljer sig.
 
 - GAX: 100 miles, 14 editioner 2014–2026, inklusive två separata 2021 A/B.
 - **Norm för 2023:** officiell resultatlista, 90 resultat och 70 FINISHED; inte arrangörens löptext.
@@ -11,6 +11,6 @@ Detta är en separat ren kodgren skapad från GAX100 `main` och använder den fa
 - Position, replay, banprofil och 2–5-kartduell är dataspärrade utan rättighetsklar års-GPX och kontrollkoordinater. Kontrolltid och jämförelse fungerar när källan har observerade passager.
 - Verifierad ålder saknas för GAX; namn/publicerad export förblir blockerad tills GDPR/suppression/rättslig grund är dokumenterat godkända.
 - Sätilas foton och soundtrack är inte kopierade. Hero är en separat CSS-baserad GAX-version utan tredje parts bild.
-- Den gamla GAX100 PR #8 och dess historiska GitHub-sanering påverkas inte av denna nya gren.
+- GAX100 PR #8 och dess historiska GitHub-sanering påverkas inte av denna gren. Ingen ny rådata finns i aktuell offentlig kod, men grenen är skapad från Git-historik som fortfarande kan kräva GitHub Supports sanering.
 
 Efter fullt godkännande genererar den privata pipelinen publik JSON från den verifierade, filtrerade källan; den ska aldrig kopiera raw SQLite, raw HTML/PDF eller okontrollerade personuppgifter till denna publika gren.
