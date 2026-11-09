@@ -1,5 +1,21 @@
 # WORK_QUEUE.md
 
+## Ny omimport och integritetshantering 2026-11-09
+
+| ID | Status | Nästa steg |
+|---|---|---|
+| REIMPORT-01 Fräsch källa 2014–2026 | DONE PRIVAT | Actions 42590244783 PASS, 14 upplagor, 945 resultat, 1 838 observationer; privat PR #24 mergad till `loppanalys-private-data/main` |
+| REIMPORT-02 PDF 2025 från officiell källa | DONE PRIVAT | Ny direkt PDF-tabellimport: 69 FINISHED, 40 DNF, 10 DNS |
+| REIMPORT-03 HTML 2026 med explicita statusavsnitt | DONE PRIVAT | 66 FINISHED, 33 DNF, 11 DNS; tidigare parsers 44 UNKNOWN är ersatt i ny källa |
+| REIMPORT-04 Gammal publik JSON i aktiv PR #8 | DONE FÖR HEAD | `web/data.json` borttagen; historiska PR-refar/commits och andra grenar återstår hos GitHub Support |
+| REIMPORT-05 Integrera ny privat DB i GDPR-filtrerad export | BLOCKED | Ny privata DB:n är inte publik, och full QA får inte göra release förrän skydd och rättslig grund verifierats |
+| REIMPORT-06 Gamla privata råkällfiler | HOLD | 17 källfiler kvar tills oberoende backup, retention och revisionsbevis är beslutade; de är originalfiler, inte den nya SQLite-databasen |
+| REIMPORT-07 2023-källkonflikt | REVIEW | Officiell tabell 90/70 kontra officiell sidtext 89/69; ingen radering utan källbeslut |
+| REIMPORT-08 Städa PR/Actions/cache/historik | BLOCKED EXTERN | GitHub Support ska slutföra exponeringsfrågan; databasbyte tar inte bort gamla Git-objekt |
+| REIMPORT-09 Kartduell, GPX och Pages | BLOCKED | Ingen publicering innan GDPR/rättigheter/QA uttryckligen är godkända |
+
+
+
 ## GDPR-sanering 2026-10-14 – aktuell arbetskö
 
 | ID | Status | Verifiering / nästa säkra åtgärd |
