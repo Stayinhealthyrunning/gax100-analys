@@ -1,5 +1,16 @@
 # Projektstatus: GAX100 Analys
 
+## Ny privat omimport 9 november 2026 — pågående releasegrind
+
+- En NY SQLite har importerats från officiella GAX100-källor (2014–2026) utan den gamla PDF-transkriptionen. Den ligger ENDAST i det privata repot `loppanalys-private-data/gax100/fresh/gax100.sqlite` på `main` efter mergad privat PR #24.
+- Full privat import, PDF-parsning, strukturell SHA-256-kontroll och SQLite-kontroll passerade i [Actions-körning 42590244783](https://github.com/Stayinhealthyrunning/loppanalys-private-data/actions/runs/42590244783): 14 upplagor, 945 resultat, 1 838 tidsobservationer. År 2025: 69 FINISHED / 40 DNF / 10 DNS. År 2026: 66 FINISHED / 33 DNF / 11 DNS.
+- Den gamla publicerade `web/data.json` (505 kB) är nu borttagen från AKTIV PR #8-gren, och `.gitignore` spärrar återincheckning av genererade databaser och JSON-exporter. Fryst snapshot-QA och uppladdning av resultatbärande screenshots är avaktiverade.
+- Det gamla offentliga GAX100-repots Git-historik, äldre PR-refar och eventuella cache-/Actions-kopior rensas INTE automatiskt genom denna ändring. GitHub Support-ärendet måste fortsätta. De gamla 17 privata råkällfilerna har av bevarande-/revisionsskäl ännu inte raderats.
+- Nyimporten är endast privat; PR #8 är fortsatt Draft, ingen ny GDPR-filtrerad publik export/Pages-release/kataloglänk. 2023 års officiella resultattabell ger 90 rader/70 fullföljande medan sidans inledning säger 89/69: avvikelsen måste bedömas som källkonflikt, inte automatiskt raderas.
+- Nästa arbete: integrera den nya privata SQLite som källa i kontrollerad export; verifiera privat GDPR-register, ålder/laglig grund, 2023-källavvikelse och full release-QA. Inga publika personuppgifter utan dokumenterat godkännande.
+
+
+
 ## Aktuell saneringsstatus 2026-10-14
 
 Repositoryägaren godkände den avgränsade GAX100-GDPR-saneringen i privat ärende
