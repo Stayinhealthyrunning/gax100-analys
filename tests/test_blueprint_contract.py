@@ -56,6 +56,14 @@ class BlueprintContract(unittest.TestCase):
         js=(DOCS/"assets"/"app.js").read_text(encoding="utf-8")
         self.assertIn("editionKey",js)
         self.assertIn("PRIVATE_DATA_WITHHELD",js)
+        self.assertIn("GaxCheckpointView?.render",js)
+        self.assertIn("GaxCheckpointView?.renderComparison",js)
+        self.assertIn("GaxCheckpointView?.renderProfile",js)
+        self.assertIn("PRIVATE_DATA_WITHHELD", (DOCS/"data/races/2023-gax100.json").read_text(encoding="utf-8"))
+        checkpoint=(DOCS/"assets/gax-controls.js").read_text(encoding="utf-8")
+        self.assertIn("n>=5",checkpoint)
+        self.assertIn("source-only",checkpoint)
+        self.assertNotIn("Ramhulta",checkpoint)
         self.assertNotIn("satila-trail.mp3",js)
 
 if __name__=="__main__":
