@@ -84,14 +84,23 @@ for (const src of manifest.filter(x => x.kind === 'html' && x.status === 'downlo
     const row = tokens.find((x, i) => i > 0 && false); // keeps parsing intentionally row-token based below
   }
   // Parse each table row with a small state machine, retaining the original HTML row.
-  let currentHeading = ''; let currentGender = null; let headers = null; let sourceRow = 0;
+  let currentHeading = ''; let currentGender = null; let sectionStatus = null; let headers = null; let sourceRow = 0;
   for (const match of html.matchAll(/<(h2|h3|tr)\b[^>]*>[\s\S]*?<\/\1>/gi)) {
     const tag = match[1].toLowerCase(); const raw = match[0];
-    if (tag === 'h2') { currentHeading = clean(raw); headers = null; }
-    if (tag === 'h3' && /^(Damer|Herrar|Kvinnor|Män)/i.test(clean(raw))) currentGender = clean(raw);
+    if (tag === 'h2') { currentHeading = clean(raw); headers = null; sectionStatus = null; }
+    if (tag === 'h3' && /^(Damer|Herrar|Kvinnor|Män)/i.test(clean(raw))) { currentGender = clean(raw); sectionStatus = null; }
     if (tag !== 'tr') continue;
-    const c = cells(raw); if (c.length < 2) continue;
-    if (c.length === 1 && /^(Kvinnor|Män|Damer|Herrar)$/i.test(c[0])) { currentGender = c[0]; headers = null; continue; }
+    const c = cells(raw);
+    if (!c.length) continue;
+    const sectionLabel = (c[0] || '').trim();
+    const sectionHeading = c.slice(1).every(v => !v || !v.trim());
+    if (sectionHeading && /^(Kvinnor|Män|Damer|Herrar)$/i.test(sectionLabel)) {
+      currentGender = sectionLabel; headers = null; sectionStatus = null; continue;
+    }
+    if (sectionHeading && /^(DNF|DNS)$/i.test(sectionLabel)) {
+      sectionStatus = sectionLabel.toUpperCase(); continue;
+    }
+    if (c.length < 2) continue;
     if (/(Namn|Name)/i.test(c.join(' | ')) && /(Tid|Time|Finish|Mål|Sluttid)/i.test(c.join(' | '))) { headers = c; continue; }
     if (/Förnamn/i.test(c.join(' | ')) && /Efternamn/i.test(c.join(' | ')) && /Sluttid/i.test(c.join(' | '))) { headers = c; continue; }
     if (!headers) continue;
@@ -105,7 +114,7 @@ for (const src of manifest.filter(x => x.kind === 'html' && x.status === 'downlo
     const lower = c.map(x => x.toLowerCase()); const statusText = c.find(x => /^(dnf|dns|dsq)$/i.test(x)) || '';
     const finishIndex = headers.findIndex(x => /mål|finish|sluttid/i.test(x));
     const finishRaw = finishIndex >= 0 ? (c[finishIndex] || '') : '';
-    const status = statusText.toUpperCase() || (/^DNF\b/i.test(finishRaw) ? 'DNF' : parseClockSeconds(finishRaw) !== null ? 'FINISHED' : 'UNKNOWN');
+    const status = statusText.toUpperCase() || (/^DNF\b/i.test(finishRaw) ? 'DNF' : parseClockSeconds(finishRaw) !== null ? 'FINISHED' : (sectionStatus || 'UNKNOWN'));
     const clubIndex = headers.findIndex(x => /club|klubb|town|ort/i.test(x));
     const rankIndex = headers.findIndex(x => /plats|position|placering/i.test(x));
     const rawName = nameIndex >= 0 ? c[nameIndex] : `${c[firstIndex]} ${c[lastIndex]}`; const rawRank = rankIndex >= 0 ? c[rankIndex] : '';
