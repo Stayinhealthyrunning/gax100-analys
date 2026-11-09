@@ -577,7 +577,15 @@ function resultRows(){
   });
   return list;
 }
-function renderResults(){let list=resultRows(),per=35,pages=Math.max(1,Math.ceil(list.length/per));S.page=Math.min(S.page,pages-1);$('#results-count').textContent=`${format(list.length)} träffar`;
+function renderResults(){
+  if(S.race?.release_state==='PRIVATE_DATA_WITHHELD'){
+    const edition=S.boot?.editions?.find(e=>e.race_key===S.race?.race_key);
+    $('#results-count').textContent=`${format(edition?.results??0)} officiella resultat finns i privat källa · individuella poster är inte publicerade`;
+    $('#results-table tbody').innerHTML='<tr><td colspan="11">Resultatlistan är avsiktligt spärrad i denna förhandsversion. Historikens aggregerade uppgifter är tillgängliga, men inga identifierbara deltagaruppgifter visas.</td></tr>';
+    $('#page-number').textContent='Publicering spärrad';
+    $('#page-prev').disabled=true;$('#page-next').disabled=true;return;
+  }
+  let list=resultRows(),per=35,pages=Math.max(1,Math.ceil(list.length/per));S.page=Math.min(S.page,pages-1);$('#results-count').textContent=`${format(list.length)} träffar`;
 $('#results-table tbody').innerHTML=list.slice(S.page*per,(S.page+1)*per).map(r=>`<tr><td>${S.year}</td><td>${html(S.race.label)} · ${html(editionDistanceLabel(S.race))}</td><td>${r.place??'—'}</td><td>${html(r.bib)}</td><td><strong>${html(r.name)}</strong></td><td>${html(sexLabel(r))}</td><td>${html(r.class_name)}</td><td>${html(r.club)}</td><td>${html(r.status)}</td><td>${time(r.finish_seconds)}</td><td><button type="button" data-open="${html(r.id)}" aria-label="Öppna profilen för ${html(r.name)}">Öppna ↗</button></td></tr>`).join('');$('#page-number').textContent=`Sida ${S.page+1} / ${pages}`;$('#page-prev').disabled=S.page<=0;$('#page-next').disabled=S.page>=pages-1;bindResultLinks($('#results-table'));}
 function findRecord(id){return records().find(r=>r.id===id)}
 function searchMatches(q){q=String(q||'').trim().toLocaleLowerCase('sv');return q.length<2?[]:records().filter(r=>r.name.toLocaleLowerCase('sv').includes(q)||r.bib===q).slice(0,9)}
