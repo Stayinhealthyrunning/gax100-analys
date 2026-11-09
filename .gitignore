@@ -1,0 +1,7 @@
+data/raw/
+data/curated/*.sqlite
+data/verified/result-2025-official.json
+.private-source/
+node_modules/
+playwright-report/
+test-results/
