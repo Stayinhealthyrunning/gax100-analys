@@ -151,7 +151,7 @@ function create(){
     captureCurrentSelection,
     setContext(nextFamily,nextYear){const changed=family!==nextFamily,previousActiveYear=currentYear;family=nextFamily;currentYear=Number(nextYear)||null;if(changed){selected=[];restoredFamily=null;crossYearSelectionActive=false}const currentEdition=getCurrentSelection?.()?.edition?.race_key;
       const latest=editions()[0]?.race_key;
-      const previous=changed||!previousActiveYear||String(year.value)===String(currentEdition)?String(currentEdition||latest):year.value;
+      const previous=(crossYearSelectionActive&&!changed&&year.value)?year.value:String(currentEdition||latest);
       year.innerHTML=editions().map(ed=>`<option value="${esc(ed.race_key)}">${esc(ed.edition_label||ed.year)}</option>`).join('')+'<option value="all">Alla år</option>';
       const deepLink=new URLSearchParams(location.search).get('myFamily')===family;
       year.value=deepLink?'all':editions().some(ed=>String(ed.race_key)===String(previous))?String(previous):String(latest);if(deepLink)crossYearSelectionActive=true;renderSelected();if(changed)hide();updatePicker();restore().catch(console.error)}
