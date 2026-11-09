@@ -1,0 +1,11 @@
+name: GAX100 legacy QA (retired after privacy-motivated source reset)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  retired:
+    if: ${{ false }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Retired legacy QA; use private fresh GAX100 import"
