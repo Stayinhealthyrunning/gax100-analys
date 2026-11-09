@@ -497,7 +497,7 @@ const bands=interactive?ranges.map(s=>{
   return `<rect data-elev-segment="${s.index}" class="elevation-segment ${s.index===S.selectedSegment?'selected':''}" x="${left}" y="18" width="${Math.max(1,right-left)}" height="${H-18}" tabindex="0" role="button" aria-pressed="${s.index===S.selectedSegment}" aria-label="Välj GAX100-arrangörens-segment ${html(s.label)} på höjdprofilen" style="pointer-events:none"><title>GAX100-arrangörens: ${html(s.label)} · endast distansprojektion, ingen depåposition</title></rect>${!aids.length&&right-left>46?`<text class="elevation-segment-label" x="${mid}" y="${H-4}" text-anchor="middle">${html(s.to.name.slice(0,10))}</text>`:''}`;
 }).join(''):'';
 const aidMarkers=aids.map((a,i)=>{
-  const pos=x([a.route_km]),title=a.name==='Ramhultafallet'?'Ramhulta':a.name;
+  const pos=x([a.route_km]),title=a.name;
   const labelY=H-4-(i%2)*11;
   return `<g data-aid-elevation="${html(a.name)}"><line x1="${pos}" x2="${pos}" y1="17" y2="${H-P}" stroke="#8b5327" stroke-width="1" stroke-dasharray="3 3" opacity=".75"/><circle cx="${pos}" cy="${H-P}" r="3" fill="#8b5327"/><text x="${pos}" y="${labelY}" font-size="9" fill="#334d38" text-anchor="middle">${html(title)}</text><title>${html(a.name)} · depå ${fmtKm(a.official_km)} km, GPS-rutt ${fmtKm(a.route_km)} km</title></g>`;
 }).join('');
