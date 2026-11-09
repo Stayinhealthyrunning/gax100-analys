@@ -41,6 +41,8 @@ function stations(race){
  });
 }
 function displayKm(st){
+ // Finish uses the nominal definition of 100 miles, not an observed source kilometre.
+ if(st.is_finish)return '—';
  return valid(st.km)?Number(st.km).toLocaleString('sv-SE',{maximumFractionDigits:2})+'*':'—';
 }
 function ensureOverview(){
