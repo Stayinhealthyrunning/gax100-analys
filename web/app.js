@@ -48,6 +48,41 @@ function syncUrl(push = false) {
   if (state.duel.length) url.searchParams.set('duel', state.duel.join(',')); else url.searchParams.delete('duel');
   if (push) history.pushState(null, '', url); else history.replaceState(null, '', url);
 }
+function renderEditionCapabilities() {
+  const rows = editionResults(state.year);
+  const editionName = edition()?.edition_label || 'vald upplaga';
+  const finished = rows.filter(r => r.status === 'FINISHED' && Number.isFinite(r.finish_seconds) && r.finish_seconds > 0);
+  const observed = rows.filter(r => Array.isArray(r.observations) && r.observations.length > 0);
+  const complete = GaxField.cohort(rows);
+  const sourceRank = finished.filter(r => /^\d+$/.test(String(r.rank || ''))).length;
+  const cells = [
+    {available:finished.length > 0, label:'Sluttider och fältstatistik',note:finished.length+' verifierade',href:'#field-overview'},
+    {available:observed.length > 0, label:'Observerade mellantider',note:observed.length+' resultat med passage',href:'#runner-finder'},
+    {available:!!complete, label:'Segmentlabb och loppplan',note:complete ? complete.n+' kompletta profiler' : 'otillräckligt underlag',href:'#segment-lab'},
+    {available:sourceRank > 0, label:'Officiella placeringar',note:sourceRank+' verifierade',href:'#field-overview'},
+  ];
+  $('#edition-capability-content').innerHTML =
+    '<div class="capability-heading"><h2>Vad går att analysera för '+esc(editionName)+'?</h2>'+
+    '<p>Visar vad källdatan faktiskt stöder. Inga saknade passager, placeringar eller GPS-positioner rekonstrueras.</p></div>'+
+    '<div class="capability-options">'+cells.map(cell =>
+      (cell.available ? '<a class="capability-item available" href="'+cell.href+'"' :
+        '<div class="capability-item unavailable" aria-disabled="true"')+
+      ' aria-label="'+esc(cell.label)+': '+esc(cell.note)+'">'+
+      '<span aria-hidden="true">'+(cell.available?'✓':'–')+'</span>'+
+      '<strong>'+esc(cell.label)+'</strong><small>'+esc(cell.note)+'</small>'+
+      (cell.available?'</a>':'</div>')).join('')+'</div>'+
+    (!complete?'<p class="capability-hint">Vill du se den historiska delsträckeanalysen? '+
+      '<button type="button" id="find-split-year">Visa senaste upplagan med kompletta mellantider</button></p>':'');
+  const button=$('#find-split-year');
+  if(button) {
+    const next=state.data.editions.slice().sort((a,b)=>b.year-a.year ||
+      b.edition_id.localeCompare(a.edition_id)).find(item=>!!GaxField.cohort(editionResults(item.edition_id)));
+    if (!next) {button.disabled=true;return;}
+    button.onclick=()=>{$('#year').value=next.edition_id;$('#year').dispatchEvent(new Event('change',{bubbles:true}));
+      $('#segment-lab').scrollIntoView({block:'start'});};
+  }
+}
+
 function renderFacts() {
   const all = editionResults(state.year);
   const finished = all.filter((result) => result.status === 'FINISHED' && Number.isFinite(result.finish_seconds) && result.finish_seconds > 0);
@@ -971,7 +1006,7 @@ function setupHelpDialog() {
   $('#help-dialog-close').onclick = () => dialog.close();
 }
 
-function render() { renderFacts(); renderFilters(); renderRows(); renderRunner(); renderPlan(); renderComparison(); renderMapDuel(); renderFinishGroupSelector(); chart(); renderPercentiles(); renderTargetPlacement(); renderHistory(); renderQuality(); renderExtended(); renderFieldInsights(); renderSegmentLab(); enhanceChartViewports(); }
+function render() { renderEditionCapabilities(); renderFacts(); renderFilters(); renderRows(); renderRunner(); renderPlan(); renderComparison(); renderMapDuel(); renderFinishGroupSelector(); chart(); renderPercentiles(); renderTargetPlacement(); renderHistory(); renderQuality(); renderExtended(); renderFieldInsights(); renderSegmentLab(); enhanceChartViewports(); }
 
 $('#chart-zoom-dialog').addEventListener('close', () => {
   $('#chart-zoom-content').replaceChildren();
