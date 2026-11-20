@@ -328,7 +328,26 @@ function renderSegmentGraph(segs){const host=$('#segment-chart'),shown=modeDistr
 function renderSegmentTable(){let segs=segmentStats(S.filtered);$('#segment-table tbody').innerHTML=segs.map((s,i)=>`<tr data-select-segment="${i}" tabindex="0" class="${i===S.selectedSegment?'selected':''}"><td>${html(s.from.name)} → ${html(s.to.name)}</td><td>${fmtKm(s.km)}</td><td>${s.n}</td><td>${time(s.median)}</td><td>${num(s.q25)?time(s.q25)+' – '+time(s.q75):'n &lt; 10'}</td><td>${paceDistanceSupported(s)?pace(s.median,s.km,S.unit):'Distans ej verifierad'}</td></tr>`).join('');$$('[data-select-segment]',$('#segment-table')).forEach(n=>{let go=()=>activateSegment(+n.dataset.selectSegment);n.addEventListener('click',go);n.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go()}})});}
 function selectedRange(){const cp=boundaries(),from=cp[S.podiumStart],to=cp[S.podiumEnd];if(!from||!to||to.km<=from.km)return null;const obs=S.filtered.filter(finish).map(r=>{const a=S.podiumStart===0?{elapsed_seconds:0}:observed(r,from),b=observed(r,to);return a&&b&&num(a.elapsed_seconds)&&num(b.elapsed_seconds)&&b.elapsed_seconds>a.elapsed_seconds?{r,seconds:b.elapsed_seconds-a.elapsed_seconds}:null}).filter(Boolean),adjacent=segmentStats(records()).slice(S.podiumStart,S.podiumEnd),distanceSupported=adjacent.length===S.podiumEnd-S.podiumStart&&adjacent.every(paceDistanceSupported);return {from,to,km:to.km-from.km,obs,distanceSupported}}
 function renderSegmentPodium(){let range=selectedRange();$('#segment-podium').innerHTML=range?`<p class="segment-range-summary">${html(range.from.name)} → ${html(range.to.name)} · ${fmtKm(range.km)} timing-km · ${range.obs.length} giltiga tidspar</p><div class="podium-pair">${podiumPair(range.obs.slice().sort((a,b)=>a.seconds-b.seconds).map(o=>({r:o.r,value:range.distanceSupported?pace(o.seconds,range.km,S.unit):time(o.seconds)+' · tid endast'})))}</div>`:empty();bindResultLinks($('#segment-podium'))}
-function parseTarget(){let s=$('#target-time').value.trim(),p=s.split(':').map(Number);if(p.some(x=>!Number.isFinite(x)||x<0)||p.length<2||p.length>3||p.slice(1).some(x=>x>59))return null;let n=p.length===2?p[0]*3600+p[1]*60:p[0]*3600+p[1]*60+p[2];return n>0?n:null}
+function normalizeTargetInput(raw){
+  const s=String(raw??'').trim();
+  let h,m=0,sec=0;
+  if(/^\d{1,2}:\d{1,2}(?::\d{1,2})?$/.test(s)){
+    const parts=s.split(':').map(Number);[h,m,sec]=[parts[0],parts[1],parts[2]??0];
+  }else if(/^\d{1,6}$/.test(s)){
+    if(s.length<=2)h=Number(s);
+    else if(s.length<=4){h=Number(s.slice(0,-2));m=Number(s.slice(-2));}
+    else{h=Number(s.slice(0,-4));m=Number(s.slice(-4,-2));sec=Number(s.slice(-2));}
+  }else return null;
+  if(m>=60||sec>=60||h*3600+m*60+sec===0)return null;
+  return [h,m,sec].map(n=>String(n).padStart(2,'0')).join(':');
+}
+function parseTarget(){
+  const field=$('#target-time'),normalized=normalizeTargetInput(field.value);
+  if(!normalized)return null;
+  field.value=normalized;
+  const [h,m,s]=normalized.split(':').map(Number);
+  return h*3600+m*60+s;
+}
 function renderPlan(){
   if(!S.race)return;
   const cohortSelect=$('#plan-cohort');
