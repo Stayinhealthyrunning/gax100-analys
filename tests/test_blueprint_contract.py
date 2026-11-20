@@ -21,6 +21,26 @@ class BlueprintContract(unittest.TestCase):
         self.assertNotIn("EQ Timing",html)
         self.assertEqual(len(re.findall(r'data-family="gax100"',html)),1)
 
+    def test_stage_dialog_and_compact_group_layout(self):
+        page=(DOCS/"index.html").read_text(encoding="utf-8")
+        js=(DOCS/"assets"/"app.js").read_text(encoding="utf-8")
+        helpers=(DOCS/"assets"/"gax-controls.js").read_text(encoding="utf-8")
+        self.assertIn('id="open-gax-stages"',page)
+        self.assertIn('id="gax-stages-dialog"',page)
+        self.assertIn('id="close-gax-stages"',page)
+        self.assertIn('aria-haspopup="dialog"',page)
+        self.assertEqual(page.count('class="gax-stage-list"'),1)
+        for control in ("Magleberg","Haväng","Sandhammaren"):
+            self.assertIn(control,page)
+        self.assertIn("inte en verifierad GPS-indelning",page)
+        self.assertNotIn("Klasser och kön",page)
+        self.assertIn('id="group-bars" hidden aria-hidden="true"',page)
+        self.assertIn("gax-group-breakdown",js)
+        self.assertIn("completion.append(details)",js)
+        self.assertIn("details.append(groupsChart)",js)
+        self.assertIn("stagesDialog.showModal()",helpers)
+        self.assertIn("stagesButton.focus()",helpers)
+
     def test_only_aggregate_public_data(self):
         data=DOCS/"data"
         boot=json.loads((data/"bootstrap.json").read_text(encoding="utf-8"))

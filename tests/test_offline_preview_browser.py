@@ -17,6 +17,20 @@ def main(file:Path):
         assert page.locator(".gax-offline-demo").count()==1, "fictional data banner missing"
         assert page.locator("#results-table tbody tr").count()>0,"synthetic results missing"
         assert "Demolöpare" in page.locator("#results-table tbody").inner_text(),"demo results not displayed"
+        stage=page.locator("#open-gax-stages")
+        stage.click()
+        assert page.locator("#gax-stages-dialog").evaluate("(el)=>el.open"),"stage modal missing"
+        assert page.locator(".gax-stage-list li").count()==4,"four stages not present"
+        assert "inte en verifierad GPS-indelning" in page.locator("#gax-stages-dialog").inner_text()
+        page.locator("#close-gax-stages").click()
+        assert not page.locator("#gax-stages-dialog").evaluate("(el)=>el.open"),"modal did not close"
+        assert stage.evaluate("(el)=>document.activeElement===el"),"focus not returned to opener"
+        page.locator(".gax-group-breakdown").wait_for(state="attached",timeout=12000)
+        assert page.locator("#overview .overview-groups-wide").count()==0
+        assert page.locator(".gax-group-breakdown #group-bars").count()==1
+        assert not page.locator(".gax-group-breakdown").evaluate("(el)=>el.open"),"class detail should begin collapsed"
+        page.locator(".gax-group-breakdown summary").click()
+        assert page.locator(".gax-group-breakdown").evaluate("(el)=>el.open"),"class detail did not expand"
         assert "Demokontroll" in page.locator("#gax-controls-panel").inner_text().title(),"demo control panel empty"
         page.select_option("#year-select","2021-a-gax100")
         page.wait_for_function("() => document.querySelector('#race-title')?.textContent.includes('2021-A')")

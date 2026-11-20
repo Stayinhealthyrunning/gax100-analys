@@ -7,6 +7,13 @@ on:
       - tests/test_offline_preview_browser.py
       - .github/workflows/gax-offline-preview.yml
       - docs/**
+  pull_request:
+    branches: [codex/gax100-satila-blueprint-2026-11-09]
+    paths:
+      - scripts/build_offline_preview.py
+      - tests/test_offline_preview_browser.py
+      - .github/workflows/gax-offline-preview.yml
+      - docs/**
   workflow_dispatch:
 permissions:
   contents: read
@@ -18,6 +25,7 @@ jobs:
       - name: Checkout public code only – NO private participant database
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
       - uses: actions/setup-python@v5
         with:

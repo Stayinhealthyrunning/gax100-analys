@@ -1218,6 +1218,21 @@ window.SatilaExtras=(()=>{
       <article class="panel"><div class="panel-heading"><div><p class="eyebrow">ÅLDER</p><h3>Vilka springer?</h3></div><button class="info" data-help-extra="age">i</button></div><div id="age-chart"></div></article>
       <article class="panel"><div class="panel-heading"><div><p class="eyebrow">KLUBB / ORT</p><h3>Största grupperna</h3></div><button class="info" data-help-extra="club">i</button></div><div id="club-chart"></div></article>
     </div>`);
+    // The standalone "Klasser och kön" chart was removed from the overview.
+    // Keep the existing chart/filter logic, but relocate its accessible content
+    // under the "Start till mål" gender charts in a native disclosure control.
+    const completion=$('#sex-completion')?.closest('article');
+    const groupsChart=$('#group-bars');
+    if(completion && groupsChart && !completion.contains(groupsChart)){
+      const details=document.createElement('details');
+      details.className='gax-group-breakdown';
+      details.innerHTML='<summary>Visa klassfördelning och kön</summary>'
+        +'<p class="muted small">Antal fullföljare efter den klass som faktiskt anges i resultatkällan. Inget kön eller någon klass härleds när uppgiften saknas.</p>';
+      completion.append(details);
+      details.append(groupsChart);
+      groupsChart.hidden=false;
+      groupsChart.removeAttribute('aria-hidden');
+    }
     if(!$('#extra-dynamics')) $('#dynamics').insertAdjacentHTML('beforeend',`<div id="extra-dynamics" class="extra-grid two-up">
       <article class="panel"><div class="panel-heading"><div><p class="eyebrow">PLACERINGSFÖRÄNDRING</p><h3>Vem arbetade sig framåt?</h3></div><button class="info" data-help-extra="gain">i</button></div><div id="placement-gain"></div></article>
       <article class="panel"><div class="panel-heading"><div><p class="eyebrow">SISTA TREDJEDELEN</p><h3>Avslutningens progression</h3></div><button class="info" data-help-extra="finishprogress">i</button></div><div id="finish-progression"></div></article>
