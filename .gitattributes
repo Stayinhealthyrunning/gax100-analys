@@ -1,0 +1,2 @@
+# Identifier-bearing source evidence must never render as a readable public diff.
+data/verified/result-2025-official.json -text -diff

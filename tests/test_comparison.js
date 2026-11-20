@@ -1,0 +1,18 @@
+const assert = require('node:assert/strict');
+const data = require('../web/data.json');
+const { compare } = require('../web/comparison.js');
+const same = data.results.filter((r) => r.edition_id === 'gax100-2023' && r.status === 'FINISHED' && r.observations.length >= 3);
+assert(same.length >= 2, 'must have real runners with checkpoints');
+const r = compare(same[0], same[1]);
+assert(r && !r.crossEdition);
+assert.equal(r.checkpoints.length, 3);
+for (const row of r.checkpoints) assert.equal(row.gap, row.b - row.a, 'gap is B minus A');
+assert.equal(r.finishGap, same[1].finish_seconds - same[0].finish_seconds);
+const different = compare(same[0], data.results.find((x) => x.edition_id === 'gax100-2022' && x.status === 'FINISHED'));
+assert(different.crossEdition);
+assert.equal(different.finishComparable, false);
+assert.equal(different.checkpoints.length, 0);
+assert.equal(different.finishGap, null);
+assert.equal(compare(same[0], same[0]), null);
+assert.equal(compare(null, same[0]), null);
+console.log('PASS: source-anchored, signed same-edition checkpoint gaps and safe cross-edition gating');
