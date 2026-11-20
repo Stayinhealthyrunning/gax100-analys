@@ -41,6 +41,16 @@ class BlueprintContract(unittest.TestCase):
         self.assertIn("stagesDialog.showModal()",helpers)
         self.assertIn("stagesButton.focus()",helpers)
 
+    def test_split_lab_and_plan_share_one_runtime_section(self):
+        html=(DOCS/"index.html").read_text(encoding="utf-8")
+        js=(DOCS/"assets"/"app.js").read_text(encoding="utf-8")
+        self.assertIn("Delsträckelabbet & personlig loppplan",html)
+        self.assertIn("href=\"#segments\">Delsträckor & loppplan",html)
+        self.assertIn("const planCard=$('#course .plan-card');",js)
+        self.assertIn("$('#segments').append(planCard)",js)
+        self.assertEqual(html.count('class="panel plan-card"'),1)
+        self.assertIn("Kartan",html) if "Kartan" in html else self.assertIn("karta",html)
+
     def test_only_aggregate_public_data(self):
         data=DOCS/"data"
         boot=json.loads((data/"bootstrap.json").read_text(encoding="utf-8"))
