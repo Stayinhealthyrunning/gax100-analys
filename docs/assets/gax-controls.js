@@ -78,8 +78,10 @@ function render(race){
 }
 function renderProfile(race,runner){
  const content=$('#profile-content');
- if(!content||!race||!runner||race.release_state==='PRIVATE_DATA_WITHHELD')return;
+ if(!content)return;
+ // Clear prior edition/runner output even when the next race is withheld.
  const previous=content.querySelector('#gax-runner-checkpoints');if(previous)previous.remove();
+ if(!race||!runner||race.release_state==='PRIVATE_DATA_WITHHELD')return;
  const data=observed(race,runner.id),rows=stations(race).filter(st=>data.has(String(st.uid)));
  if(!rows.length)return;
  const panel=document.createElement('section');
@@ -98,8 +100,10 @@ function renderProfile(race,runner){
 }
 function renderComparison(race,a,b){
  const content=$('#compare-content');
- if(!content||!race||!a||!b||race.release_state==='PRIVATE_DATA_WITHHELD')return;
+ if(!content)return;
+ // Never retain an earlier comparison after a withheld or invalid selection.
  const old=content.querySelector('#gax-direct-controls');if(old)old.remove();
+ if(!race||!a||!b||race.release_state==='PRIVATE_DATA_WITHHELD')return;
  const obsA=observed(race,a.id),obsB=observed(race,b.id);
  const rows=stations(race).filter(st=>obsA.has(String(st.uid))&&obsB.has(String(st.uid)));
  const panel=document.createElement('section');
