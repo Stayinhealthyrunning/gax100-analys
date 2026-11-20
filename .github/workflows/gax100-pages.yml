@@ -1,75 +1,58 @@
-name: GAX100 design review – synthetic participants ONLY
+name: GAX100 private-style review – synthetic offline artifact (NO Pages)
 on:
-  push:
-    branches: [main]
-    paths: [.github/workflows/gax100-pages.yml]
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: gax100-pages
-  cancel-in-progress: false
 
 jobs:
-  publish-fictional-design-review:
+  safe-synthetic-review:
+    if: ${{ github.actor == 'Stayinhealthyrunning' }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+    timeout-minutes: 30
     steps:
-      - name: Checkout EXACT verified GAX100 frontend without private results
+      - name: Checkout GAX blueprint – public frontend ONLY
         uses: actions/checkout@v4
         with:
-          ref: 8bf5fe6f610fda43cb92ac450dd4cf3a3e1f629d
+          ref: codex/gax100-satila-blueprint-2026-11-09
           persist-credentials: false
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
-      - name: Build complete design preview with fabricated data, never actual entrants
-        run: python3 -B scripts/build_offline_preview.py --docs docs --out public-preview/index.html
-      - name: Fail closed if any real source or unapproved asset is present
-        shell: bash
+          python-version: '3.12'
+      - name: Validate empty public result bundles and blueprint
+        run: python3 -B -m unittest discover -s tests -p 'test_blueprint_contract.py' -v
+      - name: Generate one HTML file with fictional runners
+        run: python3 -B scripts/build_offline_preview.py --docs docs --out preview/GAX100-FORHANDSGRANSKNING.html
+      - name: Install browser test environment
         run: |
-          set -euo pipefail
-          test -s public-preview/index.html
-          test ! -e public-preview/data.json
-          test ! -e public-preview/CNAME
+          python3 -m pip install --disable-pip-version-check playwright==1.56.0
+          python3 -m playwright install --with-deps chromium
+      - name: Test synthetic-only offline file at 390 and 1440 px
+        run: python3 -B tests/test_offline_preview_browser.py --file preview/GAX100-FORHANDSGRANSKNING.html
+      - name: Verify artifact contains no raw data, CNAME or extra file
+        run: |
           python3 - <<'PY'
           from pathlib import Path
-          import re
-          root=Path('public-preview')
-          files=list(root.rglob('*'))
-          assert len(files)==1 and files[0].name=='index.html', "Unexpected deploy file"
-          raw=files[0].read_text(encoding='utf-8')
-          assert 'FÖRHANDSGRANSKNING' in raw
-          assert 'Demolöpare ' in raw
-          assert 'LOPPANALYS_PRIVACY_REGISTRY_B64' not in raw
-          assert 'PRIVATE_DATA_WITHHELD' in raw
-          assert '<meta name="robots" content="noindex, nofollow">' in raw
-          assert re.search(r'ALL NAMES AND TIMES ARE FABRICATED',raw)
-          assert 'gax100.sqlite' not in raw
-          print('GAX_SAFE_PAGES_PREVIEW_PASS fictional_runner_rows=945 real_runner_rows=0')
+          p=Path('preview/GAX100-FORHANDSGRANSKNING.html')
+          assert list(Path('preview').iterdir())==[p], 'Unexpected preview assets'
+          s=p.read_text(encoding='utf-8')
+          for marker in ('Demolöpare ', 'ALL NAMES AND TIMES ARE FABRICATED',
+                         'PRIVATE_DATA_WITHHELD', 'FÖRHANDSGRANSKNING',
+                         '<meta name="robots" content="noindex, nofollow">'):
+              assert marker in s, 'Required synthetic-only privacy marker missing'
+          for marker in ('gax100.sqlite', 'LOPPANALYS_PRIVACY_REGISTRY_B64', '<script src="assets/',
+                         '<link rel="stylesheet" href="assets/'):
+              assert marker not in s, 'Unsafe external or private dependency'
+          print('GAX_ARTIFACT_ONLY_PASS: no Pages, no real participant records')
           PY
-          printf 'User-agent: *\nDisallow: /\n' > public-preview/robots.txt
-          printf 'GitHub Pages design review, entirely fictional results. No live participant data.\n' > public-preview/README.txt
-      - name: Configure GitHub Pages
-        uses: actions/configure-pages@v5
-      - name: Upload synthetic-only static review site
-        uses: actions/upload-pages-artifact@v4
+      - name: Save HTML for offline design review only
+        uses: actions/upload-artifact@v4
         with:
-          path: public-preview/
-          name: gax100-synthetic-review-${{ github.run_id }}-${{ github.run_attempt }}
-      - name: Deploy GAX100 fictional-data design review
-        uses: actions/deploy-pages@v4
-        id: deployment
-        with:
-          artifact_name: gax100-synthetic-review-${{ github.run_id }}-${{ github.run_attempt }}
+          name: gax100-synthetic-offline-design-${{ github.run_id }}
+          path: preview/GAX100-FORHANDSGRANSKNING.html
+          retention-days: 14
+          if-no-files-found: error
 
-# The GAX Pages address is public even without a hyperlink.
-# Never add real names, original results, raw observations, CNAME or hidden
-# database exports. Legal publication of real entrants is a separate decision.
+# No pages:write, id-token:write or actions/deploy-pages.
+# The HTML is synthetic and publicly downloadable as an artifact in this public repo.
+# Real GAX results remain private until independent GDPR, rights and QA approval.
