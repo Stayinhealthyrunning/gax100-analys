@@ -39,6 +39,15 @@ def main(file:Path):
         page.select_option("#year-select","2023-gax100")
         page.wait_for_function("() => document.querySelector('#scope-status')?.textContent.includes('90')")
         assert "Demolöpare" in page.locator("#results-table tbody").inner_text()
+        # The two finishing-strength views must show actual named source rows
+        # whenever the LAST observed time-pair cohort is sufficient. There is
+        # no approved GPX/physical distance in this fictional demo.
+        page.locator("#standouts [data-standout-tab='finish']").click()
+        assert page.locator("#standout-active-panel .podium-row").count()>=1,"named finishers missing in strongest finish"
+        assert "Demolöpare" in page.locator("#standout-active-panel .podium-row").first.inner_text()
+        page.locator("#last-segment-strength .mini-result").first.wait_for(timeout=10000)
+        assert "Demolöpare" in page.locator("#last-segment-strength .mini-result").first.inner_text()
+        assert "Ingen GPS-fart" in page.locator("#last-segment-strength").inner_text()
         page.locator("#results-table [data-open]").first.click()
         assert page.locator("#profile-dialog").evaluate("(el) => el.open")
         assert page.locator("#gax-runner-checkpoints tbody tr").count()>=1

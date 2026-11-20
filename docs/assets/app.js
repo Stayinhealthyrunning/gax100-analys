@@ -215,27 +215,39 @@ function renderDynamics(){
 
 /* Every standout uses source-supported adjacent TIME observations. Physical
    pacing categories never include a segment whose timing distance is gated. */
-function standoutFinishStrength(profiles){
- const cps=boundaries(),goal=cps.at(-1);
- if(cps.length<4||goal?.name!=='Mål'||!num(goal.km)||goal.km<=0)return[];
- const breakpoint=cps.slice(1,-1).filter(p=>p.km>=goal.km*.55&&p.km<=goal.km*.80)
-  .sort((a,b)=>Math.abs(a.km/goal.km-2/3)-Math.abs(b.km/goal.km-2/3))[0];
- if(!breakpoint)return[];
- return profiles.map(({r,parts})=>{
-  // Require a continuous observed Start→Mål series and usable physical pacing
-  // on every leg, rather than treating missing passings as if they were zero.
-  if(parts.length!==cps.length-1||parts.some((part,i)=>part.index!==i||!paceDistanceSupported(part)))return null;
-  const midway=observed(r,breakpoint),finishObs=observed(r,goal);
-  const t0=midway?.elapsed_seconds,t1=finishObs?.elapsed_seconds;
-  if(!num(t0)||!num(t1)||t0<=0||t1<=t0)return null;
-  const before=breakpoint.km/t0,after=(goal.km-breakpoint.km)/(t1-t0);
-  const ratio=after/before;
-  return num(ratio)&&ratio>0?{r,ratio,from:breakpoint.name,to:goal.name}:null;
+/* Source-timed finishing strength: no GPS, no assumed physical distance.
+ * Compare each FINISHED runner's last actually observed checkpoint-to-finish
+ * TIME pair with the median of the *same pair* and declared sex cohort.
+ * A valid comparison needs at least five independent observed time pairs.
+ * Different checkpoint pairs are NEVER combined in the reference median.
+ */
+function sourceTimedFinishStrength(rows){
+ const goal=boundaries().at(-1);
+ if(!goal?.is_finish)return[];
+ const candidates=rows.filter(finish).map(r=>{
+   const sex=analyticalSex(r);
+   const p=pairs(r).findLast(x=>x.to.uid===goal.uid);
+   return sex&&p&&num(p.seconds)&&p.seconds>0?{r,p,sex}:null;
  }).filter(Boolean);
+ const groups=new Map();
+ for(const item of candidates){
+   const key=item.sex+'|'+String(item.p.from.uid)+'|'+String(item.p.to.uid);
+   if(!groups.has(key))groups.set(key,[]);
+   groups.get(key).push(item);
+ }
+ return candidates.flatMap(item=>{
+   const key=item.sex+'|'+String(item.p.from.uid)+'|'+String(item.p.to.uid);
+   const group=groups.get(key)||[];
+   if(group.length<5)return[];
+   const reference=median(group.map(x=>x.p.seconds));
+   if(!num(reference)||reference<=0)return[];
+   return [{r:item.r,p:item.p,n:group.length,reference,
+            relative:100*reference/item.p.seconds}];
+ });
 }
 const STANDOUT_EXPLANATIONS={
  relative:'Löparens snabbaste verifierade delsträcka jämförs med den egna genomsnittshastigheten över hela loppet. 140 % betyder att hastigheten på just denna delsträcka var 40 % högre än löparens loppsnitt, inte att hela loppet gick 40 % snabbare. Terräng och lutning påverkar.',
- finish:'Fartbevarandet från kontrollen närmast två tredjedelar av banan fram till mål jämförs med farten före kontrollen. Resultatet jämförs med medianen för fullföljare av samma kön i urvalet: 112 % betyder 12 % starkare fartbevarande än gruppmedianen. Det betyder inte nödvändigtvis att löparen ökade farten – även den som saktar ned mindre än andra kan ligga över 100 %. Minst fem jämförbara löpare och sammanhängande verkliga TIME-passager krävs.',
+ finish:'Sista verkligt observerade kontrollpassage till mål jämförs med medianen av exakt samma tidspar för löpare av samma kön. 112 % betyder att det sista tidssegmentet avverkades 12 % snabbare än referensmedianen, mätt som kvoten median/tid. Minst fem verkliga jämförbara tidspar krävs. Olika kontrollsegment blandas inte ihop och inga GPS-avstånd eller saknade passager räknas fram.',
  gain:'Största verkliga förbättring i totalplacering mellan två intilliggande kontroller. +23 platser betyder att löparen passerade 23 placeringar på den delsträckan. Bara positiva förbättringar rangordnas; en saknad placering antas aldrig vara noll.',
  even:'Lägst variation i tempo (sekunder per kilometer) mellan minst två verifierade delsträckor. 5 % variation är en variationskoefficient på 5 % (standardavvikelse delad med genomsnittstempo). Låg variation innebär jämnare tempo, men kupering och olika långa delsträckor påverkar jämförelsen.',
  last:'Snabbast registrerade tempo på den sista observerade delsträckan ända fram till mål, uttryckt i min/km eller km/h enligt ditt enhetsval. Endast verkliga TIME-par och delsträckor med tillförlitligt distansunderlag används. Detta är absolut fart, inte ett mått på vunna placeringar.'
@@ -244,18 +256,11 @@ function standoutsFor(rows){
  const paceKm=wholeCoursePaceKm(S.race);
  const profiles=rows.filter(finish).map(r=>({r,parts:pairs(r)})).filter(x=>x.parts.length>=2);
  const all=profiles.flatMap(x=>x.parts.map(s=>({...s,r:x.r,rel:num(paceKm)&&paceKm>0?s.seconds/s.km/(x.r.finish_seconds/paceKm):null})));
- if(!all.length)return[];
+ const finishEntries=sourceTimedFinishStrength(rows);
+ if(!all.length&&!finishEntries.length)return[];
  const physical=all.filter(x=>paceDistanceSupported(x)&&num(x.rel)&&x.rel>0);
  const gain=all.filter(x=>num(x.placeFrom)&&num(x.placeTo)).map(x=>({...x,change:x.placeFrom-x.placeTo})).filter(x=>x.change>0);
- const finishEntries=standoutFinishStrength(profiles);
- const finishList=finishEntries.flatMap(x=>{
-  const sex=analyticalSex(x.r),cohort=finishEntries.filter(y=>analyticalSex(y.r)===sex);
-  if(!sex||cohort.length<5)return[];
-  const groupMedian=median(cohort.map(y=>y.ratio));
-  if(!num(groupMedian)||groupMedian<=0)return[];
-  const index=100*x.ratio/groupMedian;
-  return [{...x,index}];
- });
+ const finishList=finishEntries.map(x=>({...x,index:x.relative,from:x.p.from.name,to:x.p.to.name}));
  const even=profiles.map(x=>{
   const z=x.parts.filter(p=>paceDistanceSupported(p)).map(p=>p.seconds/p.km);
   if(z.length<2)return null;
@@ -1311,18 +1316,12 @@ window.SatilaExtras=(()=>{
   }
   function renderLastSegmentStrength(){
     const h=$('#last-segment-strength');if(!h)return;
-    // D11 is based on a runner's last real positive TIME pair and the median
-    // for precisely that segment; no unverified physical distance is required.
-    const refs=segmentStats(S.filtered),lastStrength=[];
-    for(const r of S.filtered.filter(finish)){
-      const p=pairs(r).at(-1);if(!p||p.seconds<=0)continue;
-      const stat=refs.find(x=>x.index===p.index);
-      if(!stat||stat.n<5||!num(stat.median))continue;
-      lastStrength.push({r,p,n:stat.n,reference:stat.median,relative:100*stat.median/p.seconds});
-    }
+    // Exact source TIME pairs only; same finish segment and sex-specific n>=5.
+    // No unverified physical pace, GPS position or missing split is inferred.
+    const lastStrength=sourceTimedFinishStrength(S.filtered);
     lastStrength.sort((a,b)=>b.relative-a.relative);
     const columns=['F','M'].map(sex=>{const rows=lastStrength.filter(x=>analyticalSex(x.r)===sex).slice(0,5);return `<section><h4>${sex==='F'?'Kvinnor':'Män'}</h4>${rows.length?`<div class="finish-progress-list">${rows.map((x,i)=>`<button class="mini-result" data-open="${esc(x.r.id)}"><span><b>${i+1}</b> ${esc(x.r.name)}</span><strong>${x.relative.toFixed(0)} %</strong><small>${esc(x.p.from.name)} → ${esc(x.p.to.name)} · ${time(x.p.seconds)} · median ${time(x.reference)} · n=${x.n}</small></button>`).join('')}</div>`:empty('Inga källsäkra observationer.')}</section>`}).join('');
-    h.innerHTML=lastStrength.length?`<p class="small muted">100 = median för samma observerade segment i aktuellt urval. Över 100 = snabbare. Ingen GPS-fart eller imputerad passage används.</p><div class="strength-pair">${columns}</div>`:empty('Minst fem verkliga segmentpar på respektive löpares sista verifierade delsträcka krävs för relativ styrka.');
+    h.innerHTML=lastStrength.length?`<p class="small muted">100 = median för samma sista observerade tidssegment och kön. Över 100 = kortare tid än median. Ingen GPS-fart eller imputerad passage används.</p><div class="strength-pair">${columns}</div>`:empty('Minst fem fullföljare av samma kön med verkliga tidspar på exakt samma sista kontrollsträcka krävs för relativ avslutningsstyrka.');
     bindResultLinks(h);
   }
   function renderSegmentSex(){const h=$('#segment-sex-extra');if(!h)return;const s=currentSeg();if(!s){h.innerHTML=empty();return}const all=segmentStats(S.filtered),shown=modeDistributionSegments(all),label=S.segmentSeriesMode==='F'?'Kvinnor':S.segmentSeriesMode==='M'?'Män':'Alla';bandChart(h,shown,{dataAttribute:'data-extra-segment',domainPoints:all,showStart:true,startValue:0,startExplanation:'0:00 – ingen tid har förflutit vid start',note:`Start visar 0:00 innan första delsträckan, inte en beräknad median. ${label}; vald delsträcka ${s.from.name} → ${s.to.name}. Median visas från n≥5, Q25–Q75 från n≥10.`})}
