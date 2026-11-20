@@ -3,7 +3,7 @@ on:
   push:
     branches: [codex/gax100-satila-blueprint-2026-11-09]
   pull_request:
-    branches: [main]
+    branches: [main, codex/gax100-satila-blueprint-2026-11-09]
 permissions:
   contents: read
 jobs:
@@ -12,6 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
       - uses: actions/setup-python@v5
         with:
