@@ -51,6 +51,20 @@ class BlueprintContract(unittest.TestCase):
         self.assertEqual(html.count('class="panel plan-card"'),1)
         self.assertIn("årsspecifika banans karta och höjdprofil",html)
 
+    def test_checkpoint_panels_clear_before_privacy_guard(self):
+        """Switching to withheld data must not leave prior runner observations."""
+        js=(DOCS/"assets"/"gax-controls.js").read_text(encoding="utf-8")
+        for panel,guard in (
+            ("#gax-runner-checkpoints", "if(!race||!runner||race.release_state==='PRIVATE_DATA_WITHHELD')return;"),
+            ("#gax-direct-controls", "if(!race||!a||!b||race.release_state==='PRIVATE_DATA_WITHHELD')return;"),
+        ):
+            start=js.index("function renderProfile(") if "runner" in guard else js.index("function renderComparison(")
+            end=js.index("\nfunction ",start+1) if "\nfunction " in js[start+1:] else js.index("\n// Accessible",start)
+            body=js[start:end]
+            self.assertIn(panel,body)
+            self.assertIn(guard,body)
+            self.assertLess(body.index(".remove();"),body.index(guard))
+
     def test_only_aggregate_public_data(self):
         data=DOCS/"data"
         boot=json.loads((data/"bootstrap.json").read_text(encoding="utf-8"))
