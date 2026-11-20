@@ -1248,6 +1248,11 @@ window.SatilaExtras=(()=>{
       <article class="panel"><div class="panel-heading"><div><p class="eyebrow">KVINNOR / MÄN</p><h3>Tidsåtgång per delsträcka</h3></div><button class="info" data-help-extra="sexpace">i</button></div><div id="segment-sex-extra"></div></article>
       <article class="panel extra-wide"><div class="panel-heading"><div><p class="eyebrow">FÄLTETS SPRIDNING</p><h3>Q25–Q75 genom kontrollerna</h3></div><button class="info" data-help-extra="spread">i</button></div><div id="checkpoint-spread"></div></article>
     </div>`);
+    // GAX requested a single work area for split analysis and the personal
+    // race plan. Move the already wired form only after the source diagrams
+    // and supplemental split analyses are mounted; no duplicate form/IDs.
+    const planCard=$('#course .plan-card');
+    if(planCard && $('#segments'))$('#segments').append(planCard);
     if(!$('#extra-course')) $('#course').insertAdjacentHTML('beforeend',`<div id="extra-course" class="extra-grid course-intelligence-row"><div id="course-intelligence" class="course-intelligence-split"></div></div>`);
     if(!$('#extra-history')) $('#history').insertAdjacentHTML('beforeend',`<div id="extra-history" class="extra-grid history-extra">
       <article class="panel"><div class="panel-heading"><div><p class="eyebrow">PRESTATION PER UPPLAGA</p><h3>Medianer utan falsk trendlinje</h3></div><button class="info" data-help-extra="performance">i</button></div><div id="history-performance"></div></article>
