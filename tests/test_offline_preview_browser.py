@@ -20,7 +20,7 @@ def main(file:Path):
         stage=page.locator("#open-gax-stages")
         stage.click()
         assert page.locator("#gax-stages-dialog").evaluate("(el)=>el.open"),"stage modal missing"
-        assert page.locator("#gax-stage-list li").count()==4 if page.locator("#gax-stage-list").count() else page.locator(".gax-stage-list li").count()==4
+        assert page.locator(".gax-stage-list li").count()==4,"four stages not present"
         assert "inte en verifierad GPS-indelning" in page.locator("#gax-stages-dialog").inner_text()
         page.locator("#close-gax-stages").click()
         assert not page.locator("#gax-stages-dialog").evaluate("(el)=>el.open"),"modal did not close"
