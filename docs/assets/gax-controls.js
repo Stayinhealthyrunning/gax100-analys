@@ -114,6 +114,21 @@ function renderComparison(race,a,b){
  :'<p class="muted">Inga gemensamma, registrerade kontrollpassager utöver sluttiderna.</p>');
  content.appendChild(panel);
 }
+// Accessible information modal: the historical controls describe four
+// conceptual stages, never a measured course version or estimated split.
+const stagesButton=$('#open-gax-stages');
+const stagesDialog=$('#gax-stages-dialog');
+const stagesClose=$('#close-gax-stages');
+if(stagesButton&&stagesDialog&&stagesClose){
+ stagesButton.addEventListener('click',()=>{
+  if(!stagesDialog.open)stagesDialog.showModal();
+ });
+ stagesClose.addEventListener('click',()=>stagesDialog.close());
+ stagesDialog.addEventListener('close',()=>stagesButton.focus());
+ stagesDialog.addEventListener('click',event=>{
+  if(event.target===stagesDialog)stagesDialog.close();
+ });
+}
 window.GaxCheckpointView={render,renderProfile,renderComparison,
  _test:{median,observed,stations}};
 })();
