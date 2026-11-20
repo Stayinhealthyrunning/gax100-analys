@@ -22,6 +22,8 @@ jobs:
           node-version: '24'
       - name: Public preview must contain no named participants or raw records
         run: python -B -m unittest discover -s tests -p 'test_blueprint_contract.py' -v
+      - name: Verify annual GPX source rights and no fabricated historical maps
+        run: python3 -B -m unittest discover -s tests -p 'test_gax_course_evidence.py' -v
       - name: Original Sätila blueprint JS remains syntactically valid
         run: |
           for file in docs/assets/*.js; do node --check "$file"; done
