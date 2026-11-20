@@ -1,0 +1,114 @@
+#!/usr/bin/env python3
+"""Source-only, non-identifying public GAX100 blueprint safeguards."""
+from __future__ import annotations
+import json
+from pathlib import Path
+import re
+import unittest
+
+ROOT=Path(__file__).resolve().parents[1]
+DOCS=ROOT/"docs"
+class BlueprintContract(unittest.TestCase):
+    def test_sae_tila_blueprint_structure(self):
+        html=(DOCS/"index.html").read_text(encoding="utf-8")
+        expected=("runner-tools","map-duel-builder","overview","dynamics",
+                  "segments","course","history","results","method",
+                  "profile-dialog","compare-dialog","year-select")
+        for item in expected:
+            self.assertIn('id="'+item+'"',html)
+        self.assertIn('data-family="gax100"',html)
+        self.assertNotIn("Lygnern",html)
+        self.assertNotIn("EQ Timing",html)
+        self.assertEqual(len(re.findall(r'data-family="gax100"',html)),1)
+
+    def test_stage_dialog_and_compact_group_layout(self):
+        page=(DOCS/"index.html").read_text(encoding="utf-8")
+        js=(DOCS/"assets"/"app.js").read_text(encoding="utf-8")
+        helpers=(DOCS/"assets"/"gax-controls.js").read_text(encoding="utf-8")
+        self.assertIn('id="open-gax-stages"',page)
+        self.assertIn('id="gax-stages-dialog"',page)
+        self.assertIn('id="close-gax-stages"',page)
+        self.assertIn('aria-haspopup="dialog"',page)
+        self.assertEqual(page.count('class="gax-stage-list"'),1)
+        for control in ("Magleberg","Haväng","Sandhammaren"):
+            self.assertIn(control,page)
+        self.assertIn("inte en verifierad GPS-indelning",page)
+        self.assertNotIn("Klasser och kön",page)
+        self.assertIn('id="group-bars" hidden aria-hidden="true"',page)
+        self.assertIn("gax-group-breakdown",js)
+        self.assertIn("completion.append(details)",js)
+        self.assertIn("details.append(groupsChart)",js)
+        self.assertIn("stagesDialog.showModal()",helpers)
+        self.assertIn("stagesButton.focus()",helpers)
+
+    def test_split_lab_and_plan_share_one_runtime_section(self):
+        html=(DOCS/"index.html").read_text(encoding="utf-8")
+        js=(DOCS/"assets"/"app.js").read_text(encoding="utf-8")
+        self.assertIn("Delsträckelabbet & personlig loppplan",html)
+        self.assertIn("href=\"#segments\">Delsträckor & loppplan",html)
+        self.assertIn("const planCard=$('#course .plan-card');",js)
+        self.assertIn("$('#segments').append(planCard)",js)
+        self.assertEqual(html.count('class="panel plan-card"'),1)
+        self.assertIn("årsspecifika banans karta och höjdprofil",html)
+
+    def test_checkpoint_panels_clear_before_privacy_guard(self):
+        """Switching to withheld data must not leave prior runner observations."""
+        js=(DOCS/"assets"/"gax-controls.js").read_text(encoding="utf-8")
+        for panel,guard in (
+            ("#gax-runner-checkpoints", "if(!race||!runner||race.release_state==='PRIVATE_DATA_WITHHELD')return;"),
+            ("#gax-direct-controls", "if(!race||!a||!b||race.release_state==='PRIVATE_DATA_WITHHELD')return;"),
+        ):
+            start=js.index("function renderProfile(") if "runner" in guard else js.index("function renderComparison(")
+            end=js.index("\nfunction ",start+1) if "\nfunction " in js[start+1:] else js.index("\n// Accessible",start)
+            body=js[start:end]
+            self.assertIn(panel,body)
+            self.assertIn(guard,body)
+            self.assertLess(body.index(".remove();"),body.index(guard))
+
+    def test_only_aggregate_public_data(self):
+        data=DOCS/"data"
+        boot=json.loads((data/"bootstrap.json").read_text(encoding="utf-8"))
+        self.assertEqual(boot["event"],"GAX 100 miles")
+        self.assertEqual(len(boot["editions"]),14)
+        self.assertEqual([f["id"] for f in boot["families"]],["gax100"])
+        self.assertEqual(sum(e["results"] for e in boot["editions"]),945)
+        self.assertEqual(sum(e["finishers"] for e in boot["editions"]),651)
+        self.assertEqual(sum(e["split_observations"] for e in boot["editions"]),1838)
+        year23=next(e for e in boot["editions"] if e["year"]==2023)
+        self.assertEqual((year23["results"],year23["finishers"]),(90,70))
+        keys={e["race_key"] for e in boot["editions"]}
+        self.assertEqual(len(keys),14)
+        self.assertIn("2021-a-gax100",keys)
+        self.assertIn("2021-b-gax100",keys)
+        for key in keys:
+            race=json.loads((data/"races"/(key+".json")).read_text(encoding="utf-8"))
+            self.assertEqual(race["family"],"gax100")
+            self.assertEqual(race["release_state"],"PRIVATE_DATA_WITHHELD")
+            self.assertEqual(race["results"],[])
+            self.assertEqual(race["splits"],[])
+            self.assertEqual(race["stations"],[])
+            self.assertFalse(race["distance_verified"])
+            self.assertEqual(race["route_status"],"none")
+        self.assertEqual(len(list((data/"races").glob("*.json"))),14)
+        self.assertEqual(json.loads((data/"route-inventory.json").read_text(encoding="utf-8")),[])
+
+    def test_no_raw_sources_or_copyrighted_sae_tila_assets(self):
+        for path in DOCS.rglob("*"):
+            if path.is_file():
+                self.assertNotIn(path.suffix.lower(),{".sqlite",".db",".pdf",".fit",".gpx",".kmz",".mp3",".webp"})
+                self.assertNotIn("satila",path.name.lower())
+        js=(DOCS/"assets"/"app.js").read_text(encoding="utf-8")
+        self.assertIn("editionKey",js)
+        self.assertIn("PRIVATE_DATA_WITHHELD",js)
+        self.assertIn("GaxCheckpointView?.render",js)
+        self.assertIn("GaxCheckpointView?.renderComparison",js)
+        self.assertIn("GaxCheckpointView?.renderProfile",js)
+        self.assertIn("PRIVATE_DATA_WITHHELD", (DOCS/"data/races/2023-gax100.json").read_text(encoding="utf-8"))
+        checkpoint=(DOCS/"assets/gax-controls.js").read_text(encoding="utf-8")
+        self.assertIn("st.values.length>=5",checkpoint)
+        self.assertIn("source-only",checkpoint)
+        self.assertNotIn("Ramhulta",checkpoint)
+        self.assertNotIn("satila-trail.mp3",js)
+
+if __name__=="__main__":
+    unittest.main(verbosity=2)
