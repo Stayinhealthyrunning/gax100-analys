@@ -1,0 +1,13 @@
+name: GAX100 Snapshot UX QA (disabled - frozen PII snapshot removed)
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  snapshot-qa:
+    if: ${{ false }}
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Frozen historical participant JSON removed; use private-source QA instead"

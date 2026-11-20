@@ -1,0 +1,119 @@
+[
+  {
+    "id": "result-index-2026",
+    "bytes": 63073,
+    "dnf": 2,
+    "dns": 3,
+    "splits": 0,
+    "status": "downloaded",
+    "note": "regex audit only; not normalized result counts"
+  },
+  {
+    "id": "result-2014",
+    "bytes": 28157,
+    "dnf": 0,
+    "dns": 1,
+    "splits": 3,
+    "status": "downloaded",
+    "note": "regex audit only; not normalized result counts"
+  },
+  {
+    "id": "result-2015",
+    "bytes": 41093,
+    "dnf": 0,
+    "dns": 1,
+    "splits": 3,
+    "status": "downloaded",
+    "note": "regex audit only; not normalized result counts"
+  },
+  {
+    "id": "result-2016",
+    "bytes": 48571,
+    "dnf": 14,
+    "dns": 1,
+    "splits": 3,
+    "status": "downloaded",
+    "note": "regex audit only; not normalized result counts"
+  },
+  {
+    "id": "result-2017",
+    "bytes": 39101,
+    "dnf": 0,
+    "dns": 1,
+    "splits": 4,
+    "status": "downloaded",
+    "note": "regex audit only; not normalized result counts"
+  },
+  {
+    "id": "result-2018",
+    "bytes": 31389,
+    "dnf": 16,
+    "dns": 1,
+    "splits": 9,
+    "status": "downloaded",
+    "note": "regex audit only; not normalized result counts"
+  },
+  {
+    "id": "result-2019",
+    "bytes": 33127,
+    "dnf": 17,
+    "dns": 1,
+    "splits": 9,
+    "status": "downloaded",
+    "note": "regex audit only; not normalized result counts"
+  },
+  {
+    "id": "result-2020",
+    "bytes": 28833,
+    "dnf": 5,
+    "dns": 1,
+    "splits": 7,
+    "status": "downloaded",
+    "note": "regex audit only; not normalized result counts"
+  },
+  {
+    "id": "result-2021",
+    "bytes": 74686,
+    "dnf": 21,
+    "dns": 1,
+    "splits": 12,
+    "status": "downloaded",
+    "note": "regex audit only; not normalized result counts"
+  },
+  {
+    "id": "result-2022",
+    "bytes": 84380,
+    "dnf": 14,
+    "dns": 1,
+    "splits": 6,
+    "status": "downloaded",
+    "note": "regex audit only; not normalized result counts"
+  },
+  {
+    "id": "result-2023",
+    "bytes": 55227,
+    "dnf": 19,
+    "dns": 1,
+    "splits": 6,
+    "status": "downloaded",
+    "note": "regex audit only; not normalized result counts"
+  },
+  {
+    "id": "result-2024",
+    "bytes": 33616,
+    "dnf": 37,
+    "dns": 1,
+    "splits": 6,
+    "status": "downloaded",
+    "note": "regex audit only; not normalized result counts"
+  },
+  {
+    "id": "course-current",
+    "bytes": 26259,
+    "dnf": 0,
+    "dns": 1,
+    "splits": 9,
+    "status": "downloaded",
+    "note": "regex audit only; not normalized result counts"
+  }
+]
