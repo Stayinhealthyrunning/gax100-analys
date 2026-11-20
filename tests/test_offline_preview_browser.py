@@ -31,6 +31,12 @@ def main(file:Path):
         assert not page.locator(".gax-group-breakdown").evaluate("(el)=>el.open"),"class detail should begin collapsed"
         page.locator(".gax-group-breakdown summary").click()
         assert page.locator(".gax-group-breakdown").evaluate("(el)=>el.open"),"class detail did not expand"
+        # Split lab and personal plan must share one rendered section.
+        assert page.locator("#segments .plan-card").count()==1,"race plan not under split lab"
+        assert page.locator("#course .plan-card").count()==0,"plan incorrectly duplicated in course section"
+        page.locator("#target-time").fill("1230")
+        page.locator("#calculate-plan").click()
+        assert page.locator("#target-time").input_value()=="12:30:00","mobile time not normalized"
         assert "Demokontroll" in page.locator("#gax-controls-panel").inner_text().title(),"demo control panel empty"
         page.select_option("#year-select","2021-a-gax100")
         page.wait_for_function("() => document.querySelector('#race-title')?.textContent.includes('2021-A')")
