@@ -1,0 +1,608 @@
+{
+  "generated_at": "2026-10-09T13:19:22.729Z",
+  "input_dir": "data/raw/gpx",
+  "files": [
+    {
+      "file": "Gax 100 Miles-2022-M6.gpx",
+      "sha256": "5f1c8c181efdf9e3379ed47c231acb60c4ca9f3e73791b9caf9e0c450262a9ed",
+      "bytes": 1034764,
+      "creator": "www.plotaroute.com",
+      "name": "Gax 100 Miles-2022-M6",
+      "sourceLink": null,
+      "points": 10503,
+      "track_segments": 1,
+      "continuous_runs": 1,
+      "interruptions_over_250m": [],
+      "distance_km": 161.74,
+      "bounds": {
+        "min_lat": 55.382442,
+        "max_lat": 55.74471,
+        "min_lon": 13.687622,
+        "max_lon": 14.357181
+      },
+      "knaebackshusen": {
+        "reference": {
+          "lat": 55.64097,
+          "lon": 14.27477
+        },
+        "nearest": {
+          "index": 6557,
+          "meters": 77.8,
+          "lat": 55.641603,
+          "lon": 14.275299
+        },
+        "route_km": 94.02
+      },
+      "elevation": {
+        "points": 10503,
+        "min_m": 0,
+        "max_m": 116,
+        "p10_m": 2,
+        "p50_m": 29,
+        "p90_m": 92,
+        "missing_points": 0
+      },
+      "timestamps": {
+        "points": 10503,
+        "first": "2026-10-09T00:00:00.000Z",
+        "last": "2026-10-09T16:11:32.000Z",
+        "quality": "exporttid; ej löpartid",
+        "median_interval_s": 5,
+        "monotonic": true
+      },
+      "jumps_over_250m": [],
+      "likely_geometry": true,
+      "likely_exported_route": true
+    },
+    {
+      "file": "Gax 2021 100 Miles_final.gpx",
+      "sha256": "7c7b9a0ad63239611c3955f76841eb8b265c043b03abbb6db49dc9caa520b272",
+      "bytes": 236924,
+      "creator": "www.plotaroute.com",
+      "name": "Gax 2021 100 Miles_final",
+      "sourceLink": null,
+      "points": 2452,
+      "track_segments": 1,
+      "continuous_runs": 56,
+      "interruptions_over_250m": [
+        {
+          "index": 65,
+          "meters": 258.3
+        },
+        {
+          "index": 94,
+          "meters": 339.7
+        },
+        {
+          "index": 123,
+          "meters": 298.9
+        },
+        {
+          "index": 128,
+          "meters": 253.7
+        },
+        {
+          "index": 130,
+          "meters": 387.8
+        },
+        {
+          "index": 134,
+          "meters": 274.7
+        },
+        {
+          "index": 165,
+          "meters": 347.2
+        },
+        {
+          "index": 200,
+          "meters": 364
+        },
+        {
+          "index": 218,
+          "meters": 321
+        },
+        {
+          "index": 473,
+          "meters": 255.5
+        },
+        {
+          "index": 474,
+          "meters": 297.5
+        },
+        {
+          "index": 507,
+          "meters": 322.8
+        },
+        {
+          "index": 522,
+          "meters": 252.6
+        },
+        {
+          "index": 526,
+          "meters": 268.9
+        },
+        {
+          "index": 528,
+          "meters": 361.3
+        },
+        {
+          "index": 538,
+          "meters": 291
+        },
+        {
+          "index": 546,
+          "meters": 380.4
+        },
+        {
+          "index": 574,
+          "meters": 490.4
+        },
+        {
+          "index": 576,
+          "meters": 277.5
+        },
+        {
+          "index": 601,
+          "meters": 295.8
+        },
+        {
+          "index": 610,
+          "meters": 294.4
+        },
+        {
+          "index": 674,
+          "meters": 589
+        },
+        {
+          "index": 675,
+          "meters": 250.6
+        },
+        {
+          "index": 807,
+          "meters": 398.1
+        },
+        {
+          "index": 875,
+          "meters": 296.9
+        },
+        {
+          "index": 1139,
+          "meters": 363.4
+        },
+        {
+          "index": 1145,
+          "meters": 288.4
+        },
+        {
+          "index": 1227,
+          "meters": 333.4
+        },
+        {
+          "index": 1363,
+          "meters": 305.1
+        },
+        {
+          "index": 1367,
+          "meters": 292.2
+        },
+        {
+          "index": 1398,
+          "meters": 605.6
+        },
+        {
+          "index": 1400,
+          "meters": 334.1
+        },
+        {
+          "index": 1547,
+          "meters": 355.2
+        },
+        {
+          "index": 1548,
+          "meters": 366.3
+        },
+        {
+          "index": 1562,
+          "meters": 502.6
+        },
+        {
+          "index": 1592,
+          "meters": 290
+        },
+        {
+          "index": 1712,
+          "meters": 356.9
+        },
+        {
+          "index": 1762,
+          "meters": 254.9
+        },
+        {
+          "index": 1878,
+          "meters": 369.3
+        },
+        {
+          "index": 1886,
+          "meters": 262.9
+        },
+        {
+          "index": 1888,
+          "meters": 658.1
+        },
+        {
+          "index": 1890,
+          "meters": 294.3
+        },
+        {
+          "index": 1896,
+          "meters": 378.6
+        },
+        {
+          "index": 2030,
+          "meters": 752.2
+        },
+        {
+          "index": 2032,
+          "meters": 322.4
+        },
+        {
+          "index": 2067,
+          "meters": 275.1
+        },
+        {
+          "index": 2147,
+          "meters": 463.7
+        },
+        {
+          "index": 2159,
+          "meters": 285.6
+        },
+        {
+          "index": 2190,
+          "meters": 309.3
+        },
+        {
+          "index": 2293,
+          "meters": 355.7
+        },
+        {
+          "index": 2296,
+          "meters": 873.3
+        },
+        {
+          "index": 2301,
+          "meters": 842.9
+        },
+        {
+          "index": 2304,
+          "meters": 440.6
+        },
+        {
+          "index": 2308,
+          "meters": 327.8
+        },
+        {
+          "index": 2366,
+          "meters": 263
+        },
+        {
+          "index": 2391,
+          "meters": 252.4
+        },
+        {
+          "index": 2408,
+          "meters": 285.1
+        },
+        {
+          "index": 2412,
+          "meters": 540.6
+        }
+      ],
+      "distance_km": 139.78,
+      "bounds": {
+        "min_lat": 55.38247,
+        "max_lat": 55.74467,
+        "min_lon": 13.68765,
+        "max_lon": 14.35718
+      },
+      "knaebackshusen": {
+        "reference": {
+          "lat": 55.64097,
+          "lon": 14.27477
+        },
+        "nearest": {
+          "index": 121,
+          "meters": 79.1,
+          "lat": 55.64161,
+          "lon": 14.27532
+        },
+        "route_km": 83.12
+      },
+      "elevation": {
+        "points": 2452,
+        "min_m": 0,
+        "max_m": 116,
+        "p10_m": 2,
+        "p50_m": 26,
+        "p90_m": 91,
+        "missing_points": 0
+      },
+      "timestamps": {
+        "points": 2452,
+        "first": "2026-10-09T00:00:00.000Z",
+        "last": "2026-10-09T16:07:59.000Z",
+        "quality": "exporttid; ej löpartid",
+        "median_interval_s": 16,
+        "monotonic": true
+      },
+      "jumps_over_250m": [
+        {
+          "index": 65,
+          "meters": 258.3
+        },
+        {
+          "index": 94,
+          "meters": 339.7
+        },
+        {
+          "index": 123,
+          "meters": 298.9
+        },
+        {
+          "index": 128,
+          "meters": 253.7
+        },
+        {
+          "index": 130,
+          "meters": 387.8
+        },
+        {
+          "index": 134,
+          "meters": 274.7
+        },
+        {
+          "index": 165,
+          "meters": 347.2
+        },
+        {
+          "index": 200,
+          "meters": 364
+        },
+        {
+          "index": 218,
+          "meters": 321
+        },
+        {
+          "index": 473,
+          "meters": 255.5
+        },
+        {
+          "index": 474,
+          "meters": 297.5
+        },
+        {
+          "index": 507,
+          "meters": 322.8
+        },
+        {
+          "index": 522,
+          "meters": 252.6
+        },
+        {
+          "index": 526,
+          "meters": 268.9
+        },
+        {
+          "index": 528,
+          "meters": 361.3
+        },
+        {
+          "index": 538,
+          "meters": 291
+        },
+        {
+          "index": 546,
+          "meters": 380.4
+        },
+        {
+          "index": 574,
+          "meters": 490.4
+        },
+        {
+          "index": 576,
+          "meters": 277.5
+        },
+        {
+          "index": 601,
+          "meters": 295.8
+        }
+      ],
+      "likely_geometry": false,
+      "likely_exported_route": true
+    },
+    {
+      "file": "The_Gax_100_miles.gpx",
+      "sha256": "9073f562cde894cffe2327680ff4208d7435013527cad9078d6a0872243c1380",
+      "bytes": 4487041,
+      "creator": "AllTrails.com",
+      "name": "The Gax 100 miles [Stängd]",
+      "sourceLink": "http://www.alltrails.com",
+      "points": 53853,
+      "track_segments": 1,
+      "continuous_runs": 1,
+      "interruptions_over_250m": [],
+      "distance_km": 162.08,
+      "bounds": {
+        "min_lat": 55.38247,
+        "max_lat": 55.73473,
+        "min_lon": 13.68764,
+        "max_lon": 14.35718
+      },
+      "knaebackshusen": {
+        "reference": {
+          "lat": 55.64097,
+          "lon": 14.27477
+        },
+        "nearest": {
+          "index": 29710,
+          "meters": 79,
+          "lat": 55.64162,
+          "lon": 14.27528
+        },
+        "route_km": 93.76
+      },
+      "elevation": {
+        "points": 53853,
+        "min_m": 0,
+        "max_m": 119.72,
+        "p10_m": 2.18,
+        "p50_m": 20.18,
+        "p90_m": 91.73,
+        "missing_points": 0
+      },
+      "timestamps": {
+        "points": 0,
+        "first": null,
+        "last": null,
+        "quality": "saknas",
+        "median_interval_s": null,
+        "monotonic": true
+      },
+      "jumps_over_250m": [],
+      "likely_geometry": true,
+      "likely_exported_route": true
+    },
+    {
+      "file": "the-gax-100-miles-2018.gpx",
+      "sha256": "d79593ea40a2549d4747c5880ac11f5d8c256eb368927ff42cfcc10f26e30f0b",
+      "bytes": 3433228,
+      "creator": "Trace de Trail",
+      "name": "The Gax 100 Miles 2018",
+      "sourceLink": "https://tracedetrail.fr/en/trace/48826",
+      "points": 26916,
+      "track_segments": 1,
+      "continuous_runs": 3,
+      "interruptions_over_250m": [
+        {
+          "index": 21205,
+          "meters": 2997.6
+        },
+        {
+          "index": 21558,
+          "meters": 1597.6
+        }
+      ],
+      "distance_km": 156.16,
+      "bounds": {
+        "min_lat": 55.38247,
+        "max_lat": 55.73473,
+        "min_lon": 13.68764,
+        "max_lon": 14.35718
+      },
+      "knaebackshusen": {
+        "reference": {
+          "lat": 55.64097,
+          "lon": 14.27477
+        },
+        "nearest": {
+          "index": 15534,
+          "meters": 79,
+          "lat": 55.64162,
+          "lon": 14.27528
+        },
+        "route_km": 92.78
+      },
+      "elevation": {
+        "points": 26916,
+        "min_m": 2,
+        "max_m": 128,
+        "p10_m": 4,
+        "p50_m": 24,
+        "p90_m": 95,
+        "missing_points": 0
+      },
+      "timestamps": {
+        "points": 26916,
+        "first": "2026-10-09T12:14:13.000Z",
+        "last": "2026-10-10T10:39:58.000Z",
+        "quality": "exporttid; ej löpartid",
+        "median_interval_s": 3,
+        "monotonic": true
+      },
+      "jumps_over_250m": [
+        {
+          "index": 21205,
+          "meters": 2997.6
+        },
+        {
+          "index": 21558,
+          "meters": 1597.6
+        }
+      ],
+      "likely_geometry": true,
+      "likely_exported_route": false
+    },
+    {
+      "file": "the-gax-100-miles-2021-162-km.gpx",
+      "sha256": "bf5713a4335e9a178c219dbea2b76e405489ae60a3d022b7b2cfd014123f95b4",
+      "bytes": 1878962,
+      "creator": "Trace de Trail",
+      "name": "The Gax 100 Miles 2021 - 162 km",
+      "sourceLink": "https://tracedetrail.fr/en/trace/139697",
+      "points": 14728,
+      "track_segments": 1,
+      "continuous_runs": 2,
+      "interruptions_over_250m": [
+        {
+          "index": 6588,
+          "meters": 1647.9
+        }
+      ],
+      "distance_km": 160.38,
+      "bounds": {
+        "min_lat": 55.38247,
+        "max_lat": 55.74467,
+        "min_lon": 13.68764,
+        "max_lon": 14.35718
+      },
+      "knaebackshusen": {
+        "reference": {
+          "lat": 55.64097,
+          "lon": 14.27477
+        },
+        "nearest": {
+          "index": 2140,
+          "meters": 79.1,
+          "lat": 55.64163,
+          "lon": 14.27524
+        },
+        "route_km": 92.69
+      },
+      "elevation": {
+        "points": 14728,
+        "min_m": 1,
+        "max_m": 128,
+        "p10_m": 3,
+        "p50_m": 26,
+        "p90_m": 96,
+        "missing_points": 0
+      },
+      "timestamps": {
+        "points": 14728,
+        "first": "2026-10-09T12:21:11.000Z",
+        "last": "2026-10-10T00:37:32.000Z",
+        "quality": "exporttid; ej löpartid",
+        "median_interval_s": 3,
+        "monotonic": true
+      },
+      "jumps_over_250m": [
+        {
+          "index": 6588,
+          "meters": 1647.9
+        }
+      ],
+      "likely_geometry": true,
+      "likely_exported_route": false
+    }
+  ]
+}
